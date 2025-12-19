@@ -1,0 +1,117 @@
+{
+  "reference_info": {
+    "description": "Database schema reference for backend implementation",
+    "generated_at": "2025-12-19T11:00:00Z",
+    "notes": "Types are based on TypeScript interfaces and typical SQL/NoSQL equivalents."
+  },
+  "schemas": {
+    "users": {
+      "table_name": "users",
+      "fields": {
+        "id": { "type": "UUID/String", "pk": true, "required": true },
+        "name": { "type": "String", "required": true },
+        "email": { "type": "String", "unique": true, "required": true },
+        "password_hash": {
+          "type": "String",
+          "notes": "If using credential auth"
+        },
+        "role": {
+          "type": "Enum",
+          "values": ["admin", "customer"],
+          "default": "customer"
+        },
+        "image": { "type": "String", "notes": "URL to avatar" },
+        "created_at": { "type": "Timestamp", "default": "now()" },
+        "updated_at": { "type": "Timestamp" }
+      }
+    },
+    "categories": {
+      "table_name": "categories",
+      "fields": {
+        "id": { "type": "UUID/String", "pk": true, "required": true },
+        "name": { "type": "String", "required": true },
+        "slug": { "type": "String", "unique": true, "required": true },
+        "description": { "type": "String" },
+        "image": { "type": "String", "notes": "URL to category image" },
+        "created_at": { "type": "Timestamp", "default": "now()" }
+      }
+    },
+    "products": {
+      "table_name": "products",
+      "fields": {
+        "id": { "type": "UUID/String", "pk": true, "required": true },
+        "name": { "type": "String", "required": true },
+        "description": { "type": "Text", "required": true },
+        "price": { "type": "Decimal/Float", "required": true },
+        "category_id": {
+          "type": "UUID/String",
+          "fk": "categories.id",
+          "required": true
+        },
+        "image": { "type": "String", "required": true },
+        "stock": { "type": "Integer", "default": 0 },
+        "specs": {
+          "type": "JSON/JSONB",
+          "notes": "Key-value pairs for technical specs"
+        },
+        "featured": { "type": "Boolean", "default": false },
+        "created_at": { "type": "Timestamp", "default": "now()" },
+        "updated_at": { "type": "Timestamp" }
+      }
+    },
+    "orders": {
+      "table_name": "orders",
+      "fields": {
+        "id": { "type": "UUID/String", "pk": true, "required": true },
+        "customer_name": { "type": "String", "required": true },
+        "customer_email": { "type": "String", "required": true },
+        "total": { "type": "Decimal/Float", "required": true },
+        "status": {
+          "type": "Enum",
+          "values": [
+            "pending",
+            "processing",
+            "shipped",
+            "delivered",
+            "cancelled"
+          ],
+          "default": "pending"
+        },
+        "user_id": {
+          "type": "UUID/String",
+          "fk": "users.id",
+          "nullable": true,
+          "notes": "If linked to registered user"
+        },
+        "created_at": { "type": "Timestamp", "default": "now()" },
+        "updated_at": { "type": "Timestamp" }
+      }
+    },
+    "order_items": {
+      "table_name": "order_items",
+      "fields": {
+        "id": { "type": "UUID/String", "pk": true, "required": true },
+        "order_id": {
+          "type": "UUID/String",
+          "fk": "orders.id",
+          "required": true
+        },
+        "product_id": {
+          "type": "UUID/String",
+          "fk": "products.id",
+          "required": true
+        },
+        "product_name": {
+          "type": "String",
+          "notes": "Snapshot of name at time of order"
+        },
+        "quantity": { "type": "Integer", "required": true },
+        "price": {
+          "type": "Decimal/Float",
+          "required": true,
+          "notes": "Snapshot of price at time of order"
+        }
+      }
+    }
+  }
+}

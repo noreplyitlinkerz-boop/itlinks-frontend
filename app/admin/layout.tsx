@@ -32,7 +32,7 @@ export default function AdminLayout({
         <div className="flex h-16 items-center gap-4 px-6">
           <Link href="/" className="flex items-center gap-2 mr-auto">
             <Store className="w-6 h-6 text-primary" />
-            <span className="font-bold text-xl">TechStore Admin</span>
+            <span className="font-bold text-xl">Itlinkers Admin</span>
           </Link>
           <Link href="/">
             <Button variant="outline" size="sm">

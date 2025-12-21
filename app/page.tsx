@@ -20,10 +20,10 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-background via-background/95 to-background py-20 md:py-32">
+        <section className="relative overflow-hidden bg-linear-to-b from-background via-background/95 to-background py-20 md:py-32">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-8 animate-fade-in">
-              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-6xl font-bold bg-linear-to-r from-primary via-accent to-cyan-500 bg-clip-text text-transparent">
                 Elevate Your Tech Experience
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

@@ -7,6 +7,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart, Menu, Laptop, Sun, Moon } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 export function Header() {
   const { totalItems } = useCart();
@@ -15,14 +16,20 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <Laptop className="w-8 h-8 text-primary group-hover:rotate-12 transition-transform" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-              TechStore
+            <Image
+              className="w-8 h-8 text-primary group-hover:rotate-12 transition-transform"
+              src="/logo.png"
+              alt="Logo"
+              width={32}
+              height={32}
+            />
+            <span className="text-2xl font-bold bg-linear-to-r from-primary via-blue-500 to-accent bg-clip-text text-transparent">
+              Itlinkers
             </span>
           </Link>
 

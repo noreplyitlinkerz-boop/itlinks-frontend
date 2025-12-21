@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">TechStore</h3>
+            <h3 className="text-lg font-semibold">Itlinkers</h3>
             <p className="text-sm text-muted-foreground">
               Your trusted source for premium laptops, components, and
               accessories.
@@ -122,7 +122,7 @@ export function Footer() {
                 <Linkedin className="w-5 h-5" />
               </a>
               <a
-                href="mailto:contact@techstore.com"
+                href="mailto:contact@Itlinkers.com"
                 className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
               >
                 <Mail className="w-5 h-5" />
@@ -133,7 +133,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
           <p>
-            &copy; {new Date().getFullYear()} TechStore. All rights reserved.
+            &copy; {new Date().getFullYear()} Itlinkers. All rights reserved.
           </p>
         </div>
       </div>

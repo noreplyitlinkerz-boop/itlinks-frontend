@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Suspense, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { SortOption } from "@/types";
 
-export default function ProductsPage() {
+function ProductsContent() {
   const { products, categories } = useAdmin();
   const searchParams = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
@@ -73,78 +73,90 @@ export default function ProductsPage() {
   }, [products, selectedCategory, searchQuery, sortOption]);
 
   return (
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="space-y-4">
+        <h1 className="text-4xl font-bold">All Products</h1>
+        <p className="text-muted-foreground">
+          Browse our complete collection of premium tech products
+        </p>
+      </div>
+
+      {/* Filters and Search */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <CategoryFilter
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search products..."
+          />
+
+          <Select
+            value={sortOption}
+            onValueChange={(value) => setSortOption(value as SortOption)}
+          >
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="price-asc">Price: Low to High</SelectItem>
+              <SelectItem value="price-desc">Price: High to Low</SelectItem>
+              <SelectItem value="name-asc">Name: A to Z</SelectItem>
+              <SelectItem value="name-desc">Name: Z to A</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Results Count */}
+      <div className="text-sm text-muted-foreground">
+        Showing {filteredAndSortedProducts.length} product
+        {filteredAndSortedProducts.length !== 1 ? "s" : ""}
+      </div>
+
+      {/* Products Grid */}
+      {filteredAndSortedProducts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredAndSortedProducts.map((product) => (
+            <div key={product.id} className="animate-scale-in">
+              <ProductCard product={product} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <p className="text-xl text-muted-foreground">No products found</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Try adjusting your filters or search query
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
     <div className="min-h-screen flex flex-col">
       <Header />
-
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          {/* Page Header */}
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold">All Products</h1>
-            <p className="text-muted-foreground">
-              Browse our complete collection of premium tech products
-            </p>
-          </div>
-
-          {/* Filters and Search */}
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            <CategoryFilter
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-            />
-
-            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search products..."
-              />
-
-              <Select
-                value={sortOption}
-                onValueChange={(value) => setSortOption(value as SortOption)}
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                  <SelectItem value="name-asc">Name: A to Z</SelectItem>
-                  <SelectItem value="name-desc">Name: Z to A</SelectItem>
-                </SelectContent>
-              </Select>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
-          </div>
-
-          {/* Results Count */}
-          <div className="text-sm text-muted-foreground">
-            Showing {filteredAndSortedProducts.length} product
-            {filteredAndSortedProducts.length !== 1 ? "s" : ""}
-          </div>
-
-          {/* Products Grid */}
-          {filteredAndSortedProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredAndSortedProducts.map((product) => (
-                <div key={product.id} className="animate-scale-in">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-xl text-muted-foreground">No products found</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Try adjusting your filters or search query
-              </p>
-            </div>
-          )}
-        </div>
+          }
+        >
+          <ProductsContent />
+        </Suspense>
       </main>
-
       <Footer />
     </div>
   );

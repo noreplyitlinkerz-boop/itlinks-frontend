@@ -13,7 +13,7 @@ export default function AboutPage() {
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold">
-                About TechStore
+                About Itlinkers
               </h1>
               <p className="text-xl text-muted-foreground">
                 Your trusted partner for premium technology solutions since 2020
@@ -29,7 +29,7 @@ export default function AboutPage() {
               <div className="space-y-4">
                 <h2 className="text-3xl font-bold">Our Story</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  TechStore was founded with a simple mission: to make premium
+                  Itlinkers was founded with a simple mission: to make premium
                   technology accessible to everyone. What started as a small
                   online store has grown into a trusted destination for tech
                   enthusiasts, professionals, and businesses looking for quality

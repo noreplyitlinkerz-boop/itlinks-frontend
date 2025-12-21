@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TechStore - Premium Laptops & Accessories",
+  title: "Itlinkers - Premium Laptops & Accessories",
   description:
     "Your one-stop shop for high-performance laptops, components, and accessories",
 };

@@ -64,6 +64,17 @@ export interface SearchProductsParams {
   [key: string]: unknown;
 }
 
+export interface Category {
+  _id: string;
+  slug: string;
+  name: string;
+  brand?: string;
+  description: string;
+  category_image?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // ============================================================================
 // Order Types
 // ============================================================================

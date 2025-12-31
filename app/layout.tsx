@@ -5,6 +5,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AdminProvider } from "@/context/AdminContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
 const poppins = Poppins({
@@ -28,14 +29,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.className} antialiased`}>
         <ThemeProvider>
-          <AdminProvider>
-            <CartProvider>
-              <WishlistProvider>
-                {children}
-                <Toaster />
-              </WishlistProvider>
-            </CartProvider>
-          </AdminProvider>
+          <AuthProvider>
+            <AdminProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  {children}
+                  <Toaster />
+                </WishlistProvider>
+              </CartProvider>
+            </AdminProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

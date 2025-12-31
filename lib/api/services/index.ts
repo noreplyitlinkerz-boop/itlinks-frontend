@@ -8,6 +8,7 @@ export { productService } from "./product-service";
 export { orderService } from "./order-service";
 export { authService } from "./auth-service";
 export { userService } from "./user-service";
+export { categoryService } from "./category-service";
 
 // Export types
 export * from "../types/endpoints";

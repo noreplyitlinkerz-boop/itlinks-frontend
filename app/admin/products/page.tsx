@@ -65,14 +65,38 @@ export default function AdminProductsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
 
-  // Fetch categories once
+  // Fetch categories once - Using dummy data (API not available)
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await categoryService.getCategories();
-        setCategories(response.data || []);
+        // TODO: Replace with actual API when available
+        // const response = await categoryService.getCategories();
+        // setCategories(response.data || []);
+
+        // Dummy categories
+        setCategories([
+          {
+            _id: "1",
+            name: "Electronics",
+            slug: "electronics",
+            description: "Electronic items",
+          },
+          {
+            _id: "2",
+            name: "Laptops",
+            slug: "laptops",
+            description: "Laptop computers",
+          },
+          {
+            _id: "3",
+            name: "Accessories",
+            slug: "accessories",
+            description: "Computer accessories",
+          },
+        ]);
       } catch (error) {
         console.error("Failed to load categories", error);
+        setCategories([]);
       }
     }
     fetchCategories();

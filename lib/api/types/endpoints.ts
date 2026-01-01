@@ -31,7 +31,7 @@ export interface Product {
   product_primary_image_url?: string;
   product_videos_url?: string[];
   images?: string[];
-  keywords?: string[]; 
+  keywords?: string[];
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
@@ -65,9 +65,20 @@ export interface GetProductsParams extends PaginationParams {
 }
 
 export interface SearchProductsParams {
-  query: string;
+  search: string;
   limit?: number;
   [key: string]: unknown;
+}
+
+export interface SearchProductsResponse {
+  success: boolean;
+  data: {
+    _id: string;
+    slug: string;
+    name: string;
+    price: number;
+  }[];
+  count: number;
 }
 
 export interface Category {
@@ -238,7 +249,7 @@ export interface AddToWishlistRequest {
 
 export type GetProductsResponse = PaginatedResponse<Product>;
 export type GetOrdersResponse = PaginatedResponse<Order>;
-export type SearchProductsResponse = Product[];
+// export type SearchProductsResponse = Product[]; // Removed duplicate
 
 // ============================================================================
 // Cart Types

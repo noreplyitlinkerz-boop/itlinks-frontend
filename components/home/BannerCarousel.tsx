@@ -5,6 +5,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { productService } from "@/lib/api/services";
+
+interface SearchResultItem {
+  _id: string;
+  slug: string;
+  name: string;
+  price: number;
+}
 
 const BANNER_SLIDES = [
   {
@@ -51,13 +59,42 @@ const TEMP_SUGGESTIONS = [
 
 export function BannerCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  // Search State
   const [searchQuery, setSearchQuery] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const router = useRouter();
 
-  const filteredSuggestions = TEMP_SUGGESTIONS.filter((s) =>
-    s.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Debounced Search Effect
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.length >= 2) {
+        setIsSearching(true);
+        try {
+          const response = await productService.searchProducts({
+            search: searchQuery,
+            limit: 10,
+          });
+          if (response && response.data && Array.isArray(response.data)) {
+            setSearchResults(response.data);
+          } else {
+            setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Search failed", error);
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+          setShowResults(true);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   // Auto-play
   useEffect(() => {
@@ -129,12 +166,8 @@ export function BannerCarousel() {
               placeholder="Search for products, brands, and more..."
               className="w-full h-14 pl-6 pr-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-xl"
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSuggestions(true);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowResults(true)}
             />
             <Button
               type="submit"
@@ -143,36 +176,57 @@ export function BannerCarousel() {
             >
               <Search className="w-5 h-5" />
             </Button>
+            {isSearching && (
+              <div className="absolute right-14 top-1/2 -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              </div>
+            )}
           </form>
 
-          {/* Suggestions Dropdown */}
-          {showSuggestions && searchQuery && (
-            <div className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden backdrop-blur-md border border-white/20 shadow-2xl animate-fade-in z-40">
-              {filteredSuggestions.length > 0 ? (
-                <ul>
-                  {filteredSuggestions.map((suggestion, index) => (
-                    <li
-                      key={index}
-                      className="cursor-pointer px-6 py-3 text-white transition-colors odd:bg-black/60 even:bg-black/80 hover:bg-accent hover:text-white"
-                      onClick={() => {
-                        setSearchQuery(suggestion);
-                        router.push(
-                          `/products?search=${encodeURIComponent(suggestion)}`
-                        );
-                        setShowSuggestions(false);
-                      }}
-                    >
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="px-6 py-4 text-gray-300 bg-black/80">
-                  No suggestions found
+          {/* Search Results Dropdown */}
+          {showResults &&
+            (searchQuery.length >= 2 || searchResults.length > 0) && (
+              <>
+                <div
+                  className="fixed inset-0 z-10 bg-transparent"
+                  onClick={() => setShowResults(false)}
+                />
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden max-h-[60vh] overflow-y-auto">
+                  {isSearching ? (
+                    <div className="p-4 text-center text-sm text-gray-300">
+                      Searching...
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-2">
+                      {searchResults.map((product) => (
+                        <div
+                          key={product._id}
+                          className="flex items-center gap-4 px-4 py-3 hover:bg-white/10 transition-colors cursor-pointer border-b border-white/5 last:border-0"
+                          onClick={() => {
+                            router.push(`/products/slug/${product.slug}`);
+                            setShowResults(false);
+                            setSearchQuery("");
+                          }}
+                        >
+                          <div className="flex-1 flex justify-between items-center min-w-0 gap-4">
+                            <h4 className="text-base font-medium text-primary truncate">
+                              {product.name}
+                            </h4>
+                            <p className="text-sm text-accent font-semibold whitespace-nowrap">
+                              ${product.price.toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : searchQuery.length >= 2 ? (
+                    <div className="p-4 text-center text-sm text-gray-300">
+                      No products found
+                    </div>
+                  ) : null}
                 </div>
-              )}
-            </div>
-          )}
+              </>
+            )}
         </div>
       </div>
 

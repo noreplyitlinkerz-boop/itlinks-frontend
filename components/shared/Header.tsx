@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   Heart,
   Menu,
-  Laptop,
   Sun,
   Moon,
   LayoutDashboard,

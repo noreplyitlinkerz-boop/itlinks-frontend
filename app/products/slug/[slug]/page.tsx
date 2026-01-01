@@ -39,11 +39,19 @@ export default function ProductDetailPage({
       try {
         const response = await productService.getProductBySlug(slug);
         console.log("Product API Response:", response);
-        if (response.data) {
-          console.log("Product Data:", response.data);
-          setProduct(response.data);
+
+        // API might return data directly or wrapped in response.data
+        const productData = response.data || response;
+
+        console.log("Product Data:", productData);
+        console.log("Has _id?", productData?._id);
+        console.log("Type of productData:", typeof productData);
+
+        if (productData && productData._id) {
+          console.log("✅ Setting product:", productData);
+          setProduct(productData as ApiProduct);
         } else {
-          console.error("No product data in response");
+          console.error("❌ No product data in response", response);
         }
       } catch (error) {
         console.error("Failed to fetch product", error);
@@ -121,11 +129,14 @@ export default function ProductDetailPage({
             <div className="relative aspect-square rounded-lg overflow-hidden bg-muted border border-border/50">
               <Image
                 src={
-                  product.product_primary_image_url?.startsWith("http")
-                    ? product.product_primary_image_url
-                    : `${API_CONFIG.BASE_URL}${
-                        product.product_primary_image_url || "/placeholder.png"
-                      }`
+                  product.images &&
+                  product.images.length > 0 &&
+                  product.images[0] !== "string" && // Check if not placeholder string
+                  product.images[0].trim() !== ""
+                    ? product.images[0].startsWith("http")
+                      ? product.images[0]
+                      : `${API_CONFIG.BASE_URL}${product.images[0]}`
+                    : "/placeholder.png"
                 }
                 alt={product.name}
                 fill
@@ -143,13 +154,32 @@ export default function ProductDetailPage({
           {/* Product Info */}
           <div className="space-y-6">
             <div>
+              <p className="text-sm text-muted-foreground uppercase tracking-wide">
+                {product.brand}
+              </p>
               <h1 className="text-4xl font-bold mt-2">{product.name}</h1>
             </div>
 
             <div className="flex items-center gap-4">
-              <p className="text-4xl font-bold text-primary">
-                ${product.price.toFixed(2)}
-              </p>
+              {product.discount && typeof product.discount === "object" ? (
+                <div className="flex items-center gap-3">
+                  <p className="text-4xl font-bold text-primary">
+                    ${product.discount.discountedPrice.toFixed(2)}
+                  </p>
+                  <div className="flex flex-col">
+                    <p className="text-lg text-muted-foreground line-through">
+                      ${product.price.toFixed(2)}
+                    </p>
+                    <Badge variant="destructive" className="w-fit">
+                      {product.discount.percentage}% OFF
+                    </Badge>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-4xl font-bold text-primary">
+                  ${product.price.toFixed(2)}
+                </p>
+              )}
               {product.stock < 10 && product.stock > 0 && (
                 <Badge
                   variant="outline"

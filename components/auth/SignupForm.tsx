@@ -33,7 +33,7 @@ const signupSchema = z.object({
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
-export function SignupForm() {
+export function SignupForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const { login: setAuthUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -64,10 +64,16 @@ export function SignupForm() {
       // Redirect based on role
       if (response.user.role === "admin") {
         router.push("/admin");
-      } else {
-        router.push("/");
+        if (onSuccess) onSuccess();
+        return;
       }
 
+      if (onSuccess) {
+        onSuccess();
+        return;
+      }
+
+      router.push("/");
       router.refresh();
     } catch (error: any) {
       toast.error("Registration failed", {
@@ -205,15 +211,17 @@ export function SignupForm() {
           )}
         </Button>
 
-        <div className="text-center text-sm text-slate-400 mt-4">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-primary font-semibold hover:underline"
-          >
-            Sign in
-          </Link>
-        </div>
+        {!onSuccess && (
+          <div className="text-center text-sm text-slate-400 mt-4">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign in
+            </Link>
+          </div>
+        )}
       </form>
     </Form>
   );

@@ -30,7 +30,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, openLoginModal, setPendingAction } = useAuth();
 
   const mapApiCartToItems = (apiItems: any[]): CartItem[] => {
     return apiItems.map((item) => {
@@ -68,7 +68,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = async (product: Product, quantity: number = 1) => {
     if (!isAuthenticated) {
-      toast.error("Please login to add items to cart");
+      setPendingAction(() => addItem(product, quantity));
+      openLoginModal();
       return;
     }
     try {

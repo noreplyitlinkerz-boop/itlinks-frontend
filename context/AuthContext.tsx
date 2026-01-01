@@ -10,6 +10,10 @@ interface AuthContextType {
   login: (userData: any) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  isLoginModalOpen: boolean;
+  openLoginModal: () => void;
+  closeLoginModal: () => void;
+  setPendingAction: (action: (() => Promise<void> | void) | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -19,46 +23,67 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [pendingAction, setPendingActionState] = useState<
+    (() => Promise<void> | void) | null
+  >(null);
+
+  // Helper to maintain type safety
+  const setPendingAction = (action: (() => Promise<void> | void) | null) => {
+    setPendingActionState(() => action);
+  };
 
   useEffect(() => {
-    // Initial load: get user from local storage or API
+    // Initial load: get user from local storage
     const storedUser = authService.getStoredUser();
-    const token = authService.isAuthenticated(); // Checks if token exists
+    const token = authService.isAuthenticated();
 
-    console.log("AuthContext: Initial Load", { storedUser, hasToken: token });
-
-    if (storedUser) {
+    if (storedUser && token) {
+      console.log("AuthContext: Restoring session for user", storedUser);
       setUser(storedUser);
-    }
+      setIsLoading(false); // Immediate access
 
-    // Check with API to ensure token is still valid
-    if (token) {
-      console.log("AuthContext: Refreshing user...");
-      refreshUser().finally(() => setIsLoading(false));
+      // Verify token in background
+      refreshUser().catch((err) => {
+        console.warn("AuthContext: Background token verification failed", err);
+      });
     } else {
-      console.log("AuthContext: No token found, not authenticated");
       setIsLoading(false);
     }
   }, []);
+
+  // Execute pending action when user becomes authenticated
+  useEffect(() => {
+    if (user && pendingAction) {
+      console.log("AuthContext: Executing pending action...");
+      const action = pendingAction;
+      setPendingActionState(null); // Clear first to prevent double execution
+      Promise.resolve(action()).catch((err) =>
+        console.error("AuthContext: Pending action failed", err)
+      );
+    }
+  }, [user, pendingAction]);
 
   const refreshUser = async () => {
     try {
       const response = await authService.getCurrentUser();
       if (response.data) {
-        console.log("AuthContext: User refreshed successfully", response.data);
-        setUser(response.data);
+        // Only update if data actually changed to avoid re-renders
+        setUser((prev) => {
+          if (JSON.stringify(prev) !== JSON.stringify(response.data)) {
+            console.log("AuthContext: User data refreshed from API");
+            return response.data;
+          }
+          return prev;
+        });
       }
     } catch (error: any) {
       console.error("AuthContext: Refresh failed", error);
-      // Only clear user if unauthorized (401)
+      // Only clear session if strictly 401 (Unauthorized)
       if (error?.response?.status === 401 || error?.status === 401) {
-        console.log("AuthContext: 401 Unauthorized, clearing session");
-        setUser(null);
-        // Clear storage to prevent infinite loop of trying to refresh invalid token
-        authService.logout().catch(() => {});
+        console.log("AuthContext: Session invalid, logging out");
+        logout();
       }
-      // For other errors (network, 500, etc), keep the stored user state
-      // This prevents logout on temporary connectivity issues
     }
   };
 
@@ -71,9 +96,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authService.logout();
     } finally {
       setUser(null);
-      window.location.href = "/login";
+      setPendingActionState(null);
+      // Optional: Redirect to home if on a protected route, or just let the guard handle it
+      // window.location.href = "/";
     }
   };
+
+  const openLoginModal = () => setIsLoginModalOpen(true);
+  const closeLoginModal = () => setIsLoginModalOpen(false);
 
   return (
     <AuthContext.Provider
@@ -84,6 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         refreshUser,
+        isLoginModalOpen,
+        openLoginModal,
+        closeLoginModal,
+        setPendingAction,
       }}
     >
       {children}

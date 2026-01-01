@@ -102,10 +102,8 @@ export default function ProductDetailPage({
   const handleToggleWishlist = () => {
     if (inWishlist) {
       removeFromWishlist(product._id);
-      toast.info(`Removed ${product.name} from wishlist`);
     } else {
       addToWishlist(product);
-      toast.success(`Added ${product.name} to wishlist`);
     }
   };
 

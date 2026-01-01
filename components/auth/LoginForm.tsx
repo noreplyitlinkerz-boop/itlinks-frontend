@@ -30,7 +30,7 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const router = useRouter();
   const { login: setAuthUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -58,10 +58,18 @@ export function LoginForm() {
       // Redirect based on role
       if (response.user.role === "admin") {
         router.push("/admin");
-      } else {
-        router.push("/");
+        if (onSuccess) onSuccess(); // Close modal if used as modal
+        return;
       }
 
+      // For non-admin users, if modal usage (onSuccess), just close it and stay
+      if (onSuccess) {
+        onSuccess();
+        return;
+      }
+
+      // Default redirect for standalone page (though removed) or fallback
+      router.push("/");
       router.refresh();
     } catch (error: any) {
       toast.error("Login failed", {
@@ -140,15 +148,17 @@ export function LoginForm() {
           )}
         </Button>
 
-        <div className="text-center text-sm text-slate-400">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="text-primary font-semibold hover:underline"
-          >
-            Sign up
-          </Link>
-        </div>
+        {!onSuccess && (
+          <div className="text-center text-sm text-slate-400">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign up
+            </Link>
+          </div>
+        )}
       </form>
     </Form>
   );

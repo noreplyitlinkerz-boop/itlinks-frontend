@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
+import { AuthModal } from "@/components/auth/AuthModal";
+
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -35,6 +37,7 @@ export default function RootLayout({
                 <WishlistProvider>
                   {children}
                   <Toaster />
+                  <AuthModal />
                 </WishlistProvider>
               </CartProvider>
             </AdminProvider>

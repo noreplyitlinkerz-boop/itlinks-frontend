@@ -30,7 +30,7 @@ const WishlistContext = createContext<WishlistContextType | undefined>(
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, openLoginModal, setPendingAction } = useAuth();
 
   const mapApiWishlistToItems = (apiItems: any[]): WishlistItem[] => {
     return apiItems.map((item) => ({
@@ -65,7 +65,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const addItem = async (product: Product) => {
     if (!isAuthenticated) {
-      toast.error("Please login to use wishlist");
+      setPendingAction(() => addItem(product));
+      openLoginModal();
       return;
     }
     try {

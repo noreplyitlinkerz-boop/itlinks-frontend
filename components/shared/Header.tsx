@@ -30,7 +30,7 @@ export function Header() {
   const { totalItems } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { theme, toggleTheme } = useTheme();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, openLoginModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const userInitials = user
@@ -176,15 +176,14 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link href="/login">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="hidden md:flex rounded-full px-5 bg-linear-to-r from-primary to-blue-600 hover:opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-95"
-                >
-                  Login
-                </Button>
-              </Link>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={openLoginModal}
+                className="hidden md:flex rounded-full px-5 bg-linear-to-r from-primary to-blue-600 hover:opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-95"
+              >
+                Login
+              </Button>
             )}
 
             {/* Mobile Menu Button */}
@@ -231,13 +230,16 @@ export function Header() {
               Contact
             </Link>
             {!isAuthenticated && (
-              <Link
-                href="/login"
-                className="text-sm font-medium text-white bg-primary rounded-lg px-4 py-2 mt-2 text-center"
-                onClick={() => setMobileMenuOpen(false)}
+              <Button
+                variant="default"
+                className="w-full text-sm font-medium text-white bg-primary rounded-lg px-4 py-2 mt-2 text-center items-center justify-center"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openLoginModal();
+                }}
               >
                 Login
-              </Link>
+              </Button>
             )}
             {isAuthenticated && (
               <Button

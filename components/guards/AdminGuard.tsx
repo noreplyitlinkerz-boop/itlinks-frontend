@@ -5,9 +5,11 @@
 
 "use client";
 
-import { useEffect, ReactNode } from "react";
+import { useEffect, ReactNode, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/lib/hooks/useAdminAuth";
+import { AuthContext, useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
 
 interface AdminGuardProps {
   /**
@@ -49,17 +51,27 @@ interface AdminGuardProps {
  */
 export function AdminGuard({
   children,
-  redirectTo = "/login",
+  redirectTo = "/",
   loadingComponent,
   unauthorizedComponent,
 }: AdminGuardProps) {
   const router = useRouter();
   const { isAdmin, isLoading } = useAdminAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
-    // We no longer redirect automatically
-    // This allows the "Access Denied" state to persist
-  }, []);
+    // If not loading and not an admin
+    if (!isLoading && !isAdmin) {
+      // If user is logged in but NOT an admin, log them out as requested
+      if (user) {
+        console.warn("AdminGuard: Unauthorized access attempt, logging out...");
+        logout();
+      } else {
+        // If not logged in at all, just go home
+        router.replace(redirectTo);
+      }
+    }
+  }, [isAdmin, isLoading, user, logout, router, redirectTo]);
 
   // Show loading state
   if (isLoading) {
@@ -77,7 +89,7 @@ export function AdminGuard({
     );
   }
 
-  // Show unauthorized state
+  // Show unauthorized state (while logout/redirect processes)
   if (!isAdmin) {
     return (
       <>
@@ -105,17 +117,14 @@ export function AdminGuard({
                   Access Denied
                 </h1>
                 <p className="text-muted-foreground mt-2">
-                  You do not have permission to view this page. This area is
-                  restricted to administrators only.
+                  You do not have permission to view this page. You have been
+                  logged out for security.
                 </p>
               </div>
               <div className="pt-4">
-                <button
-                  onClick={() => router.push("/")}
-                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
-                >
+                <Button onClick={() => router.push("/")} className="w-full">
                   Return to Home
-                </button>
+                </Button>
               </div>
             </div>
           </div>

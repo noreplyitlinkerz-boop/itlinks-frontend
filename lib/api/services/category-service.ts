@@ -8,7 +8,7 @@ import { Category } from "../types/endpoints";
 import { ApiResponse } from "../types/api-types";
 
 class CategoryService extends BaseService {
-  protected basePath = "/api/categories";
+  protected basePath = "/categories";
 
   /**
    * Get all categories

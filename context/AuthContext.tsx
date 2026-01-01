@@ -38,15 +38,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = authService.getStoredUser();
     const token = authService.isAuthenticated();
 
-    if (storedUser && token) {
-      console.log("AuthContext: Restoring session for user", storedUser);
-      setUser(storedUser);
-      setIsLoading(false); // Immediate access
+    if (token) {
+      if (storedUser) {
+        console.log("AuthContext: Restoring session from cache", storedUser);
+        setUser(storedUser);
+        setIsLoading(false); // Immediate access
 
-      // Verify token in background
-      refreshUser().catch((err) => {
-        console.warn("AuthContext: Background token verification failed", err);
-      });
+        // Verify token in background
+        refreshUser().catch((err) => {
+          console.warn("AuthContext: Background verification failed", err);
+        });
+      } else {
+        // Token exists but no user data - fetch it
+        console.log("AuthContext: Token found but no user data, fetching...");
+        refreshUser().finally(() => setIsLoading(false));
+      }
     } else {
       setIsLoading(false);
     }
@@ -97,8 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setPendingActionState(null);
-      // Optional: Redirect to home if on a protected route, or just let the guard handle it
-      // window.location.href = "/";
+      // Redirect to home after logout to ensure user isn't stuck on a protected page
+      window.location.href = "/";
     }
   };
 

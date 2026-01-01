@@ -55,19 +55,18 @@ export interface UseAdminAuthReturn {
 export function useAdminAuth(): UseAdminAuthReturn {
   const router = useRouter();
   const authContext = useContext(AuthContext);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const userIsAdmin = isAdmin();
-  const userCanAccessAdminPanel = canAccessAdminPanel();
+  if (!authContext) {
+    throw new Error("useAdminAuth must be used within an AuthProvider");
+  }
 
-  useEffect(() => {
-    // Check if auth context is loaded
-    if (authContext) {
-      setIsLoading(false);
-    }
-  }, [authContext]);
+  const { user, isLoading } = authContext;
 
-  const requireAdmin = (redirectTo: string = "/login") => {
+  // Use the user from context for reactivity
+  const userIsAdmin = user?.role === "admin";
+  const userCanAccessAdminPanel = user?.role === "admin";
+
+  const requireAdmin = (redirectTo: string = "/") => {
     if (!isLoading && !userIsAdmin) {
       router.push(redirectTo);
     }

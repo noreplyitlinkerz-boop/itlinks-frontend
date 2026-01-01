@@ -38,6 +38,8 @@ function getStorage(): Storage {
   };
 }
 
+import Cookies from "js-cookie";
+
 /**
  * Token Storage
  */
@@ -46,42 +48,52 @@ export const TokenStorage = {
    * Get access token
    */
   getAccessToken(): string | null {
-    return getStorage().getItem(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+    return Cookies.get(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN) || null;
   },
 
   /**
    * Set access token
    */
   setAccessToken(token: string): void {
-    getStorage().setItem(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, token);
+    Cookies.set(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, token, {
+      expires: 7, // 7 days
+      secure: window.location.protocol === "https:",
+      sameSite: "strict",
+      path: "/",
+    });
   },
 
   /**
    * Remove access token
    */
   removeAccessToken(): void {
-    getStorage().removeItem(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+    Cookies.remove(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, { path: "/" });
   },
 
   /**
    * Get refresh token
    */
   getRefreshToken(): string | null {
-    return getStorage().getItem(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+    return Cookies.get(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN) || null;
   },
 
   /**
    * Set refresh token
    */
   setRefreshToken(token: string): void {
-    getStorage().setItem(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, token);
+    Cookies.set(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, token, {
+      expires: 30, // 30 days
+      secure: window.location.protocol === "https:",
+      sameSite: "strict",
+      path: "/",
+    });
   },
 
   /**
    * Remove refresh token
    */
   removeRefreshToken(): void {
-    getStorage().removeItem(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+    Cookies.remove(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, { path: "/" });
   },
 
   /**

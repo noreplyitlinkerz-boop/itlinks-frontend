@@ -34,7 +34,7 @@ export default function AdminCategoriesPage() {
     name: "",
     slug: "",
     description: "",
-    image: "/categories/placeholder.jpg",
+    category_image: "/categories/placeholder.jpg",
   });
 
   const handleOpenDialog = (category?: Category) => {
@@ -44,7 +44,8 @@ export default function AdminCategoriesPage() {
         name: category.name,
         slug: category.slug,
         description: category.description,
-        image: category.image,
+        category_image:
+          category.category_image || "/categories/placeholder.jpg",
       });
     } else {
       setEditingCategory(null);
@@ -52,7 +53,7 @@ export default function AdminCategoriesPage() {
         name: "",
         slug: "",
         description: "",
-        image: "/categories/placeholder.jpg",
+        category_image: "/categories/placeholder.jpg",
       });
     }
     setDialogOpen(true);
@@ -62,14 +63,10 @@ export default function AdminCategoriesPage() {
     e.preventDefault();
 
     if (editingCategory) {
-      updateCategory(editingCategory.id, formData);
+      updateCategory(editingCategory._id, formData);
       toast.success("Category updated successfully");
     } else {
-      const newCategory: Category = {
-        ...formData,
-        id: `cat-${Date.now()}`,
-      };
-      addCategory(newCategory);
+      addCategory(formData);
       toast.success("Category added successfully");
     }
 
@@ -79,7 +76,6 @@ export default function AdminCategoriesPage() {
   const handleDelete = (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete "${name}"?`)) {
       deleteCategory(id);
-      toast.success("Category deleted successfully");
     }
   };
 
@@ -155,9 +151,9 @@ export default function AdminCategoriesPage() {
                 <Label htmlFor="image">Image URL</Label>
                 <Input
                   id="image"
-                  value={formData.image}
+                  value={formData.category_image}
                   onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
+                    setFormData({ ...formData, category_image: e.target.value })
                   }
                   placeholder="/categories/image.jpg"
                 />
@@ -193,7 +189,7 @@ export default function AdminCategoriesPage() {
           </TableHeader>
           <TableBody>
             {categories.map((category) => (
-              <TableRow key={category.id}>
+              <TableRow key={category._id}>
                 <TableCell className="font-medium">{category.name}</TableCell>
                 <TableCell className="font-mono text-sm">
                   {category.slug}
@@ -213,7 +209,7 @@ export default function AdminCategoriesPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDelete(category.id, category.name)}
+                      onClick={() => handleDelete(category._id, category.name)}
                       className="text-destructive hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />

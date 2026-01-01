@@ -18,6 +18,8 @@ class AuthService extends BaseService {
 
   /**
    * Register new user
+   * @public
+   * @endpoint POST /api/auth/signup
    */
   async signup(data: SignupRequest): Promise<AuthResponse> {
     const response = await this.post<AuthResponse>("/signup", data);
@@ -33,6 +35,8 @@ class AuthService extends BaseService {
 
   /**
    * Login user
+   * @public
+   * @endpoint POST /api/auth/login
    */
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await this.post<AuthResponse>("/login", data);
@@ -48,6 +52,8 @@ class AuthService extends BaseService {
 
   /**
    * Logout current user
+   * @authenticated Requires authentication
+   * @endpoint POST /api/auth/logout
    */
   async logout(): Promise<ApiResponse<{ message: string }>> {
     try {
@@ -63,6 +69,8 @@ class AuthService extends BaseService {
 
   /**
    * Get current logged-in user
+   * @authenticated Requires authentication
+   * @endpoint GET /api/auth/me
    */
   async getCurrentUser(): Promise<ApiResponse<User>> {
     const response = await this.get<ApiResponse<User>>("/me");

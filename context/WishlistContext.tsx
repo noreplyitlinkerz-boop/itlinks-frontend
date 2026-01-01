@@ -1,14 +1,26 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { WishlistItem, Product } from "@/types";
+import { wishlistService as apiWishlistService } from "@/lib/api/services";
+import { Product as ApiProduct } from "@/lib/api/types/endpoints";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import { safeParse } from "@/lib/utils";
 
 interface WishlistContextType {
   items: WishlistItem[];
-  addItem: (product: Product) => void;
-  removeItem: (productId: string) => void;
+  addItem: (product: Product) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
-  clearWishlist: () => void;
+  clearWishlist: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(
@@ -17,32 +29,85 @@ const WishlistContext = createContext<WishlistContextType | undefined>(
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
 
-  // Add item to wishlist
-  const addItem = (product: Product) => {
-    setItems((prevItems) => {
-      const exists = prevItems.some((item) => item.product.id === product.id);
-      if (exists) return prevItems;
-
-      return [...prevItems, { product, addedAt: new Date().toISOString() }];
-    });
+  const mapApiWishlistToItems = (apiItems: any[]): WishlistItem[] => {
+    return apiItems.map((item) => ({
+      product: item.product as ApiProduct,
+      addedAt: item.addedAt,
+    }));
   };
 
-  // Remove item from wishlist
-  const removeItem = (productId: string) => {
-    setItems((prevItems) =>
-      prevItems.filter((item) => item.product.id !== productId)
-    );
+  const fetchWishlist = async () => {
+    if (!isAuthenticated) {
+      setItems([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await apiWishlistService.getWishlist();
+      if (response.data && response.data.items) {
+        setItems(mapApiWishlistToItems(response.data.items));
+      } else {
+        setItems([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch wishlist", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Check if product is in wishlist
+  useEffect(() => {
+    fetchWishlist();
+  }, [isAuthenticated]);
+
+  const addItem = async (product: Product) => {
+    if (!isAuthenticated) {
+      toast.error("Please login to use wishlist");
+      return;
+    }
+    try {
+      const response = await apiWishlistService.addToWishlist(product._id);
+      if (response.data && response.data.items) {
+        setItems(mapApiWishlistToItems(response.data.items));
+        toast.success("Added to wishlist");
+      }
+    } catch (error) {
+      console.error("Failed to add to wishlist", error);
+      toast.error("Failed to add to wishlist");
+    }
+  };
+
+  const removeItem = async (productId: string) => {
+    if (!isAuthenticated) return;
+    try {
+      const response = await apiWishlistService.removeFromWishlist(productId);
+      if (response.data && response.data.items) {
+        setItems(mapApiWishlistToItems(response.data.items));
+        toast.success("Removed from wishlist");
+      }
+    } catch (error) {
+      console.error("Failed to remove from wishlist", error);
+      toast.error("Failed to remove from wishlist");
+    }
+  };
+
   const isInWishlist = (productId: string) => {
-    return items.some((item) => item.product.id === productId);
+    return items.some((item) => item.product._id === productId);
   };
 
-  // Clear all items from wishlist
-  const clearWishlist = () => {
-    setItems([]);
+  const clearWishlist = async () => {
+    if (!isAuthenticated) return;
+    try {
+      await apiWishlistService.clearWishlist();
+      setItems([]);
+      toast.success("Wishlist cleared");
+    } catch (error) {
+      console.error("Failed to clear wishlist", error);
+      toast.error("Failed to clear wishlist");
+    }
   };
 
   return (
@@ -53,6 +118,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         removeItem,
         isInWishlist,
         clearWishlist,
+        isLoading,
       }}
     >
       {children}

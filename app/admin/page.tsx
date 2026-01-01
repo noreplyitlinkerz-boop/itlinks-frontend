@@ -18,10 +18,12 @@ export default function AdminDashboard() {
 
   // Calculate stats
   const totalRevenue = orders
-    .filter((o) => o.status !== "cancelled")
-    .reduce((sum, order) => sum + order.total, 0);
+    .filter((o) => o.orderStatus !== "cancelled")
+    .reduce((sum, order) => sum + order.totalAmount, 0);
 
-  const pendingOrders = orders.filter((o) => o.status === "pending").length;
+  const pendingOrders = orders.filter(
+    (o) => o.orderStatus === "pending"
+  ).length;
 
   // Recent orders (last 5)
   const recentOrders = [...orders]
@@ -123,14 +125,19 @@ export default function AdminDashboard() {
             </TableHeader>
             <TableBody>
               {recentOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell>{order.items.length} items</TableCell>
-                  <TableCell>${order.total.toFixed(2)}</TableCell>
+                <TableRow key={order._id}>
+                  <TableCell className="font-medium font-mono text-xs">
+                    {order._id}
+                  </TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status}
+                    {order.shippingAddress.firstName}{" "}
+                    {order.shippingAddress.lastName}
+                  </TableCell>
+                  <TableCell>{order.items.length} items</TableCell>
+                  <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(order.orderStatus)}>
+                      {order.orderStatus}
                     </Badge>
                   </TableCell>
                   <TableCell>

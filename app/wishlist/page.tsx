@@ -56,14 +56,17 @@ export default function WishlistPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {items.map((item) => (
               <div
-                key={item.product.id}
+                key={item.product._id}
                 className="group relative rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden transition-all hover:shadow-xl"
               >
                 {/* Product Image */}
-                <Link href={`/products/${item.product.id}`}>
+                <Link href={`/products/${item.product._id}`}>
                   <div className="relative aspect-square bg-muted">
                     <Image
-                      src={item.product.image}
+                      src={
+                        item.product.product_primary_image_url ||
+                        "/placeholder.png"
+                      }
                       alt={item.product.name}
                       fill
                       className="object-cover transition-transform group-hover:scale-110"
@@ -73,7 +76,7 @@ export default function WishlistPage() {
 
                 {/* Product Info */}
                 <div className="p-4 space-y-3">
-                  <Link href={`/products/${item.product.id}`}>
+                  <Link href={`/products/${item.product._id}`}>
                     <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
                       {item.product.name}
                     </h3>
@@ -98,7 +101,7 @@ export default function WishlistPage() {
                     </Button>
                     <Button
                       onClick={() => {
-                        removeItem(item.product.id);
+                        removeItem(item.product._id);
                         toast.info(
                           `Removed ${item.product.name} from wishlist`
                         );

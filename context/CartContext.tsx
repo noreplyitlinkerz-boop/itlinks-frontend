@@ -1,72 +1,140 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { CartItem, Product } from "@/types";
+import { cartService as apiCartService } from "@/lib/api/services";
+import { Product as ApiProduct } from "@/lib/api/types/endpoints";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import { safeParse } from "@/lib/utils";
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
+  addItem: (product: Product, quantity?: number) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   totalItems: number;
   totalPrice: number;
+  isLoading: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
 
-  // Add item to cart or update quantity if already exists
-  const addItem = (product: Product, quantity: number = 1) => {
-    setItems((prevItems) => {
-      const existingItem = prevItems.find(
-        (item) => item.product.id === product.id
-      );
-
-      if (existingItem) {
-        return prevItems.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-
-      return [...prevItems, { product, quantity }];
+  const mapApiCartToItems = (apiItems: any[]): CartItem[] => {
+    return apiItems.map((item) => {
+      const p = item.product as ApiProduct;
+      return {
+        product: p,
+        quantity: item.quantity,
+      };
     });
   };
 
-  // Remove item from cart
-  const removeItem = (productId: string) => {
-    setItems((prevItems) =>
-      prevItems.filter((item) => item.product.id !== productId)
-    );
+  const fetchCart = async () => {
+    if (!isAuthenticated) {
+      setItems([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await apiCartService.getCart();
+      if (response.data && response.data.items) {
+        setItems(mapApiCartToItems(response.data.items));
+      } else {
+        setItems([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch cart", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Update item quantity
-  const updateQuantity = (productId: string, quantity: number) => {
+  useEffect(() => {
+    fetchCart();
+  }, [isAuthenticated]);
+
+  const addItem = async (product: Product, quantity: number = 1) => {
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to cart");
+      return;
+    }
+    try {
+      console.log("CartContext: Adding item...", product._id, quantity);
+      const response = await apiCartService.addToCart(product._id, quantity);
+      console.log("CartContext: API Response", response);
+
+      if (response.data && response.data.items) {
+        setItems(mapApiCartToItems(response.data.items));
+        toast.success("Added to cart");
+      } else {
+        console.warn("CartContext: Response items missing, refetching cart");
+        await fetchCart();
+        toast.success("Added to cart");
+      }
+    } catch (error) {
+      console.error("Failed to add to cart", error);
+      toast.error("Failed to add to cart");
+    }
+  };
+
+  const removeItem = async (productId: string) => {
+    if (!isAuthenticated) return;
+    try {
+      const response = await apiCartService.removeFromCart(productId);
+      if (response.data && response.data.items) {
+        setItems(mapApiCartToItems(response.data.items));
+        toast.success("Removed from cart");
+      }
+    } catch (error) {
+      console.error("Failed to remove from cart", error);
+      toast.error("Failed to remove from cart");
+    }
+  };
+
+  const updateQuantity = async (productId: string, quantity: number) => {
+    if (!isAuthenticated) return;
     if (quantity <= 0) {
-      removeItem(productId);
+      await removeItem(productId);
       return;
     }
 
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    try {
+      const response = await apiCartService.updateQuantity(productId, quantity);
+      if (response.data && response.data.items) {
+        setItems(mapApiCartToItems(response.data.items));
+      }
+    } catch (error) {
+      console.error("Failed to update quantity", error);
+      toast.error("Failed to update quantity");
+    }
   };
 
-  // Clear all items from cart
-  const clearCart = () => {
-    setItems([]);
+  const clearCart = async () => {
+    if (!isAuthenticated) return;
+    try {
+      await apiCartService.clearCart();
+      setItems([]);
+      toast.success("Cart cleared");
+    } catch (error) {
+      console.error("Failed to clear cart", error);
+      toast.error("Failed to clear cart");
+    }
   };
 
-  // Calculate total number of items
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-
-  // Calculate total price
   const totalPrice = items.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
@@ -82,6 +150,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         totalPrice,
+        isLoading,
       }}
     >
       {children}

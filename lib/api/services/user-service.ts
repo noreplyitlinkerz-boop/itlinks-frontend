@@ -17,6 +17,8 @@ class UserService extends BaseService {
 
   /**
    * Update user profile
+   * @authenticated Requires authentication
+   * @endpoint PATCH /users/profile
    */
   async updateProfile(data: UpdateProfileRequest): Promise<ApiResponse<User>> {
     return this.patch<ApiResponse<User>>("/profile", data);
@@ -28,6 +30,8 @@ class UserService extends BaseService {
 
   /**
    * Get user's wishlist
+   * @authenticated Requires authentication
+   * @endpoint GET /wishlist
    */
   async getWishlist(): Promise<ApiResponse<Wishlist>> {
     return this.get<ApiResponse<Wishlist>>("/wishlist", undefined, {
@@ -37,6 +41,8 @@ class UserService extends BaseService {
 
   /**
    * Add product to wishlist
+   * @authenticated Requires authentication
+   * @endpoint POST /wishlist
    */
   async addToWishlist(
     data: AddToWishlistRequest
@@ -48,6 +54,8 @@ class UserService extends BaseService {
 
   /**
    * Remove product from wishlist
+   * @authenticated Requires authentication
+   * @endpoint DELETE /wishlist/{productId}
    */
   async removeFromWishlist(productId: string): Promise<ApiResponse<Wishlist>> {
     return this.delete<ApiResponse<Wishlist>>(
@@ -61,6 +69,8 @@ class UserService extends BaseService {
 
   /**
    * Clear entire wishlist
+   * @authenticated Requires authentication
+   * @endpoint DELETE /wishlist
    */
   async clearWishlist(): Promise<ApiResponse<{ message: string }>> {
     return this.delete<ApiResponse<{ message: string }>>(

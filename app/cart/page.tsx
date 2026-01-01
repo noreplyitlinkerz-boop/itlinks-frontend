@@ -45,13 +45,16 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <div
-                key={item.product.id}
+                key={item.product._id}
                 className="flex gap-4 p-4 rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:shadow-lg"
               >
                 {/* Product Image */}
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
                   <Image
-                    src={item.product.image}
+                    src={
+                      item.product.product_primary_image_url ||
+                      "/placeholder.png"
+                    }
                     alt={item.product.name}
                     fill
                     className="object-cover"
@@ -60,7 +63,7 @@ export default function CartPage() {
 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
-                  <Link href={`/products/${item.product.id}`}>
+                  <Link href={`/products/${item.product._id}`}>
                     <h3 className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1">
                       {item.product.name}
                     </h3>
@@ -78,7 +81,7 @@ export default function CartPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeItem(item.product.id)}
+                    onClick={() => removeItem(item.product._id)}
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -89,7 +92,7 @@ export default function CartPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        updateQuantity(item.product.id, item.quantity - 1)
+                        updateQuantity(item.product._id, item.quantity - 1)
                       }
                       className="h-8 w-8"
                     >
@@ -102,7 +105,7 @@ export default function CartPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        updateQuantity(item.product.id, item.quantity + 1)
+                        updateQuantity(item.product._id, item.quantity + 1)
                       }
                       disabled={item.quantity >= item.product.stock}
                       className="h-8 w-8"

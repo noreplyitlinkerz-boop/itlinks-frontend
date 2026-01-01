@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Product } from "@/types";
+import { API_CONFIG } from "@/lib/api/api-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { ShoppingCart, Heart } from "lucide-react";
 import { toast } from "sonner";
+import { Product } from "@/lib/api/services";
 
 interface ProductCardProps {
   product: Product;
@@ -22,18 +23,17 @@ export function ProductCard({ product }: ProductCardProps) {
     isInWishlist,
     removeItem: removeFromWishlist,
   } = useWishlist();
-  const inWishlist = isInWishlist(product.id);
+  const inWishlist = isInWishlist(product._id);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    addItem(product);
-    toast.success(`Added ${product.name} to cart`);
+    await addItem(product);
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     if (inWishlist) {
-      removeFromWishlist(product.id);
+      removeFromWishlist(product._id);
       toast.info(`Removed ${product.name} from wishlist`);
     } else {
       addToWishlist(product);
@@ -42,12 +42,18 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Link href={`/products/${product.id}`} className="group">
+    <Link href={`/products/slug/${product.slug}`} className="group">
       <Card className="h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-border/50 bg-card/50 backdrop-blur-sm group-hover:border-primary/50">
         <CardContent className="p-0">
           <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
             <Image
-              src={product.image}
+              src={
+                product.product_primary_image_url?.startsWith("http")
+                  ? product.product_primary_image_url
+                  : `${API_CONFIG.BASE_URL}${
+                      product.product_primary_image_url || "/placeholder.png"
+                    }`
+              }
               alt={product.name}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-110"

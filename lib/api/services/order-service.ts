@@ -21,6 +21,8 @@ class OrderService extends BaseService {
 
   /**
    * Create new order
+   * @authenticated Requires authentication
+   * @endpoint POST /orders
    */
   async createOrder(data: CreateOrderRequest): Promise<ApiResponse<Order>> {
     return this.post<ApiResponse<Order>>("", data);
@@ -28,6 +30,8 @@ class OrderService extends BaseService {
 
   /**
    * Get user orders with pagination and filters
+   * @authenticated Requires authentication - Returns only current user's orders
+   * @endpoint GET /orders
    */
   async getUserOrders(params?: GetOrdersParams): Promise<GetOrdersResponse> {
     return this.get<GetOrdersResponse>("", params);
@@ -35,6 +39,8 @@ class OrderService extends BaseService {
 
   /**
    * Get order by ID
+   * @authenticated Requires authentication - User scope only
+   * @endpoint GET /orders/{id}
    */
   async getOrderById(id: string): Promise<ApiResponse<Order>> {
     return this.get<ApiResponse<Order>>(`/${id}`);
@@ -42,6 +48,8 @@ class OrderService extends BaseService {
 
   /**
    * Cancel order
+   * @authenticated Requires authentication - User can cancel their own orders
+   * @endpoint DELETE /orders/{id}/cancel
    */
   async cancelOrder(
     id: string,
@@ -55,28 +63,37 @@ class OrderService extends BaseService {
   // ============================================================================
 
   /**
-   * Get all orders (Admin only)
+   * Get all orders from all users
+   * @admin ADMIN ONLY - Requires admin role
+   * @endpoint GET /orders/admin/all
    */
   async getAllOrders(params?: GetOrdersParams): Promise<GetOrdersResponse> {
     return this.get<GetOrdersResponse>("/admin/all", params);
   }
 
   /**
-   * Get order statistics (Admin only)
+   * Get order statistics
+   * @admin ADMIN ONLY - Requires admin role
+   * @endpoint GET /orders/admin/stats
    */
   async getOrderStats(): Promise<ApiResponse<OrderStats>> {
     return this.get<ApiResponse<OrderStats>>("/admin/stats");
   }
 
   /**
-   * Get order by ID (Admin only)
+   * Get order by ID (Admin version)
+   * @admin ADMIN ONLY - Requires admin role
+   * @endpoint GET /orders/admin/{id}
+   * @deprecated Use getOrderById instead - this endpoint doesn't exist in API rules
    */
   async getOrderByIdAdmin(id: string): Promise<ApiResponse<Order>> {
     return this.get<ApiResponse<Order>>(`/admin/${id}`);
   }
 
   /**
-   * Update order status (Admin only)
+   * Update order status
+   * @admin ADMIN ONLY - Requires admin role
+   * @endpoint PUT /orders/{id}/status
    */
   async updateOrderStatus(
     id: string,
@@ -86,7 +103,9 @@ class OrderService extends BaseService {
   }
 
   /**
-   * Update payment status (Admin only)
+   * Update payment status
+   * @admin ADMIN ONLY - Requires admin role
+   * @endpoint PUT /orders/{id}/payment
    */
   async updatePaymentStatus(
     id: string,
@@ -96,7 +115,10 @@ class OrderService extends BaseService {
   }
 
   /**
-   * Cancel order (Admin only)
+   * Cancel order (Admin version)
+   * @admin ADMIN ONLY - Requires admin role
+   * @endpoint DELETE /orders/admin/{id}/cancel
+   * @deprecated Not in API rules - use cancelOrder instead
    */
   async cancelOrderAdmin(
     id: string,

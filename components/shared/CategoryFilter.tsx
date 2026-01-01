@@ -27,9 +27,9 @@ export function CategoryFilter({
       </Button>
       {categories.map((category) => (
         <Button
-          key={category.id}
-          variant={selectedCategory === category.id ? "default" : "outline"}
-          onClick={() => onSelectCategory(category.id)}
+          key={category._id}
+          variant={selectedCategory === category._id ? "default" : "outline"}
+          onClick={() => onSelectCategory(category._id)}
           size="sm"
           className="transition-all"
         >

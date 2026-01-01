@@ -18,6 +18,27 @@ class CategoryService extends BaseService {
   }
 
   /**
+   * Create new category
+   */
+  async createCategory(data: any): Promise<ApiResponse<Category>> {
+    return this.post<ApiResponse<Category>>("", data);
+  }
+
+  /**
+   * Update category
+   */
+  async updateCategory(id: string, data: any): Promise<ApiResponse<Category>> {
+    return this.put<ApiResponse<Category>>(`/${id}`, data);
+  }
+
+  /**
+   * Delete category
+   */
+  async deleteCategory(id: string): Promise<ApiResponse<void>> {
+    return this.delete<ApiResponse<void>>(`/${id}`);
+  }
+
+  /**
    * Get category by ID
    */
   async getCategoryById(id: string): Promise<ApiResponse<Category>> {

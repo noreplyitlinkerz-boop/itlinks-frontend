@@ -19,16 +19,22 @@ export interface Product {
   stock: number;
   featured: boolean;
   isVisible: boolean;
-  discount?: {
-    percentage: number;
-    discountedPrice: number;
-  };
-  specifications?: Record<string, string>;
-  product_primary_image?: string;
+  isVerified: boolean;
+  rating: number;
+  discount?:
+    | string
+    | {
+        percentage: number;
+        discountedPrice: number;
+      };
+  specifications?: string | Record<string, string>;
+  product_primary_image_url?: string;
+  product_videos_url?: string[];
   images?: string[];
-  videos?: string[];
+  keywords?: string[]; 
   createdAt?: string;
   updatedAt?: string;
+  __v?: number;
 }
 
 export interface CreateProductRequest {
@@ -233,3 +239,31 @@ export interface AddToWishlistRequest {
 export type GetProductsResponse = PaginatedResponse<Product>;
 export type GetOrdersResponse = PaginatedResponse<Order>;
 export type SearchProductsResponse = Product[];
+
+// ============================================================================
+// Cart Types
+// ============================================================================
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  _id?: string;
+}
+
+export interface Cart {
+  _id: string;
+  user: string;
+  items: CartItem[];
+  totalPrice: number;
+}
+
+export interface AddToCartRequest {
+  productId: string;
+  quantity: number;
+}
+
+export interface UpdateCartItemRequest {
+  quantity: number;
+}
+
+export type GetCartResponse = Cart;

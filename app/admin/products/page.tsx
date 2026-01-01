@@ -19,6 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { safeParse } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -257,9 +258,9 @@ export default function AdminProductsPage() {
                 >
                   <TableCell>
                     <div className="relative h-12 w-12 rounded-lg bg-muted border-none overflow-hidden">
-                      {product.product_primary_image ? (
+                      {product.product_primary_image_url ? (
                         <img
-                          src={product.product_primary_image}
+                          src={product.product_primary_image_url}
                           alt={product.name}
                           className="h-full w-full object-contain p-1"
                         />
@@ -287,7 +288,12 @@ export default function AdminProductsPage() {
                       </span>
                       {product.discount && (
                         <span className="text-[10px] text-green-500">
-                          -{product.discount.percentage}% Off
+                          -
+                          {
+                            safeParse(product.discount, { percentage: 0 })
+                              .percentage
+                          }
+                          % Off
                         </span>
                       )}
                     </div>
@@ -365,7 +371,10 @@ export default function AdminProductsPage() {
                           <Pencil className="w-4 h-4 mr-2" />
                           Edit Product
                         </DropdownMenuItem>
-                        <Link href={`/product/${product.slug}`} target="_blank">
+                        <Link
+                          href={`/products/slug/${product.slug}`}
+                          target="_blank"
+                        >
                           <DropdownMenuItem className="cursor-pointer">
                             <ExternalLink className="w-4 h-4 mr-2" />
                             View on Store

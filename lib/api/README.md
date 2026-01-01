@@ -38,6 +38,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 lib/api/
 ├── api-client.ts              # Configured Axios instance
 ├── api-config.ts              # Configuration constants
+├── api-access-rules.md        # 🔐 API access control rules (SOURCE OF TRUTH)
 ├── errors/
 │   ├── api-error.ts          # Custom error classes
 │   ├── error-handler.ts      # Error transformation logic
@@ -46,6 +47,8 @@ lib/api/
 │   ├── request-interceptor.ts   # Request interceptor
 │   ├── response-interceptor.ts  # Response interceptor
 │   └── retry-logic.ts          # Retry strategy
+├── middleware/
+│   └── auth-middleware.ts     # Role-based access control
 ├── services/
 │   ├── base-service.ts       # Abstract base class
 │   ├── product-service.ts    # Product operations
@@ -55,12 +58,129 @@ lib/api/
 │   └── index.ts              # Central exports
 ├── types/
 │   ├── api-types.ts          # Common types
+│   ├── api-roles.ts          # Role-based access types
 │   └── endpoints.ts          # Endpoint-specific types
 ├── utils/
 │   ├── api-utils.ts          # Helper functions
+│   ├── role-utils.ts         # Role verification utilities
 │   └── storage.ts            # Token/user storage
 └── examples/
     └── usage-examples.ts     # Usage demonstrations
+```
+
+## 🔐 Access Control
+
+This API implements strict role-based access control. All endpoints are classified into three access levels:
+
+- **🟢 Public** - No authentication required (signup, login, product browsing)
+- **🟡 Authenticated** - Requires valid user token (orders, profile, wishlist)
+- **🔴 Admin** - Requires admin role (product management, order management)
+
+### Source of Truth
+
+See [api-access-rules.md](./api-access-rules.md) for the complete, definitive list of endpoint access levels.
+
+**CRITICAL:** Do not modify or reinterpret these rules. They are fixed and must be followed exactly.
+
+### Access Levels by Endpoint
+
+#### Frontend / User APIs (Non-Admin)
+
+**Products (Read-only)**
+- `GET /products` - 🟢 Public
+- `GET /products/search/list` - 🟢 Public
+- `GET /products/{id}` - 🟢 Public
+- `GET /products/slug/{slug}` - 🟢 Public
+
+**Authentication**
+- `POST /api/auth/signup` - 🟢 Public
+- `POST /api/auth/login` - 🟢 Public
+- `POST /api/auth/logout` - 🟡 Authenticated
+- `GET /api/auth/me` - 🟡 Authenticated
+
+**User Profile & Wishlist**
+- `PATCH /users/profile` - 🟡 Authenticated
+- `GET /wishlist` - 🟡 Authenticated
+- `POST /wishlist` - 🟡 Authenticated
+- `DELETE /wishlist/{productId}` - 🟡 Authenticated
+- `DELETE /wishlist` - 🟡 Authenticated
+
+**Orders (User Scope)**
+- `POST /orders` - 🟡 Authenticated
+- `GET /orders` - 🟡 Authenticated
+- `GET /orders/{id}` - 🟡 Authenticated
+- `DELETE /orders/{id}/cancel` - 🟡 Authenticated
+
+#### Admin-Only APIs
+
+**Products (Write Operations)**
+- `POST /products` - 🔴 Admin Only
+- `PUT /products/{id}` - 🔴 Admin Only
+- `DELETE /products/{id}` - 🔴 Admin Only
+
+**Orders (Admin Operations)**
+- `GET /orders/admin/all` - 🔴 Admin Only
+- `GET /orders/admin/stats` - 🔴 Admin Only
+- `PUT /orders/{id}/status` - 🔴 Admin Only
+- `PUT /orders/{id}/payment` - 🔴 Admin Only
+
+### Role Verification
+
+```typescript
+import { isAdmin, canAccessAdminPanel, requireAdmin } from '@/lib/api/services';
+
+// Check if user is admin
+if (isAdmin()) {
+  console.log('User is admin');
+}
+
+// Check if user can access admin panel
+if (canAccessAdminPanel()) {
+  // Show admin UI
+}
+
+// Require admin access (throws error if not admin)
+try {
+  requireAdmin();
+  // Admin-only code
+} catch (error) {
+  console.error('Admin access required');
+}
+```
+
+### Frontend Guards
+
+#### Using AdminGuard Component
+
+```tsx
+import { AdminGuard } from '@/components/guards/AdminGuard';
+
+export default function AdminPage() {
+  return (
+    <AdminGuard redirectTo="/login">
+      <AdminDashboard />
+    </AdminGuard>
+  );
+}
+```
+
+#### Using useAdminAuth Hook
+
+```tsx
+import { useAdminAuth } from '@/lib/hooks/useAdminAuth';
+
+export function AdminPanel() {
+  const { isAdmin, requireAdmin, isLoading } = useAdminAuth();
+
+  useEffect(() => {
+    requireAdmin('/'); // Redirect to home if not admin
+  }, []);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (!isAdmin) return null;
+
+  return <div>Admin Content</div>;
+}
 ```
 
 ## Usage
@@ -306,36 +426,41 @@ const product = await productService.createProduct({
 ## API Endpoints
 
 ### Products
-- `GET /products` - Get all products
-- `GET /products/search/list` - Search products
-- `GET /products/{id}` - Get product by ID
-- `GET /products/slug/{slug}` - Get product by slug
-- `POST /products` - Create product (Admin)
-- `PUT /products/{id}` - Update product (Admin)
-- `DELETE /products/{id}` - Delete product (Admin)
+- `GET /products` - 🟢 Get all products
+- `GET /products/search/list` - 🟢 Search products
+- `GET /products/{id}` - 🟢 Get product by ID
+- `GET /products/slug/{slug}` - 🟢 Get product by slug
+- `POST /products` - 🔴 Create product (Admin)
+- `PUT /products/{id}` - 🔴 Update product (Admin)
+- `DELETE /products/{id}` - 🔴 Delete product (Admin)
 
 ### Orders
-- `POST /orders` - Create order
-- `GET /orders` - Get user orders
-- `GET /orders/{id}` - Get order by ID
-- `DELETE /orders/{id}/cancel` - Cancel order
-- `GET /orders/admin/all` - Get all orders (Admin)
-- `GET /orders/admin/stats` - Get order stats (Admin)
-- `PUT /orders/{id}/status` - Update order status (Admin)
-- `PUT /orders/{id}/payment` - Update payment status (Admin)
+- `POST /orders` - 🟡 Create order
+- `GET /orders` - 🟡 Get user orders
+- `GET /orders/{id}` - 🟡 Get order by ID
+- `DELETE /orders/{id}/cancel` - 🟡 Cancel order
+- `GET /orders/admin/all` - 🔴 Get all orders (Admin)
+- `GET /orders/admin/stats` - 🔴 Get order stats (Admin)
+- `PUT /orders/{id}/status` - 🔴 Update order status (Admin)
+- `PUT /orders/{id}/payment` - 🔴 Update payment status (Admin)
 
 ### Authentication
-- `POST /api/auth/signup` - Register
-- `POST /api/auth/login` - Login
-- `POST /api/auth/logout` - Logout
-- `GET /api/auth/me` - Get current user
+- `POST /api/auth/signup` - 🟢 Register
+- `POST /api/auth/login` - 🟢 Login
+- `POST /api/auth/logout` - 🟡 Logout
+- `GET /api/auth/me` - 🟡 Get current user
 
 ### User
-- `PATCH /users/profile` - Update profile
-- `GET /wishlist` - Get wishlist
-- `POST /wishlist` - Add to wishlist
-- `DELETE /wishlist/{productId}` - Remove from wishlist
-- `DELETE /wishlist` - Clear wishlist
+- `PATCH /users/profile` - 🟡 Update profile
+- `GET /wishlist` - 🟡 Get wishlist
+- `POST /wishlist` - 🟡 Add to wishlist
+- `DELETE /wishlist/{productId}` - 🟡 Remove from wishlist
+- `DELETE /wishlist` - 🟡 Clear wishlist
+
+**Legend:**
+- 🟢 Public - No authentication required
+- 🟡 Authenticated - Requires valid user token
+- 🔴 Admin - Requires admin role
 
 ## Configuration Options
 

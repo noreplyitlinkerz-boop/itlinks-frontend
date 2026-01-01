@@ -1,27 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { use } from "react";
+import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
-import { ProductCard } from "@/components/shared/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAdmin } from "@/context/AdminContext";
-import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
 import { ShoppingCart, Heart, ChevronLeft, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { productService } from "@/lib/api/services";
+import { API_CONFIG } from "@/lib/api/api-config";
+import { Product as ApiProduct } from "@/lib/api/types/endpoints";
+import { safeParse } from "@/lib/utils";
 
 export default function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = use(params);
-  const { products, categories } = useAdmin();
+  const { slug } = use(params);
   const { addItem } = useCart();
   const {
     addItem: addToWishlist,
@@ -29,8 +29,43 @@ export default function ProductDetailPage({
     removeItem: removeFromWishlist,
   } = useWishlist();
 
-  const product = products.find((p) => p.id === id);
+  const [product, setProduct] = useState<ApiProduct | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      setIsLoading(true);
+      try {
+        const response = await productService.getProductBySlug(slug);
+        console.log("Product API Response:", response);
+        if (response.data) {
+          console.log("Product Data:", response.data);
+          setProduct(response.data);
+        } else {
+          console.error("No product data in response");
+        }
+      } catch (error) {
+        console.error("Failed to fetch product", error);
+        toast.error("Failed to load product details");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProduct();
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-20 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -50,21 +85,15 @@ export default function ProductDetailPage({
     );
   }
 
-  const category = categories.find((c) => c.id === product.categoryId);
-  const relatedProducts = products
-    .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
-    .slice(0, 4);
+  const inWishlist = isInWishlist(product._id);
 
-  const inWishlist = isInWishlist(product.id);
-
-  const handleAddToCart = () => {
-    addItem(product, quantity);
-    toast.success(`Added ${quantity}x ${product.name} to cart`);
+  const handleAddToCart = async () => {
+    await addItem(product, quantity);
   };
 
   const handleToggleWishlist = () => {
     if (inWishlist) {
-      removeFromWishlist(product.id);
+      removeFromWishlist(product._id);
       toast.info(`Removed ${product.name} from wishlist`);
     } else {
       addToWishlist(product);
@@ -91,7 +120,13 @@ export default function ProductDetailPage({
           <div className="space-y-4">
             <div className="relative aspect-square rounded-lg overflow-hidden bg-muted border border-border/50">
               <Image
-                src={product.image}
+                src={
+                  product.product_primary_image_url?.startsWith("http")
+                    ? product.product_primary_image_url
+                    : `${API_CONFIG.BASE_URL}${
+                        product.product_primary_image_url || "/placeholder.png"
+                      }`
+                }
                 alt={product.name}
                 fill
                 className="object-cover"
@@ -108,14 +143,6 @@ export default function ProductDetailPage({
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              {category && (
-                <Link
-                  href={`/products?category=${category.slug}`}
-                  className="text-sm text-primary hover:underline"
-                >
-                  {category.name}
-                </Link>
-              )}
               <h1 className="text-4xl font-bold mt-2">{product.name}</h1>
             </div>
 
@@ -144,15 +171,28 @@ export default function ProductDetailPage({
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Specifications</h3>
               <div className="grid grid-cols-2 gap-3">
-                {Object.entries(product.specs).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="p-3 rounded-lg bg-muted/50 border border-border/50"
-                  >
-                    <p className="text-xs text-muted-foreground">{key}</p>
-                    <p className="font-medium">{value}</p>
-                  </div>
-                ))}
+                {product.specifications &&
+                Object.entries(safeParse(product.specifications, {})).length >
+                  0 ? (
+                  Object.entries(
+                    safeParse(product.specifications, {}) as Record<
+                      string,
+                      string
+                    >
+                  ).map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="p-3 rounded-lg bg-muted/50 border border-border/50"
+                    >
+                      <p className="text-xs text-muted-foreground">{key}</p>
+                      <p className="font-medium">{value}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground col-span-2">
+                    No specifications available.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -214,17 +254,7 @@ export default function ProductDetailPage({
           </div>
         </div>
 
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <section className="space-y-8">
-            <h2 className="text-3xl font-bold">Related Products</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Related products removed as per request (category api unreliable) */}
       </main>
 
       <Footer />

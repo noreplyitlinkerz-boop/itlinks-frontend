@@ -51,7 +51,10 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
+  const handleStatusChange = (
+    orderId: string,
+    newStatus: Order["orderStatus"]
+  ) => {
     updateOrderStatus(orderId, newStatus);
     toast.success(`Order ${orderId} status updated to ${newStatus}`);
   };
@@ -76,7 +79,6 @@ export default function AdminOrdersPage() {
             <TableRow>
               <TableHead>Order ID</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
@@ -86,27 +88,39 @@ export default function AdminOrdersPage() {
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium font-mono text-sm">
-                  {order.id}
+              <TableRow key={order._id}>
+                <TableCell className="font-medium font-mono text-xs">
+                  {order._id}
                 </TableCell>
-                <TableCell>{order.customerName}</TableCell>
-                <TableCell className="text-sm">{order.customerEmail}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span>
+                      {order.shippingAddress.firstName}{" "}
+                      {order.shippingAddress.lastName}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {order.shippingAddress.phone}
+                    </span>
+                  </div>
+                </TableCell>
                 <TableCell>{order.items.length} items</TableCell>
                 <TableCell className="font-semibold">
-                  ${order.total.toFixed(2)}
+                  ${order.totalAmount.toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <Select
-                    value={order.status}
+                    value={order.orderStatus}
                     onValueChange={(value) =>
-                      handleStatusChange(order.id, value as Order["status"])
+                      handleStatusChange(
+                        order._id,
+                        value as Order["orderStatus"]
+                      )
                     }
                   >
                     <SelectTrigger className="w-[140px]">
                       <SelectValue>
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status}
+                        <Badge className={getStatusColor(order.orderStatus)}>
+                          {order.orderStatus}
                         </Badge>
                       </SelectValue>
                     </SelectTrigger>
@@ -135,7 +149,7 @@ export default function AdminOrdersPage() {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle>Order Details - {order.id}</DialogTitle>
+                        <DialogTitle>Order Details - {order._id}</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-6">
                         {/* Customer Info */}
@@ -147,13 +161,14 @@ export default function AdminOrdersPage() {
                             <div>
                               <p className="text-muted-foreground">Name</p>
                               <p className="font-medium">
-                                {order.customerName}
+                                {order.shippingAddress.firstName}{" "}
+                                {order.shippingAddress.lastName}
                               </p>
                             </div>
                             <div>
-                              <p className="text-muted-foreground">Email</p>
+                              <p className="text-muted-foreground">Phone</p>
                               <p className="font-medium">
-                                {order.customerEmail}
+                                {order.shippingAddress.phone}
                               </p>
                             </div>
                           </div>
@@ -170,7 +185,7 @@ export default function AdminOrdersPage() {
                               >
                                 <div>
                                   <p className="font-medium">
-                                    {item.productName}
+                                    {item.product.name}
                                   </p>
                                   <p className="text-sm text-muted-foreground">
                                     Quantity: {item.quantity}
@@ -189,15 +204,17 @@ export default function AdminOrdersPage() {
                           <div className="flex justify-between text-lg font-bold">
                             <span>Total</span>
                             <span className="text-primary">
-                              ${order.total.toFixed(2)}
+                              ${order.totalAmount.toFixed(2)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">
                               Status:
                             </span>
-                            <Badge className={getStatusColor(order.status)}>
-                              {order.status}
+                            <Badge
+                              className={getStatusColor(order.orderStatus)}
+                            >
+                              {order.orderStatus}
                             </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground">

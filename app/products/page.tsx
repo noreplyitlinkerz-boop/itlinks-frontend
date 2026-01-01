@@ -1,13 +1,12 @@
 "use client";
 
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { SearchBar } from "@/components/shared/SearchBar";
-import { CategoryFilter } from "@/components/shared/CategoryFilter";
-import { useAdmin } from "@/context/AdminContext";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -15,42 +14,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SortOption } from "@/types";
+import { SortOption, Product as FrontendProduct } from "@/types";
+import { productService } from "@/lib/api/services";
+import { Product as ApiProduct } from "@/lib/api/types/endpoints";
+import { safeParse } from "@/lib/utils";
 
 function ProductsContent() {
-  const { products, categories } = useAdmin();
   const searchParams = useSearchParams();
-  const categoryFromUrl = searchParams.get("category");
+  // const categoryFromUrl = searchParams.get("category"); // Ignored as per request
 
+  const [products, setProducts] = useState<FrontendProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    categoryFromUrl
-      ? categories.find((c) => c.slug === categoryFromUrl)?.id || null
-      : null
-  );
   const [sortOption, setSortOption] = useState<SortOption>("newest");
 
-  // Filter and sort products
-  const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products;
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      try {
+        // Build API params
+        const params: any = {
+          limit: 50, // Fetch a substantial amount for now
+          page: 1,
+        };
 
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter((p) => p.categoryId === selectedCategory);
-    }
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query) ||
-          p.description.toLowerCase().includes(query)
-      );
-    }
+        const response = await productService.getProducts(params);
 
-    // Sort products
-    const sorted = [...filtered].sort((a, b) => {
+        setProducts(response.data || []);
+      } catch (error) {
+        console.error("Failed to fetch products", error);
+        toast.error("Failed to load products");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // Client-side sort for the fetched batch
+  const sortedProducts = useMemo(() => {
+    return [...products].sort((a, b) => {
       switch (sortOption) {
         case "name-asc":
           return a.name.localeCompare(b.name);
@@ -62,15 +75,14 @@ function ProductsContent() {
           return b.price - a.price;
         case "newest":
           return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(b.createdAt || 0).getTime() -
+            new Date(a.createdAt || 0).getTime()
           );
         default:
           return 0;
       }
     });
-
-    return sorted;
-  }, [products, selectedCategory, searchQuery, sortOption]);
+  }, [products, sortOption]);
 
   return (
     <div className="space-y-8">
@@ -84,11 +96,8 @@ function ProductsContent() {
 
       {/* Filters and Search */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        <CategoryFilter
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-        />
+        {/* Category Filter removed as per request */}
+        <div className="hidden lg:block w-1/4"></div>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
           <SearchBar
@@ -117,15 +126,24 @@ function ProductsContent() {
 
       {/* Results Count */}
       <div className="text-sm text-muted-foreground">
-        Showing {filteredAndSortedProducts.length} product
-        {filteredAndSortedProducts.length !== 1 ? "s" : ""}
+        Showing {sortedProducts.length} product
+        {sortedProducts.length !== 1 ? "s" : ""}
       </div>
 
       {/* Products Grid */}
-      {filteredAndSortedProducts.length > 0 ? (
+      {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAndSortedProducts.map((product) => (
-            <div key={product.id} className="animate-scale-in">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[300px] rounded-xl bg-muted animate-pulse"
+            />
+          ))}
+        </div>
+      ) : sortedProducts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {sortedProducts.map((product) => (
+            <div key={product._id} className="animate-scale-in">
               <ProductCard product={product} />
             </div>
           ))}
@@ -134,7 +152,7 @@ function ProductsContent() {
         <div className="text-center py-20">
           <p className="text-xl text-muted-foreground">No products found</p>
           <p className="text-sm text-muted-foreground mt-2">
-            Try adjusting your filters or search query
+            Try adjusting your search query
           </p>
         </div>
       )}

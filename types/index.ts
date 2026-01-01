@@ -2,25 +2,25 @@
  * Core TypeScript types and interfaces for the Tech Store
  */
 
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: string;
-  image: string;
-  stock: number;
-  specs: Record<string, string>;
-  featured: boolean;
-  createdAt: string;
-}
+import {
+  Product as ApiProduct,
+  Category as ApiCategory,
+  Order as ApiOrder,
+  OrderItem as ApiOrderItem,
+  OrderStatus as ApiOrderStatus,
+} from "@/lib/api/types/endpoints";
 
-export interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image: string;
+export type Product = ApiProduct;
+export type Category = ApiCategory;
+export type Order = ApiOrder;
+export type OrderStatus = ApiOrderStatus;
+
+// These interfaces are kept for backward compatibility if they have specific frontend needs,
+// but they should ideally track the API structure.
+export interface OrderItem {
+  product: Product;
+  quantity: number;
+  price: number;
 }
 
 export interface CartItem {
@@ -40,15 +40,13 @@ export interface OrderItem {
   price: number;
 }
 
-export interface Order {
-  id: string;
-  items: OrderItem[];
-  total: number;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  customerName: string;
-  customerEmail: string;
-  createdAt: string;
-}
+// The Order type is now an alias for the API Order.
+// Mapping frontend fields to API fields:
+// id -> _id
+// total -> totalAmount
+// status -> orderStatus
+// customerName -> (derived from user/shippingAddress)
+// customerEmail -> (derived from user)
 
 export type SortOption =
   | "name-asc"

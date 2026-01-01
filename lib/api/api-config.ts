@@ -5,7 +5,7 @@
 
 export const API_CONFIG = {
   // Base URL - should be set via environment variable
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
 
   // Timeout settings (in milliseconds)
   TIMEOUT: 30000, // 30 seconds

@@ -1,72 +1,127 @@
 "use client";
-
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
 import { Product, Category, Order } from "@/types";
 import {
-  products as initialProducts,
-  categories as initialCategories,
-  orders as initialOrders,
-} from "@/lib/data/mock-data";
+  productService,
+  categoryService,
+  orderService,
+} from "@/lib/api/services";
+import { toast } from "sonner";
 
 interface AdminContextType {
   products: Product[];
   categories: Category[];
   orders: Order[];
-  addProduct: (product: Product) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  addCategory: (category: Category) => void;
-  updateCategory: (id: string, category: Partial<Category>) => void;
-  deleteCategory: (id: string) => void;
-  updateOrderStatus: (id: string, status: Order["status"]) => void;
+  isLoading: boolean;
+  addProduct: (product: any) => Promise<void>;
+  updateProduct: (id: string, product: any) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  addCategory: (category: any) => Promise<void>;
+  updateCategory: (id: string, category: any) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
+  updateOrderStatus: (
+    id: string,
+    status: Order["orderStatus"]
+  ) => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch all data
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [productsRes, categoriesRes, ordersRes] = await Promise.all([
+        productService.getProducts({ limit: 100 }), // Get a good amount for the dashboard/context
+        categoryService.getCategories(),
+        orderService.getAllOrders(),
+      ]);
+
+      setProducts(productsRes.data || []);
+      setCategories(categoriesRes.data || []);
+      setOrders(ordersRes.data || []);
+    } catch (error) {
+      console.error("Failed to fetch admin data", error);
+      toast.error("Failed to load admin data.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   // Product operations
-  const addProduct = (product: Product) => {
-    setProducts((prev) => [...prev, product]);
+  const addProduct = async (product: any) => {
+    // Note: complex product adding is usually handled in the ProductForm directly,
+    // but we can update the list here if needed.
+    await fetchData();
   };
 
-  const updateProduct = (id: string, updatedProduct: Partial<Product>) => {
-    setProducts((prev) =>
-      prev.map((product) =>
-        product.id === id ? { ...product, ...updatedProduct } : product
-      )
-    );
+  const updateProduct = async (id: string, updatedProduct: any) => {
+    await fetchData();
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((product) => product.id !== id));
+  const deleteProduct = async (id: string) => {
+    try {
+      await productService.deleteProduct(id);
+      setProducts((prev) => prev.filter((p) => (p as any)._id !== id));
+      toast.success("Product deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete product");
+    }
   };
 
   // Category operations
-  const addCategory = (category: Category) => {
-    setCategories((prev) => [...prev, category]);
+  const addCategory = async (category: any) => {
+    await fetchData();
   };
 
-  const updateCategory = (id: string, updatedCategory: Partial<Category>) => {
-    setCategories((prev) =>
-      prev.map((category) =>
-        category.id === id ? { ...category, ...updatedCategory } : category
-      )
-    );
+  const updateCategory = async (id: string, updatedCategory: any) => {
+    await fetchData();
   };
 
-  const deleteCategory = (id: string) => {
-    setCategories((prev) => prev.filter((category) => category.id !== id));
+  const deleteCategory = async (id: string) => {
+    try {
+      // API deletion for categories might not be implemented in service yet, but we'll follow previous pattern
+      await categoryService.deleteCategory(id); // Assuming a deleteCategory method exists
+      setCategories((prev) => prev.filter((c) => (c as any)._id !== id));
+      toast.success("Category deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete category");
+    }
   };
 
   // Order operations
-  const updateOrderStatus = (id: string, status: Order["status"]) => {
-    setOrders((prev) =>
-      prev.map((order) => (order.id === id ? { ...order, status } : order))
-    );
+  const updateOrderStatus = async (
+    id: string,
+    status: Order["orderStatus"]
+  ) => {
+    try {
+      await orderService.updateOrderStatus(id, { orderStatus: status });
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === id ? { ...order, orderStatus: status } : order
+        )
+      );
+      toast.success("Order status updated");
+    } catch (error) {
+      toast.error("Failed to update order status");
+    }
   };
 
   return (
@@ -75,6 +130,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         products,
         categories,
         orders,
+        isLoading,
         addProduct,
         updateProduct,
         deleteProduct,

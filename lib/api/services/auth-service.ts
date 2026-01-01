@@ -24,9 +24,8 @@ class AuthService extends BaseService {
   async signup(data: SignupRequest): Promise<AuthResponse> {
     const response = await this.post<AuthResponse>("/signup", data);
 
-    // Store token and user data
-    if (response.token) {
-      TokenStorage.setAccessToken(response.token);
+    // Store user data (session handled by browser cookies)
+    if (response.user) {
       UserStorage.setUser(response.user);
     }
 
@@ -41,9 +40,8 @@ class AuthService extends BaseService {
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await this.post<AuthResponse>("/login", data);
 
-    // Store token and user data
-    if (response.token) {
-      TokenStorage.setAccessToken(response.token);
+    // Store user data (session handled by browser cookies)
+    if (response.user) {
       UserStorage.setUser(response.user);
     }
 

@@ -38,82 +38,8 @@ function getStorage(): Storage {
   };
 }
 
-import Cookies from "js-cookie";
-
 /**
- * Token Storage
- */
-export const TokenStorage = {
-  /**
-   * Get access token
-   */
-  getAccessToken(): string | null {
-    return Cookies.get(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN) || null;
-  },
-
-  /**
-   * Set access token
-   */
-  setAccessToken(token: string): void {
-    Cookies.set(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, token, {
-      expires: 7, // 7 days
-      secure: window.location.protocol === "https:",
-      sameSite: "strict",
-      path: "/",
-    });
-  },
-
-  /**
-   * Remove access token
-   */
-  removeAccessToken(): void {
-    Cookies.remove(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, { path: "/" });
-  },
-
-  /**
-   * Get refresh token
-   */
-  getRefreshToken(): string | null {
-    return Cookies.get(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN) || null;
-  },
-
-  /**
-   * Set refresh token
-   */
-  setRefreshToken(token: string): void {
-    Cookies.set(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, token, {
-      expires: 30, // 30 days
-      secure: window.location.protocol === "https:",
-      sameSite: "strict",
-      path: "/",
-    });
-  },
-
-  /**
-   * Remove refresh token
-   */
-  removeRefreshToken(): void {
-    Cookies.remove(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, { path: "/" });
-  },
-
-  /**
-   * Clear all tokens
-   */
-  clearTokens(): void {
-    this.removeAccessToken();
-    this.removeRefreshToken();
-  },
-
-  /**
-   * Check if user is authenticated
-   */
-  isAuthenticated(): boolean {
-    return !!this.getAccessToken();
-  },
-};
-
-/**
- * User Storage
+ * User Storage (For non-sensitive session cache)
  */
 export const UserStorage = {
   /**
@@ -149,6 +75,19 @@ export const UserStorage = {
  * Clear all stored data
  */
 export function clearAllStorage(): void {
-  TokenStorage.clearTokens();
   UserStorage.removeUser();
 }
+
+/**
+ * Empty object to prevent breaking existing imports
+ */
+export const TokenStorage = {
+  getAccessToken: () => null,
+  setAccessToken: () => {},
+  removeAccessToken: () => {},
+  getRefreshToken: () => null,
+  setRefreshToken: () => {},
+  removeRefreshToken: () => {},
+  clearTokens: () => {},
+  isAuthenticated: () => false,
+};

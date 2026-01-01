@@ -12,11 +12,7 @@ import { TokenStorage } from "../utils/storage";
 export function requestInterceptor(
   config: InternalAxiosRequestConfig
 ): InternalAxiosRequestConfig {
-  // Add authentication token if available
-  const token = TokenStorage.getAccessToken();
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  // No manual token injection - browser handles session cookies automatically via withCredentials: true
 
   // Log request in development
   if (process.env.NODE_ENV === "development") {

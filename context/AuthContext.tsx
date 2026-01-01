@@ -34,28 +34,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Initial load: get user from local storage
+    // Initial load: Try to fetch user from session
     const storedUser = authService.getStoredUser();
-    const token = authService.isAuthenticated();
 
-    if (token) {
-      if (storedUser) {
-        console.log("AuthContext: Restoring session from cache", storedUser);
-        setUser(storedUser);
-        setIsLoading(false); // Immediate access
-
-        // Verify token in background
-        refreshUser().catch((err) => {
-          console.warn("AuthContext: Background verification failed", err);
-        });
-      } else {
-        // Token exists but no user data - fetch it
-        console.log("AuthContext: Token found but no user data, fetching...");
-        refreshUser().finally(() => setIsLoading(false));
-      }
-    } else {
-      setIsLoading(false);
+    // Even if we have a stored user, we verify with the API because cookies handle auth
+    // We optimistically show the stored user if available
+    if (storedUser) {
+      setUser(storedUser);
     }
+
+    // Always fetch fresh data to confirm session validity
+    console.log("AuthContext: Validating session...");
+    refreshUser().finally(() => {
+      setIsLoading(false);
+    });
   }, []);
 
   // Execute pending action when user becomes authenticated

@@ -65,12 +65,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = async () => {
     try {
       const response = await authService.getCurrentUser();
-      if (response.data) {
+      const userData = (response as any).user || response.data || response;
+
+      if (userData && userData._id) {
+        console.log("AuthContext: refreshUser got data:", userData._id);
         // Only update if data actually changed to avoid re-renders
         setUser((prev) => {
-          if (JSON.stringify(prev) !== JSON.stringify(response.data)) {
+          if (JSON.stringify(prev) !== JSON.stringify(userData)) {
             console.log("AuthContext: User data refreshed from API");
-            return response.data;
+            return userData;
           }
           return prev;
         });

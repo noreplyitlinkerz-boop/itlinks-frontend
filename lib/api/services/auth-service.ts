@@ -71,11 +71,15 @@ class AuthService extends BaseService {
    * @endpoint GET /api/auth/me
    */
   async getCurrentUser(): Promise<ApiResponse<User>> {
-    const response = await this.get<ApiResponse<User>>("/me");
+    const response = await this.get<any>("/me");
+    // Extract user from .user or .data or fallback to response itself
+    const userData = response.user || response.data || response;
+
+    console.log("authService: Extracted user data:", userData);
 
     // Update stored user data
-    if (response.data) {
-      UserStorage.setUser(response.data);
+    if (userData && userData._id) {
+      UserStorage.setUser(userData);
     }
 
     return response;

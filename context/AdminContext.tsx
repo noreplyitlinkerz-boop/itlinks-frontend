@@ -52,7 +52,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
       setProducts(productsRes.data || []);
       setCategories(categoriesRes.data || []);
-      setOrders(ordersRes.data || []);
+      // Handle different response structures for orders
+      const ordersList = ordersRes.data || (ordersRes as any).orders || [];
+      setOrders(ordersList);
     } catch (error) {
       console.error("Failed to fetch admin data", error);
       toast.error("Failed to load admin data.");

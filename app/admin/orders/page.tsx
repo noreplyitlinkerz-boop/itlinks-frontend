@@ -105,7 +105,7 @@ export default function AdminOrdersPage() {
                 </TableCell>
                 <TableCell>{order.items.length} items</TableCell>
                 <TableCell className="font-semibold">
-                  ${order.totalAmount.toFixed(2)}
+                  ₹{order.totalAmount.toLocaleString()}
                 </TableCell>
                 <TableCell>
                   <Select
@@ -185,14 +185,17 @@ export default function AdminOrdersPage() {
                               >
                                 <div>
                                   <p className="font-medium">
-                                    {item.product.name}
+                                    {item.product?.name || "Deleted Product"}
                                   </p>
                                   <p className="text-sm text-muted-foreground">
                                     Quantity: {item.quantity}
                                   </p>
                                 </div>
                                 <p className="font-semibold">
-                                  ${(item.price * item.quantity).toFixed(2)}
+                                  ₹
+                                  {(
+                                    item.price * item.quantity
+                                  ).toLocaleString()}
                                 </p>
                               </div>
                             ))}
@@ -204,7 +207,7 @@ export default function AdminOrdersPage() {
                           <div className="flex justify-between text-lg font-bold">
                             <span>Total</span>
                             <span className="text-primary">
-                              ${order.totalAmount.toFixed(2)}
+                              ₹{order.totalAmount.toLocaleString()}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">

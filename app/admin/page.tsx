@@ -2,7 +2,14 @@
 
 import { useAdmin } from "@/context/AdminContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, FolderTree, ShoppingBag, DollarSign } from "lucide-react";
+import {
+  Package,
+  FolderTree,
+  ShoppingBag,
+  DollarSign,
+  ChevronRight,
+} from "lucide-react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -54,7 +61,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Total Revenue",
-      value: `$${totalRevenue.toFixed(0)}`,
+      value: `₹${totalRevenue.toLocaleString()}`,
       icon: DollarSign,
       description: "All time",
     },
@@ -108,8 +115,15 @@ export default function AdminDashboard() {
 
       {/* Recent Orders */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Orders</CardTitle>
+          <Link
+            href="/admin/orders"
+            className="text-sm font-medium text-accent hover:underline flex items-center gap-1 group"
+          >
+            View All
+            <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </CardHeader>
         <CardContent>
           <Table>
@@ -134,7 +148,7 @@ export default function AdminDashboard() {
                     {order.shippingAddress.lastName}
                   </TableCell>
                   <TableCell>{order.items.length} items</TableCell>
-                  <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
+                  <TableCell>₹{order.totalAmount.toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(order.orderStatus)}>
                       {order.orderStatus}

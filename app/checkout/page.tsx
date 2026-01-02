@@ -102,7 +102,8 @@ export default function CheckoutPage() {
 
   const handleRazorpayPayment = async (
     orderId: string,
-    razorpayOrderId: string
+    razorpayOrderId: string,
+    amount: number
   ) => {
     const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
@@ -120,7 +121,7 @@ export default function CheckoutPage() {
 
     const options = {
       key: razorpayKey,
-      amount: Math.round(totalPrice * 1.1 * 100), // Total with tax in paise
+      amount: Math.round(amount * 100), // Use backend provided amount in paise
       currency: "INR",
       name: "TechStore",
       description: `Payment for Order #${orderId}`,
@@ -128,6 +129,8 @@ export default function CheckoutPage() {
       handler: async function (response: any) {
         try {
           setIsProcessing(true);
+          console.log("Verifying payment for order:", orderId, response);
+
           await orderService.verifyRazorpayPayment(orderId, {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
@@ -136,10 +139,18 @@ export default function CheckoutPage() {
 
           toast.success("Payment successful!");
           await clearCart();
-          router.push(`/orders?id=${orderId}`);
+          setTimeout(() => {
+            router.push(`/orders?id=${orderId}`);
+          }, 1500);
         } catch (error: any) {
-          console.error("Payment verification failed", error);
-          toast.error("Payment verification failed. Please contact support.");
+          console.error("Payment verification failed details:", error);
+          const errorMsg =
+            error?.response?.data?.message ||
+            error?.message ||
+            "Payment verification failed";
+          toast.error(errorMsg, {
+            description: "Please contact support if your amount was deducted.",
+          });
         } finally {
           setIsProcessing(false);
         }
@@ -152,11 +163,17 @@ export default function CheckoutPage() {
       theme: {
         color: "#F97316", // Accent color (Orange)
       },
+      modal: {
+        ondismiss: function () {
+          setIsProcessing(false);
+        },
+      },
     };
 
     const rzp = new (window as any).Razorpay(options);
     rzp.on("payment.failed", function (response: any) {
       toast.error(response.error.description || "Payment failed");
+      setIsProcessing(false);
     });
     rzp.open();
   };
@@ -185,12 +202,14 @@ export default function CheckoutPage() {
         const rzpOrder = rzpResponse.data || rzpResponse;
 
         // 3. Trigger Razorpay Checkout
-        await handleRazorpayPayment(order._id, rzpOrder.id);
+        await handleRazorpayPayment(order._id, rzpOrder.id, order.totalAmount);
       } else {
         // COD logic
         toast.success("Order placed successfully!");
         await clearCart();
-        router.push(`/orders?id=${order._id}`);
+        setTimeout(() => {
+          router.push(`/orders?id=${order._id}`);
+        }, 1500);
       }
     } catch (error: any) {
       console.error("Checkout failed", error);
@@ -199,8 +218,6 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-
-  const finalTotal = totalPrice * 1.1;
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-accent/30">
@@ -505,10 +522,10 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-sm font-medium">
                     <span className="text-muted-foreground">
-                      Estimated Tax (10%)
+                      Estimated Tax (18%)
                     </span>
                     <span className="font-bold">
-                      ₹{(totalPrice * 0.1).toLocaleString()}
+                      ₹{(totalPrice * 0.18).toLocaleString()}
                     </span>
                   </div>
 
@@ -518,7 +535,7 @@ export default function CheckoutPage() {
                         Total Amount
                       </p>
                       <h3 className="text-3xl font-black text-accent tracking-tighter mt-1">
-                        ₹{finalTotal.toLocaleString()}
+                        ₹{(totalPrice * 1.18).toLocaleString()}
                       </h3>
                     </div>
                   </div>

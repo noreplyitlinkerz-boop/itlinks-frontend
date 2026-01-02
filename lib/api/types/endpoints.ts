@@ -134,21 +134,34 @@ export interface OrderItem {
 
 export interface Order {
   _id: string;
+  user?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
   items: Array<{
-    product: Product;
+    product: Product | null;
     quantity: number;
     price: number;
+    discount?: number;
   }>;
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   orderStatus: OrderStatus;
   totalAmount: number;
+  subtotal?: number;
+  shippingCost?: number;
+  taxAmount?: number;
+  discount?: number;
   notes?: string;
   trackingNumber?: string;
   estimatedDeliveryDate?: string;
   paymentTransactionId?: string;
   cancelReason?: string;
+  razorpayOrderId?: string;
+  paymentGatewayResponse?: any;
   createdAt: string;
   updatedAt: string;
 }

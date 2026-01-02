@@ -37,9 +37,9 @@ export default function MyOrdersPage() {
     const fetchOrders = async () => {
       try {
         const response = await orderService.getUserOrders();
-        // Handle both wrapped and flat responses
+        // Handle both wrapped and flat responses from the backend
         const rawResponse = response as any;
-        const orderData = rawResponse.data || rawResponse;
+        const orderData = rawResponse.data || rawResponse.orders || rawResponse;
 
         if (Array.isArray(orderData)) {
           setOrders(orderData);
@@ -246,7 +246,7 @@ export default function MyOrdersPage() {
                           </div>
                           <div className="flex-1 min-w-0 space-y-1">
                             <h4 className="font-bold text-base line-clamp-1 hover:text-primary transition-colors cursor-pointer">
-                              {item.product?.name}
+                              {item.product?.name || "Product Unvailable"}
                             </h4>
                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
                               <p>

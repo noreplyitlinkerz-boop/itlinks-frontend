@@ -71,7 +71,12 @@ class ProductService extends BaseService {
    * @endpoint GET /products/slug/{slug}
    */
   async getProductBySlug(slug: string): Promise<ApiResponse<Product>> {
-    return this.get<ApiResponse<Product>>(`/slug/${slug}`);
+    const response = await this.get<any>(`/slug/${slug}`);
+    // Support flat response directly
+    if (response && response._id && !response.data) {
+      return { data: response as Product, success: true };
+    }
+    return response as ApiResponse<Product>;
   }
 
   /**

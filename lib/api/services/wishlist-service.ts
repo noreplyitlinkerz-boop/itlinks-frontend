@@ -20,7 +20,7 @@ class WishlistService extends BaseService {
    * Add item to wishlist
    */
   async addToWishlist(productId: string): Promise<ApiResponse<Wishlist>> {
-    return this.post<ApiResponse<Wishlist>>("/add", {
+    return this.post<ApiResponse<Wishlist>>("", {
       productId,
     } as AddToWishlistRequest);
   }
@@ -29,14 +29,14 @@ class WishlistService extends BaseService {
    * Remove item from wishlist
    */
   async removeFromWishlist(productId: string): Promise<ApiResponse<Wishlist>> {
-    return this.delete<ApiResponse<Wishlist>>(`/remove/${productId}`);
+    return this.delete<ApiResponse<Wishlist>>(`/${productId}`);
   }
 
   /**
    * Clear wishlist
    */
   async clearWishlist(): Promise<ApiResponse<{ message: string }>> {
-    return this.delete<ApiResponse<{ message: string }>>("/clear");
+    return this.delete<ApiResponse<{ message: string }>>("");
   }
 }
 

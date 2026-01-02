@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { ProductImage } from "@/components/shared/ProductImage";
+
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
@@ -49,21 +50,21 @@ export default function CartPage() {
                 className="flex gap-4 p-4 rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:shadow-lg"
               >
                 {/* Product Image */}
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0">
-                  <Image
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/50">
+                  <ProductImage
                     src={
                       item.product.product_primary_image_url ||
-                      "/placeholder.png"
+                      item.product.images?.[0]
                     }
                     alt={item.product.name}
                     fill
-                    className="object-cover"
+                    className="object-contain p-1"
                   />
                 </div>
 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
-                  <Link href={`/products/${item.product._id}`}>
+                  <Link href={`/products/slug/${item.product.slug}`}>
                     <h3 className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1">
                       {item.product.name}
                     </h3>
@@ -71,9 +72,27 @@ export default function CartPage() {
                   <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                     {item.product.description}
                   </p>
-                  <p className="text-lg font-bold text-primary mt-2">
-                    ${item.product.price.toFixed(2)}
-                  </p>
+                  <div className="flex flex-col gap-1 mt-2">
+                    <p className="text-lg font-bold text-primary">
+                      ₹
+                      {(item.product.discount &&
+                      typeof item.product.discount === "object"
+                        ? item.product.discount.discountedPrice
+                        : item.product.price
+                      ).toLocaleString()}
+                    </p>
+                    {item.product.discount &&
+                      typeof item.product.discount === "object" && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground line-through">
+                            ₹{item.product.price.toLocaleString()}
+                          </span>
+                          <span className="text-xs font-bold text-green-600">
+                            {item.product.discount.percentage}% OFF
+                          </span>
+                        </div>
+                      )}
+                  </div>
                 </div>
 
                 {/* Quantity Controls */}
@@ -136,7 +155,7 @@ export default function CartPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-semibold">
-                    ${totalPrice.toFixed(2)}
+                    ₹{totalPrice.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -144,9 +163,9 @@ export default function CartPage() {
                   <span className="font-semibold text-primary">Free</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax</span>
+                  <span className="text-muted-foreground">Tax (10%)</span>
                   <span className="font-semibold">
-                    ${(totalPrice * 0.1).toFixed(2)}
+                    ₹{(totalPrice * 0.1).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -154,7 +173,7 @@ export default function CartPage() {
               <div className="flex justify-between text-lg font-bold pt-4 border-t border-border/50">
                 <span>Total</span>
                 <span className="text-primary">
-                  ${(totalPrice * 1.1).toFixed(2)}
+                  ₹{(totalPrice * 1.1).toLocaleString()}
                 </span>
               </div>
 

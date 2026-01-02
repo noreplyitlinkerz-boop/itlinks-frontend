@@ -213,7 +213,7 @@ export function BannerCarousel() {
                               {product.name}
                             </h4>
                             <p className="text-sm text-accent font-semibold whitespace-nowrap">
-                              ${product.price.toFixed(2)}
+                              ₹{product.price.toLocaleString()}
                             </p>
                           </div>
                         </div>

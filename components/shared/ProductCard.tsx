@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { API_CONFIG } from "@/lib/api/api-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +9,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { ShoppingCart, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Product } from "@/lib/api/services";
+import { ProductImage } from "./ProductImage";
 
 interface ProductCardProps {
   product: Product;
@@ -44,14 +43,8 @@ export function ProductCard({ product }: ProductCardProps) {
       <Card className="h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-border/50 bg-card/50 backdrop-blur-sm group-hover:border-primary/50">
         <CardContent className="p-0">
           <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">
-            <Image
-              src={
-                product.product_primary_image_url?.startsWith("http")
-                  ? product.product_primary_image_url
-                  : `${API_CONFIG.BASE_URL}${
-                      product.product_primary_image_url || "/placeholder.png"
-                    }`
-              }
+            <ProductImage
+              src={product.product_primary_image_url || product.images?.[0]}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-110"
@@ -82,9 +75,25 @@ export function ProductCard({ product }: ProductCardProps) {
             <p className="text-sm text-muted-foreground line-clamp-2">
               {product.description}
             </p>
-            <p className="text-2xl font-bold text-primary">
-              ${product.price.toFixed(2)}
-            </p>
+            <div className="flex flex-col">
+              <p className="text-2xl font-bold text-primary">
+                ₹
+                {(product.discount && typeof product.discount === "object"
+                  ? product.discount.discountedPrice
+                  : product.price
+                ).toLocaleString()}
+              </p>
+              {product.discount && typeof product.discount === "object" && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground line-through">
+                    ₹{product.price.toLocaleString()}
+                  </span>
+                  <span className="text-xs font-bold text-green-600">
+                    {product.discount.percentage}% OFF
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2 w-full">

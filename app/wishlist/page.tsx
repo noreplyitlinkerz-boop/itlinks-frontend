@@ -9,6 +9,7 @@ import { useCart } from "@/context/CartContext";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { ProductImage } from "@/components/shared/ProductImage";
 
 export default function WishlistPage() {
   const { items, removeItem } = useWishlist();
@@ -60,23 +61,23 @@ export default function WishlistPage() {
                 className="group relative rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden transition-all hover:shadow-xl"
               >
                 {/* Product Image */}
-                <Link href={`/products/${item.product._id}`}>
+                <Link href={`/products/slug/${item.product.slug}`}>
                   <div className="relative aspect-square bg-muted">
-                    <Image
+                    <ProductImage
                       src={
                         item.product.product_primary_image_url ||
-                        "/placeholder.png"
+                        item.product.images?.[0]
                       }
                       alt={item.product.name}
                       fill
-                      className="object-cover transition-transform group-hover:scale-110"
+                      className="object-contain p-1"
                     />
                   </div>
                 </Link>
 
                 {/* Product Info */}
                 <div className="p-4 space-y-3">
-                  <Link href={`/products/${item.product._id}`}>
+                  <Link href={`/products/slug/${item.product.slug}`}>
                     <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
                       {item.product.name}
                     </h3>

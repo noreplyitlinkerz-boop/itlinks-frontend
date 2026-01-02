@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+
 import { useWishlist } from "@/context/WishlistContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
@@ -25,9 +27,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 export function Header() {
+  const pathname = usePathname();
   const { totalItems } = useCart();
+
   const { items: wishlistItems } = useWishlist();
   const { theme, toggleTheme } = useTheme();
   const { user, logout, isAuthenticated, openLoginModal } = useAuth();
@@ -59,25 +64,45 @@ export function Header() {
           <div className="hidden md:flex items-center gap-6">
             <Link
               href="/"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary relative py-1",
+                pathname === "/"
+                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+                  : "text-muted-foreground"
+              )}
             >
               Home
             </Link>
             <Link
               href="/products"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary relative py-1",
+                pathname.startsWith("/products")
+                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+                  : "text-muted-foreground"
+              )}
             >
               Products
             </Link>
             <Link
               href="/about"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary relative py-1",
+                pathname === "/about"
+                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+                  : "text-muted-foreground"
+              )}
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary relative py-1",
+                pathname === "/contact"
+                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+                  : "text-muted-foreground"
+              )}
             >
               Contact
             </Link>
@@ -100,8 +125,22 @@ export function Header() {
             </Button>
 
             <Link href="/wishlist">
-              <Button variant="ghost" size="icon" className="relative">
-                <Heart className="w-5 h-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "relative transition-colors",
+                  pathname === "/wishlist"
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground"
+                )}
+              >
+                <Heart
+                  className={cn(
+                    "w-5 h-5",
+                    pathname === "/wishlist" && "fill-current"
+                  )}
+                />
                 {wishlistItems.length > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
                     {wishlistItems.length}
@@ -111,7 +150,16 @@ export function Header() {
             </Link>
 
             <Link href="/cart">
-              <Button variant="ghost" size="icon" className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "relative transition-colors",
+                  pathname === "/cart"
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground"
+                )}
+              >
                 <ShoppingCart className="w-5 h-5" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
@@ -203,32 +251,53 @@ export function Header() {
           <div className="md:hidden mt-4 pb-4 flex flex-col gap-3 border-t border-border/40 pt-4 animate-slide-in-down">
             <Link
               href="/"
-              className="text-sm font-medium transition-colors hover:text-primary py-2"
+              className={cn(
+                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
+                pathname === "/"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+              )}
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </Link>
             <Link
               href="/products"
-              className="text-sm font-medium transition-colors hover:text-primary py-2"
+              className={cn(
+                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
+                pathname.startsWith("/products")
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+              )}
               onClick={() => setMobileMenuOpen(false)}
             >
               Products
             </Link>
             <Link
               href="/about"
-              className="text-sm font-medium transition-colors hover:text-primary py-2"
+              className={cn(
+                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
+                pathname === "/about"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+              )}
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="text-sm font-medium transition-colors hover:text-primary py-2"
+              className={cn(
+                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
+                pathname === "/contact"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+              )}
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
             </Link>
+
             {!isAuthenticated && (
               <Button
                 variant="default"

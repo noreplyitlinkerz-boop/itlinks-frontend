@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { safeParse } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ProductImage } from "@/components/shared/ProductImage";
+
 import {
   Dialog,
   DialogContent,
@@ -60,20 +62,6 @@ export default function AdminProductsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
-  const getFullImageUrl = (path?: string) => {
-    if (!path) return "";
-    if (
-      path.startsWith("http") ||
-      path.startsWith("data:") ||
-      path.startsWith("blob:")
-    )
-      return path;
-    const baseUrl = API_CONFIG.BASE_URL.endsWith("/")
-      ? API_CONFIG.BASE_URL.slice(0, -1)
-      : API_CONFIG.BASE_URL;
-    return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
-  };
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -297,13 +285,16 @@ export default function AdminProductsPage() {
                 >
                   <TableCell>
                     <div className="relative h-12 w-12 rounded-lg bg-muted border-none overflow-hidden">
-                      {product.product_primary_image_url ? (
-                        <img
-                          src={getFullImageUrl(
-                            product.product_primary_image_url
-                          )}
+                      {product.product_primary_image_url ||
+                      (product.images && product.images.length > 0) ? (
+                        <ProductImage
+                          src={
+                            product.product_primary_image_url ||
+                            product.images?.[0]
+                          }
                           alt={product.name}
-                          className="h-full w-full object-contain p-1"
+                          fill
+                          className="object-contain p-1"
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full w-full">

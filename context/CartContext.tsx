@@ -50,8 +50,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await apiCartService.getCart();
-      if (response.data && response.data.items) {
-        setItems(mapApiCartToItems(response.data.items));
+      const cartData = response.data || response;
+      if (cartData && cartData.items) {
+        setItems(mapApiCartToItems(cartData.items));
       } else {
         setItems([]);
       }
@@ -76,9 +77,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       console.log("CartContext: Adding item...", product._id, quantity);
       const response = await apiCartService.addToCart(product._id, quantity);
       console.log("CartContext: API Response", response);
+      const cartData = response.data || response;
 
-      if (response.data && response.data.items) {
-        setItems(mapApiCartToItems(response.data.items));
+      if (cartData && cartData.items) {
+        setItems(mapApiCartToItems(cartData.items));
         toast.success("Added to cart");
       } else {
         console.warn("CartContext: Response items missing, refetching cart");
@@ -95,8 +97,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!isAuthenticated) return;
     try {
       const response = await apiCartService.removeFromCart(productId);
-      if (response.data && response.data.items) {
-        setItems(mapApiCartToItems(response.data.items));
+      const cartData = response.data || response;
+      if (cartData && cartData.items) {
+        setItems(mapApiCartToItems(cartData.items));
         toast.success("Removed from cart");
       }
     } catch (error) {
@@ -114,8 +117,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await apiCartService.updateQuantity(productId, quantity);
-      if (response.data && response.data.items) {
-        setItems(mapApiCartToItems(response.data.items));
+      const cartData = response.data || response;
+      if (cartData && cartData.items) {
+        setItems(mapApiCartToItems(cartData.items));
       }
     } catch (error) {
       console.error("Failed to update quantity", error);
@@ -136,10 +140,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const totalPrice = items.reduce((sum, item) => {
+    if (!item.product) return sum;
+    const price =
+      item.product.discount && typeof item.product.discount === "object"
+        ? item.product.discount.discountedPrice
+        : item.product.price;
+    return sum + (price || 0) * item.quantity;
+  }, 0);
 
   return (
     <CartContext.Provider

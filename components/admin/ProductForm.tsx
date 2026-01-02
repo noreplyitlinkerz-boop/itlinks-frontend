@@ -44,6 +44,7 @@ import {
 import { categoryService } from "@/lib/api/services";
 import { Category } from "@/lib/api/types/endpoints";
 import { safeParse } from "@/lib/utils";
+import { getFullImageUrl } from "@/components/shared/ProductImage";
 
 export function ProductForm({
   initialData,
@@ -54,15 +55,17 @@ export function ProductForm({
   const [categories, setCategories] = useState<Category[]>([]);
   const [primaryImage, setPrimaryImage] = useState<File | null>(null);
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>(
-    initialData?.product_primary_image_url || ""
+    getFullImageUrl(
+      initialData?.product_primary_image_url || initialData?.images?.[0]
+    )
   );
   const [additionalImages, setAdditionalImages] = useState<File[]>([]);
   const [additionalImagesPreviews, setAdditionalImagesPreviews] = useState<
     string[]
-  >(initialData?.images || []);
+  >(initialData?.images?.map((img) => getFullImageUrl(img)) || []);
   const [videos, setVideos] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>(
-    initialData?.product_videos_url || []
+    initialData?.product_videos_url?.map((vid) => getFullImageUrl(vid)) || []
   );
 
   // Default specs for new products

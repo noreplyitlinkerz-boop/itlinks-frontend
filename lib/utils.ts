@@ -23,3 +23,6 @@ export function safeParse<T>(data: any, fallback: T): T {
     }
   }
 }
+export function formatPrice(price: number): string {
+  return `₹${Number(price || 0).toLocaleString()}`;
+}

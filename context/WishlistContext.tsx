@@ -47,8 +47,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await apiWishlistService.getWishlist();
-      if (response.data && response.data.items) {
-        setItems(mapApiWishlistToItems(response.data.items));
+      const wishlistData = response.data || response;
+      if (wishlistData && wishlistData.items) {
+        setItems(mapApiWishlistToItems(wishlistData.items));
       } else {
         setItems([]);
       }
@@ -71,8 +72,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
     try {
       const response = await apiWishlistService.addToWishlist(product._id);
-      if (response.data && response.data.items) {
-        setItems(mapApiWishlistToItems(response.data.items));
+      const wishlistData = response.data || response;
+      if (wishlistData && wishlistData.items) {
+        setItems(mapApiWishlistToItems(wishlistData.items));
         toast.success("Added to wishlist");
       }
     } catch (error) {
@@ -85,8 +87,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     if (!isAuthenticated) return;
     try {
       const response = await apiWishlistService.removeFromWishlist(productId);
-      if (response.data && response.data.items) {
-        setItems(mapApiWishlistToItems(response.data.items));
+      const wishlistData = response.data || response;
+      if (wishlistData && wishlistData.items) {
+        setItems(mapApiWishlistToItems(wishlistData.items));
         toast.success("Removed from wishlist");
       }
     } catch (error) {

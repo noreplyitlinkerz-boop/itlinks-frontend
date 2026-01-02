@@ -13,6 +13,8 @@ import {
   CancelOrderRequest,
   OrderStats,
   GetOrdersResponse,
+  RazorpayOrder,
+  RazorpayVerifyRequest,
 } from "../types/endpoints";
 import { ApiResponse } from "../types/api-types";
 
@@ -56,6 +58,27 @@ class OrderService extends BaseService {
     data: CancelOrderRequest
   ): Promise<ApiResponse<Order>> {
     return this.delete<ApiResponse<Order>>(`/${id}/cancel`, data);
+  }
+
+  /**
+   * Create Razorpay order for an existing order
+   * @authenticated Requires authentication
+   * @endpoint POST /orders/{id}/razorpay/create
+   */
+  async createRazorpayOrder(id: string): Promise<ApiResponse<RazorpayOrder>> {
+    return this.post<ApiResponse<RazorpayOrder>>(`/${id}/razorpay/create`);
+  }
+
+  /**
+   * Verify Razorpay payment
+   * @authenticated Requires authentication
+   * @endpoint POST /orders/{id}/razorpay/verify
+   */
+  async verifyRazorpayPayment(
+    id: string,
+    data: RazorpayVerifyRequest
+  ): Promise<ApiResponse<Order>> {
+    return this.post<ApiResponse<Order>>(`/${id}/razorpay/verify`, data);
   }
 
   // ============================================================================

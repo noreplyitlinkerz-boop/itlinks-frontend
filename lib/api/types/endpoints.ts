@@ -104,7 +104,14 @@ export type OrderStatus =
   | "cancelled"
   | "refunded";
 
-export type PaymentMethod = "cash_on_delivery" | "card" | "upi";
+export type PaymentMethod =
+  | "cash_on_delivery"
+  | "credit_card"
+  | "debit_card"
+  | "upi"
+  | "net_banking"
+  | "wallet"
+  | "razorpay";
 
 export type PaymentStatus = "pending" | "completed" | "failed" | "refunded";
 
@@ -180,6 +187,24 @@ export interface OrderStats {
   deliveredOrders: number;
   cancelledOrders: number;
   totalRevenue: number;
+}
+
+export interface RazorpayOrder {
+  id: string;
+  entity: string;
+  amount: number;
+  amount_paid: number;
+  amount_due: number;
+  currency: string;
+  receipt: string;
+  status: string;
+  created_at: number;
+}
+
+export interface RazorpayVerifyRequest {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
 }
 
 // ============================================================================

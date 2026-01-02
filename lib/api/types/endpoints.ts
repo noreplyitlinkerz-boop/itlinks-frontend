@@ -85,11 +85,8 @@ export interface SearchProductsResponse {
 
 export interface Category {
   _id: string;
-  slug: string;
   name: string;
-  brand?: string;
-  description: string;
-  category_image?: string;
+  isVisible: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -12,6 +12,7 @@ import {
 } from "../types/endpoints";
 import { ApiResponse } from "../types/api-types";
 import { TokenStorage, UserStorage, clearAllStorage } from "../utils/storage";
+import { API_CONFIG } from "../api-config";
 
 class AuthService extends BaseService {
   protected basePath = "/api/auth";
@@ -90,6 +91,15 @@ class AuthService extends BaseService {
    */
   isAuthenticated(): boolean {
     return TokenStorage.isAuthenticated();
+  }
+
+  /**
+   * Initiate Google OAuth login
+   * @endpoint GET /api/auth/google
+   */
+  initiateGoogleLogin(): void {
+    const googleAuthUrl = `${API_CONFIG.BASE_URL}${this.basePath}/google`;
+    window.location.href = googleAuthUrl;
   }
 
   /**

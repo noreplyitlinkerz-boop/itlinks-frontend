@@ -88,11 +88,25 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   // Category operations
   const addCategory = async (category: any) => {
-    await fetchData();
+    try {
+      await categoryService.createCategory(category);
+      await fetchData();
+    } catch (error) {
+      console.error("Failed to add category", error);
+      toast.error("Failed to add category");
+      throw error;
+    }
   };
 
   const updateCategory = async (id: string, updatedCategory: any) => {
-    await fetchData();
+    try {
+      await categoryService.updateCategory(id, updatedCategory);
+      await fetchData();
+    } catch (error) {
+      console.error("Failed to update category", error);
+      toast.error("Failed to update category");
+      throw error;
+    }
   };
 
   const deleteCategory = async (id: string) => {

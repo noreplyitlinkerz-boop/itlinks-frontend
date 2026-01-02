@@ -291,8 +291,8 @@ export function ProductForm({
       >
         <div className="space-y-8 max-w-3xl mx-auto">
           {/* Basic Information */}
-          <div className="p-6 bg-muted/20 rounded-xl space-y-6">
-            <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-widest">
+          <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
+            <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
               Basic Information
             </h3>
 
@@ -388,8 +388,8 @@ export function ProductForm({
           </div>
 
           {/* Product Media */}
-          <div className="p-6 bg-muted/20 rounded-xl space-y-6">
-            <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-widest">
+          <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
+            <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
               Product Media
             </h3>
 
@@ -399,7 +399,7 @@ export function ProductForm({
                 Primary Image <span className="text-red-500">*</span>
               </Label>
               <div
-                className="relative h-64 w-full border-2 border-dashed border-border rounded-xl overflow-hidden group hover:border-primary/50 transition-colors flex items-center justify-center bg-secondary/30 cursor-pointer"
+                className="relative h-64 w-full border-2 border-dashed border-border/50 rounded-2xl overflow-hidden group hover:border-primary/50 transition-all flex items-center justify-center bg-secondary/50 dark:bg-secondary/20 cursor-pointer"
                 onClick={() =>
                   document.getElementById("primary-image-upload")?.click()
                 }
@@ -459,7 +459,7 @@ export function ProductForm({
                   onClick={() =>
                     document.getElementById("additional-images-upload")?.click()
                   }
-                  className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex items-center justify-center transition-colors bg-secondary/30"
+                  className="aspect-square rounded-xl border-2 border-dashed border-border/50 hover:border-primary/50 flex items-center justify-center transition-all bg-secondary/50 dark:bg-secondary/20"
                 >
                   <Plus className="w-6 h-6 text-muted-foreground" />
                 </button>
@@ -506,10 +506,10 @@ export function ProductForm({
                 onClick={() =>
                   document.getElementById("videos-upload")?.click()
                 }
-                className="aspect-video md:col-span-2 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center transition-colors bg-secondary/30 gap-1"
+                className="aspect-video md:col-span-2 rounded-xl border-2 border-dashed border-border/50 hover:border-primary/50 flex flex-col items-center justify-center transition-all bg-secondary/50 dark:bg-secondary/20 gap-1"
               >
                 <Video className="w-6 h-6 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[10px] text-muted-foreground font-medium">
                   Add Video
                 </span>
               </button>
@@ -525,8 +525,8 @@ export function ProductForm({
           </div>
 
           {/* Inventory & Status */}
-          <div className="p-6 bg-muted/20 rounded-xl space-y-6">
-            <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-widest">
+          <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
+            <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
               Inventory & Status
             </h3>
 
@@ -631,9 +631,9 @@ export function ProductForm({
           </div>
 
           {/* Specifications */}
-          <div className="p-6 bg-muted/20 rounded-xl space-y-6">
+          <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-widest">
+              <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
                 Specifications
               </h3>
               <Button
@@ -683,14 +683,14 @@ export function ProductForm({
           </div>
         </div>
 
-        <div className="flex gap-4 pt-6 border-t border-border/50">
+        <div className="flex gap-4 pt-8 border-t border-border/50">
           <Button
             type="submit"
-            className="flex-1 h-12 bg-primary hover:opacity-90 transition-opacity"
+            className="flex-1 h-14 rounded-xl text-lg font-bold bg-primary hover:opacity-90 transition-all active:scale-[0.98]"
             disabled={isLoading}
           >
             {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             ) : initialData ? (
               "Update Product"
             ) : (
@@ -700,7 +700,7 @@ export function ProductForm({
           <Button
             type="button"
             variant="outline"
-            className="h-12 border-border flex-1 hover:bg-muted"
+            className="h-14 border-border/50 flex-1 rounded-xl text-lg font-bold hover:bg-muted transition-all active:scale-[0.98]"
             onClick={onCancel}
             disabled={isLoading}
           >

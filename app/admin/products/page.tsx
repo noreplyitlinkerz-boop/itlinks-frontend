@@ -81,20 +81,17 @@ export default function AdminProductsPage() {
           {
             _id: "1",
             name: "Electronics",
-            slug: "electronics",
-            description: "Electronic items",
+            isVisible: true,
           },
           {
             _id: "2",
             name: "Laptops",
-            slug: "laptops",
-            description: "Laptop computers",
+            isVisible: true,
           },
           {
             _id: "3",
             name: "Accessories",
-            slug: "accessories",
-            description: "Computer accessories",
+            isVisible: true,
           },
         ]);
       } catch (error) {
@@ -202,9 +199,9 @@ export default function AdminProductsPage() {
 
         <Button
           onClick={openCreateDialog}
-          className="bg-primary hover:opacity-90 transition-opacity"
+          className="h-12 px-6 rounded-xl font-bold bg-primary hover:opacity-90 transition-all active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-5 h-5 mr-2" />
           Add New Product
         </Button>
       </div>
@@ -220,22 +217,28 @@ export default function AdminProductsPage() {
             className="pl-10 bg-muted/50 border-border"
           />
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap">
+        <div className="flex items-center px-4 py-2 bg-background/30 rounded-xl border border-border/30 text-xs font-semibold text-muted-foreground whitespace-nowrap shadow-sm">
           {totalProducts} products found
         </div>
       </div>
 
       {/* Products Table */}
-      <div className="overflow-hidden">
+      <div className="overflow-hidden border border-border/50 rounded-2xl bg-card shadow-sm">
         <Table>
-          <TableHeader className="bg-transparent border-b border-border/50">
-            <TableRow className="border-border/50 hover:bg-transparent">
-              <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead className="max-w-[280px]">Product Info</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+          <TableHeader className="bg-muted/40 border-b border-border/50">
+            <TableRow className="border-none hover:bg-transparent">
+              <TableHead className="w-[80px] font-bold py-4 pl-6">
+                Image
+              </TableHead>
+              <TableHead className="max-w-[280px] font-bold">
+                Product Info
+              </TableHead>
+              <TableHead className="font-bold">Price</TableHead>
+              <TableHead className="font-bold">Stock</TableHead>
+              <TableHead className="font-bold">Status</TableHead>
+              <TableHead className="text-right font-bold pr-6">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -465,19 +468,23 @@ export default function AdminProductsPage() {
 
       {/* Product Form Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
-              {editingProduct ? "Edit Product" : "Add New Product"}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-border/60 rounded-3xl p-0 shadow-2xl">
+          <div className="p-8 pb-4">
+            <DialogHeader>
+              <DialogTitle className="text-3xl font-black">
+                {editingProduct ? "Edit Product" : "Add New Product"}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
 
-          <ProductForm
-            initialData={editingProduct}
-            onSubmit={handleCreateOrUpdate}
-            isLoading={isActionLoading}
-            onCancel={() => setDialogOpen(false)}
-          />
+          <div className="p-8 pt-0">
+            <ProductForm
+              initialData={editingProduct}
+              onSubmit={handleCreateOrUpdate}
+              isLoading={isActionLoading}
+              onCancel={() => setDialogOpen(false)}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

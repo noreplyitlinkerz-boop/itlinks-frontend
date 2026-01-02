@@ -14,6 +14,7 @@ import {
   Sun,
   Moon,
   LayoutDashboard,
+  Package,
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -209,7 +210,7 @@ export function Header() {
                   )}
                   <Link href="/orders">
                     <DropdownMenuItem className="cursor-pointer">
-                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      <Package className="mr-2 h-4 w-4" />
                       <span>My Orders</span>
                     </DropdownMenuItem>
                   </Link>

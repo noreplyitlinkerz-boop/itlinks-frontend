@@ -147,7 +147,7 @@ export function BannerCarousel() {
 
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-6 rounded-full text-lg shadow-lg hover:translate-y-[-2px] transition-transform"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 rounded-full text-lg shadow-lg hover:translate-y-[-2px] transition-transform"
                 onClick={() => router.push(slide.link)}
               >
                 {slide.cta}

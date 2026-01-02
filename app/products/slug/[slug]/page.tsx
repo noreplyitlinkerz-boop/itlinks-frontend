@@ -142,7 +142,7 @@ export default function ProductDetailPage({
       : 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-4">
@@ -201,7 +201,7 @@ export default function ProductDetailPage({
                 />
                 <button
                   onClick={handleToggleWishlist}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors z-20"
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-card shadow-lg flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors z-20 border border-border/50"
                 >
                   <Heart
                     className={cn(
@@ -239,7 +239,7 @@ export default function ProductDetailPage({
           {/* Right Column: Info & Details */}
           <div className="lg:col-span-7 space-y-6">
             <div>
-              <h1 className="text-xl md:text-2xl font-normal leading-relaxed text-[#212121]">
+              <h1 className="text-xl md:text-2xl font-normal leading-relaxed text-foreground">
                 {product.name}
               </h1>
               <div className="flex items-center gap-3 mt-3">
@@ -247,7 +247,7 @@ export default function ProductDetailPage({
                   <span>{product.rating || "4.1"}</span>
                   <span className="text-[10px]">★</span>
                 </div>
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium text-muted-foreground">
                   {Math.floor(Math.random() * 500) + 100} Ratings &{" "}
                   {Math.floor(Math.random() * 100) + 10} Reviews
                 </span>
@@ -276,7 +276,7 @@ export default function ProductDetailPage({
                 </p>
                 {product.discount && typeof product.discount === "object" && (
                   <>
-                    <p className="text-gray-500 line-through text-lg">
+                    <p className="text-muted-foreground line-through text-lg">
                       ₹{product.price.toLocaleString()}
                     </p>
                     <p className="text-green-600 text-lg font-bold">
@@ -304,10 +304,12 @@ export default function ProductDetailPage({
             {/* Details Section */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">
               <div className="md:col-span-3">
-                <h3 className="text-gray-500 font-medium">Description</h3>
+                <h3 className="text-muted-foreground font-medium">
+                  Description
+                </h3>
               </div>
               <div className="md:col-span-9">
-                <p className="text-sm leading-relaxed text-[#212121]">
+                <p className="text-sm leading-relaxed text-foreground">
                   {product.description}
                 </p>
               </div>
@@ -316,7 +318,9 @@ export default function ProductDetailPage({
             {/* Specs Section */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-4">
               <div className="md:col-span-3">
-                <h3 className="text-gray-500 font-medium">Specifications</h3>
+                <h3 className="text-muted-foreground font-medium">
+                  Specifications
+                </h3>
               </div>
               <div className="md:col-span-9">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -331,12 +335,12 @@ export default function ProductDetailPage({
                     ).map(([key, value]) => (
                       <div
                         key={key}
-                        className="flex flex-col border-b border-gray-100 pb-2"
+                        className="flex flex-col border-b border-border pb-2"
                       >
                         <span className="text-xs text-muted-foreground mb-1 capitalize">
                           {key}
                         </span>
-                        <span className="text-sm font-medium text-[#212121]">
+                        <span className="text-sm font-medium text-foreground">
                           {value}
                         </span>
                       </div>
@@ -352,15 +356,15 @@ export default function ProductDetailPage({
 
             {/* Quantity Selector */}
             <div className="flex items-center gap-6 pt-6 border-t">
-              <h3 className="text-gray-500 font-medium">Quantity</h3>
+              <h3 className="text-muted-foreground font-medium">Quantity</h3>
               <div className="flex items-center gap-3">
-                <div className="flex items-center bg-gray-50 border rounded-full px-2">
+                <div className="flex items-center bg-muted border rounded-full px-2">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
-                    className="h-8 w-8 hover:bg-white rounded-full"
+                    className="h-8 w-8 hover:bg-background rounded-full"
                   >
                     <Minus className="w-3 h-3" />
                   </Button>
@@ -374,7 +378,7 @@ export default function ProductDetailPage({
                       setQuantity(Math.min(product.stock, quantity + 1))
                     }
                     disabled={quantity >= product.stock}
-                    className="h-8 w-8 hover:bg-white rounded-full"
+                    className="h-8 w-8 hover:bg-background rounded-full"
                   >
                     <Plus className="w-3 h-3" />
                   </Button>

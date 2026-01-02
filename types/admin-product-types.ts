@@ -14,7 +14,11 @@ export const productSchema = z.object({
   stock: z.coerce.number().min(0, "Stock must be at least 0"),
   featured: z.boolean().default(false),
   isVisible: z.boolean().default(true),
+  discountPercentage: z.coerce.number().min(0).max(100).optional(),
+  discountedPrice: z.coerce.number().min(0).optional(),
+  videos: z.any().optional(),
   specifications: z.record(z.string(), z.any()).optional(),
+  categoryID: z.string().min(1, "Category is required"),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;

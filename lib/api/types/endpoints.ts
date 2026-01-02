@@ -34,6 +34,7 @@ export interface Product {
   keywords?: string[];
   createdAt?: string;
   updatedAt?: string;
+  categoryID: string;
   __v?: number;
 }
 
@@ -51,6 +52,7 @@ export interface CreateProductRequest {
   product_primary_image?: File;
   images?: File[];
   videos?: File[];
+  categoryID: string;
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {

@@ -41,7 +41,14 @@ export function buildUrl(
  * Create FormData from object
  * Handles nested objects and arrays
  */
-export function createFormData(data: Record<string, unknown>): FormData {
+export function createFormData(
+  data: Record<string, unknown> | FormData
+): FormData {
+  // If data is already FormData, return it directly
+  if (data instanceof FormData) {
+    return data;
+  }
+
   const formData = new FormData();
 
   Object.entries(data).forEach(([key, value]) => {

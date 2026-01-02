@@ -44,7 +44,7 @@ export abstract class BaseService {
    */
   protected async postFormData<T>(
     path: string = "",
-    data: Record<string, unknown>,
+    data: Record<string, unknown> | FormData,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const formData = createFormData(data);
@@ -79,7 +79,7 @@ export abstract class BaseService {
    */
   protected async putFormData<T>(
     path: string = "",
-    data: Record<string, unknown>,
+    data: Record<string, unknown> | FormData,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const formData = createFormData(data);

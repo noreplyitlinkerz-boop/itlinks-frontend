@@ -24,7 +24,25 @@ class ProductService extends BaseService {
    * @endpoint GET /products
    */
   async getProducts(params?: GetProductsParams): Promise<GetProductsResponse> {
-    return this.get<GetProductsResponse>("", params);
+    const response = await this.get<any>("", params);
+
+    // Handle flat response structure where pagination is missing
+    if (!response.pagination && typeof response.total !== "undefined") {
+      const limit = Number(response.limit) || 10;
+      const total = Number(response.total) || 0;
+
+      return {
+        data: response.data || [],
+        pagination: {
+          page: Number(response.page) || 1,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit) || 1,
+        },
+      };
+    }
+
+    return response as GetProductsResponse;
   }
 
   /**

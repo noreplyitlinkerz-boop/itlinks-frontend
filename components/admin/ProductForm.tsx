@@ -11,6 +11,7 @@ import {
   Trash2,
   PlusCircle,
   Upload,
+  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -59,6 +60,18 @@ export function ProductForm({
   const [additionalImagesPreviews, setAdditionalImagesPreviews] = useState<
     string[]
   >(initialData?.images || []);
+  const [videos, setVideos] = useState<File[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>(
+    initialData?.product_videos_url || []
+  );
+
+  // Default specs for new products
+  const defaultSpecs = [
+    { key: "screenSize", value: '15.6"' },
+    { key: "ramSize", value: "16GB" },
+    { key: "cpuModel", value: "Intel i7" },
+  ];
+
   const [specs, setSpecs] = useState<Array<{ key: string; value: string }>>(
     initialData?.specifications
       ? Object.entries(safeParse(initialData.specifications, {})).map(
@@ -67,7 +80,9 @@ export function ProductForm({
             value: String(value),
           })
         )
-      : []
+      : initialData
+      ? []
+      : defaultSpecs
   );
 
   const form = useForm<ProductFormValues>({
@@ -81,7 +96,13 @@ export function ProductForm({
       stock: initialData?.stock || 0,
       featured: initialData?.featured || false,
       isVisible: initialData?.isVisible ?? true,
+      discountPercentage:
+        safeParse(initialData?.discount, { percentage: 0 }).percentage ?? 0,
+      discountedPrice:
+        safeParse(initialData?.discount, { discountedPrice: 0 })
+          .discountedPrice ?? 0,
       specifications: safeParse(initialData?.specifications, {}),
+      categoryID: initialData?.categoryID || "",
     },
   });
 
@@ -135,6 +156,26 @@ export function ProductForm({
     setAdditionalImagesPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setVideos((prev) => [...prev, ...files]);
+      files.forEach((file) => {
+        const url = URL.createObjectURL(file);
+        setVideoPreviews((prev) => [...prev, url]);
+      });
+    }
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos((prev) =>
+      prev.filter(
+        (_, i) => i !== index - (initialData?.product_videos_url?.length || 0)
+      )
+    );
+    setVideoPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const addSpec = () => {
     setSpecs([...specs, { key: "", value: "" }]);
   };
@@ -150,14 +191,59 @@ export function ProductForm({
   };
 
   const handleFormSubmit = async (values: ProductFormValues) => {
+    // Validate Primary Image
+    if (!initialData && !primaryImage) {
+      toast.error("Primary image is required");
+      return;
+    }
+
     const formData = new FormData();
 
     // Add basic fields
     Object.entries(values).forEach(([key, value]) => {
-      if (key !== "specifications") {
-        formData.append(key, String(value));
+      if (
+        key !== "specifications" &&
+        key !== "categoryID" &&
+        key !== "discountPercentage" &&
+        key !== "discountedPrice"
+      ) {
+        if (key === "price" || key === "stock") {
+          // Ensure numbers are not empty strings
+          formData.append(key, String(value || 0));
+        } else {
+          formData.append(key, String(value));
+        }
       }
     });
+
+    // Explicitly append categoryID
+    formData.append("categoryID", values.categoryID);
+
+    // Add discount
+    if (
+      (values.discountPercentage && values.discountPercentage > 0) ||
+      (values.discountedPrice && values.discountedPrice > 0)
+    ) {
+      formData.append(
+        "discount",
+        JSON.stringify({
+          percentage: values.discountPercentage || 0,
+          discountedPrice: values.discountedPrice || 0,
+        })
+      );
+    }
+
+    // Add videos
+    videos.forEach((file) => {
+      formData.append("videos", file);
+    });
+
+    if (initialData) {
+      formData.append(
+        "existingVideos",
+        JSON.stringify(videoPreviews.filter((p) => p.startsWith("http")))
+      );
+    }
 
     // Add specifications as JSON string if backend expects it or handles it
     const specsObj = specs.reduce((acc, curr) => {
@@ -253,6 +339,34 @@ export function ProductForm({
 
             <FormField
               control={form.control as any}
+              name="categoryID"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category._id} value={category._id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control as any}
               name="description"
               render={({ field }) => (
                 <FormItem>
@@ -278,7 +392,9 @@ export function ProductForm({
 
             {/* Primary Image */}
             <div className="space-y-2">
-              <Label>Primary Image</Label>
+              <Label>
+                Primary Image <span className="text-red-500">*</span>
+              </Label>
               <div
                 className="relative h-64 w-full border-2 border-dashed border-border rounded-xl overflow-hidden group hover:border-primary/50 transition-colors flex items-center justify-center bg-secondary/30 cursor-pointer"
                 onClick={() =>
@@ -356,6 +472,55 @@ export function ProductForm({
             </div>
           </div>
 
+          {/* Videos */}
+          <div className="space-y-2">
+            <Label>Product Videos</Label>
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+              {videoPreviews.map((preview, index) => (
+                <div
+                  key={index}
+                  className="relative aspect-video rounded-lg overflow-hidden border border-border group bg-black md:col-span-2"
+                >
+                  <video
+                    src={preview}
+                    className="h-full w-full object-cover"
+                    controls={false}
+                  />
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                    <Video className="w-8 h-8 text-white/80" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeVideo(index)}
+                    className="absolute top-1 right-1 p-1 bg-red-500 rounded-full opacity-100 shadow-sm hover:bg-red-600 transition-colors z-10"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById("videos-upload")?.click()
+                }
+                className="aspect-video md:col-span-2 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center transition-colors bg-secondary/30 gap-1"
+              >
+                <Video className="w-6 h-6 text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground">
+                  Add Video
+                </span>
+              </button>
+              <input
+                id="videos-upload"
+                type="file"
+                multiple
+                accept="video/*"
+                className="hidden"
+                onChange={handleVideoChange}
+              />
+            </div>
+          </div>
+
           {/* Inventory & Status */}
           <div className="p-6 bg-muted/20 rounded-xl space-y-6">
             <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-widest">
@@ -391,24 +556,75 @@ export function ProductForm({
               />
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg">
-              <div className="space-y-0.5">
-                <Label>Featured Product</Label>
-                <p className="text-[10px] text-muted-foreground">
-                  Highlight on homepage
-                </p>
-              </div>
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="featured"
                 render={({ field }) => (
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <FormItem>
+                    <FormLabel>Featured *</FormLabel>
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "true")
+                      }
+                      defaultValue={field.value ? "true" : "false"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="true">True</SelectItem>
+                        <SelectItem value="false">False</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isVisible"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Visible</FormLabel>
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "true")
+                      }
+                      defaultValue={field.value ? "true" : "false"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="true">True</SelectItem>
+                        <SelectItem value="false">False</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control as any}
+              name="discount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Discount Percentage (%)</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" max="100" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           {/* Specifications */}

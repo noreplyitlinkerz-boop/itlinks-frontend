@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
+import { API_CONFIG } from "@/lib/api/api-config";
 
 import { Button } from "@/components/ui/button";
 import { safeParse } from "@/lib/utils";
@@ -59,6 +60,20 @@ export default function AdminProductsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  const getFullImageUrl = (path?: string) => {
+    if (!path) return "";
+    if (
+      path.startsWith("http") ||
+      path.startsWith("data:") ||
+      path.startsWith("blob:")
+    )
+      return path;
+    const baseUrl = API_CONFIG.BASE_URL.endsWith("/")
+      ? API_CONFIG.BASE_URL.slice(0, -1)
+      : API_CONFIG.BASE_URL;
+    return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+  };
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -228,7 +243,7 @@ export default function AdminProductsPage() {
           <TableHeader className="bg-transparent border-b border-border/50">
             <TableRow className="border-border/50 hover:bg-transparent">
               <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead>Product Info</TableHead>
+              <TableHead className="max-w-[280px]">Product Info</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead>Status</TableHead>
@@ -284,7 +299,9 @@ export default function AdminProductsPage() {
                     <div className="relative h-12 w-12 rounded-lg bg-muted border-none overflow-hidden">
                       {product.product_primary_image_url ? (
                         <img
-                          src={product.product_primary_image_url}
+                          src={getFullImageUrl(
+                            product.product_primary_image_url
+                          )}
                           alt={product.name}
                           className="h-full w-full object-contain p-1"
                         />
@@ -295,9 +312,9 @@ export default function AdminProductsPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-foreground">
+                  <TableCell className="max-w-[400px]">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-normal text-foreground line-clamp-2 leading-snug">
                         {product.name}
                       </span>
                       <span className="text-xs text-muted-foreground">

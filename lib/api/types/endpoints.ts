@@ -230,7 +230,7 @@ export interface User {
   lastName: string;
   email: string;
   mobile?: string;
-  role: "admin" | "customer";
+  role: "admin" | "user";
   address?: ShippingAddress;
   createdAt: string;
   updatedAt: string;

@@ -11,6 +11,7 @@ export { userService } from "./user-service";
 export { categoryService } from "./category-service";
 export { cartService } from "./cart-service";
 export { wishlistService } from "./wishlist-service";
+export { contactService } from "./contact-service";
 
 // Export types
 export * from "../types/endpoints";

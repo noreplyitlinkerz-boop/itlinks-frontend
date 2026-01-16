@@ -7,6 +7,7 @@ import {
   Package,
   FolderTree,
   ShoppingBag,
+  MessageSquare,
   Store,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export default function AdminLayout({
     { href: "/admin/products", icon: Package, label: "Products" },
     { href: "/admin/categories", icon: FolderTree, label: "Categories" },
     { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
+    { href: "/admin/contacts", icon: MessageSquare, label: "Messages" },
   ];
 
   return (

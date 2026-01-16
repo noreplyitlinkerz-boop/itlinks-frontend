@@ -34,20 +34,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Initial load: Try to fetch user from session
-    const storedUser = authService.getStoredUser();
+    const initAuth = async () => {
+      const storedUser = authService.getStoredUser();
 
-    // Even if we have a stored user, we verify with the API because cookies handle auth
-    // We optimistically show the stored user if available
-    if (storedUser) {
-      setUser(storedUser);
-    }
+      // Optimistically set the stored user if it exists
+      if (storedUser) {
+        setUser(storedUser);
+      }
 
-    // Always fetch fresh data to confirm session validity
-    console.log("AuthContext: Validating session...");
-    refreshUser().finally(() => {
-      setIsLoading(false);
-    });
+      try {
+        // Always verify with the API because session is cookie-based
+        console.log("AuthContext: Initializing/Validating session...");
+        await refreshUser();
+      } catch (error: any) {
+        // If it's a 401 during initialization, it just means no session exists
+        // We only care if we thought we were logged in (storedUser existed)
+        if (
+          storedUser &&
+          (error?.response?.status === 401 || error?.status === 401)
+        ) {
+          console.log("AuthContext: Stored session expired, clearing storage.");
+          logout();
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
   // Execute pending action when user becomes authenticated

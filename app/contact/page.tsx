@@ -7,22 +7,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { contactService } from "@/lib/api/services";
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    subject: "",
+    phone: "",
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This is just UI - no actual submission
-    toast.success("Message sent! We'll get back to you soon.");
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    setIsSubmitting(true);
+    try {
+      await contactService.submitContactMessage(formData);
+      toast.success("Message sent! We'll get back to you soon.");
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (error) {
+      console.error("Failed to send message", error);
+      toast.error("Failed to send message. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -31,7 +41,7 @@ export default function ContactPage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-gradient-to-b from-background via-background/95 to-background py-20">
+        <section className="bg-linear-to-b from-background via-background/95 to-background py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold">Get in Touch</h1>
@@ -58,37 +68,37 @@ export default function ContactPage() {
 
                 <div className="space-y-6">
                   <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                       <Mail className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <p className="font-semibold">Email</p>
                       <p className="text-muted-foreground">
-                        support@techstore.com
+                        support@itlinkers.com
                       </p>
                     </div>
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                       <Phone className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <p className="font-semibold">Phone</p>
-                      <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                      <p className="text-muted-foreground">+91 9898766555</p>
                     </div>
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                       <MapPin className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <p className="font-semibold">Office</p>
                       <p className="text-muted-foreground">
-                        123 Tech Street
+                        Tech Hub, IT Park
                         <br />
-                        San Francisco, CA 94102
+                        New Delhi, India
                       </p>
                     </div>
                   </div>
@@ -130,13 +140,13 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="phone">Phone Number</Label>
                     <Input
-                      id="subject"
-                      placeholder="How can we help?"
-                      value={formData.subject}
+                      id="phone"
+                      placeholder="9898766555"
+                      value={formData.phone}
                       onChange={(e) =>
-                        setFormData({ ...formData, subject: e.target.value })
+                        setFormData({ ...formData, phone: e.target.value })
                       }
                       required
                     />
@@ -156,8 +166,20 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full">
-                    Send Message
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Send Message"
+                    )}
                   </Button>
                 </form>
               </div>

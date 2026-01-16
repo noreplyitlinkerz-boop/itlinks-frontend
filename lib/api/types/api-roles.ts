@@ -12,7 +12,7 @@
  */
 export enum UserRole {
   ADMIN = "admin",
-  CUSTOMER = "customer",
+  USER = "user",
 }
 
 /**
@@ -124,12 +124,12 @@ export function isAdminRole(
 }
 
 /**
- * Check if a role is customer
+ * Check if a role is user
  */
-export function isCustomerRole(
+export function isUserRole(
   role: string | undefined | null
-): role is UserRole.CUSTOMER {
-  return role === UserRole.CUSTOMER;
+): role is UserRole.USER {
+  return role === UserRole.USER;
 }
 
 /**

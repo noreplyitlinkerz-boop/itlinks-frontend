@@ -13,6 +13,7 @@ import {
   categoryService,
   orderService,
 } from "@/lib/api/services";
+import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
 
 interface AdminContextType {
@@ -35,6 +36,7 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
+  const { user, isAuthenticated } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -57,15 +59,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       setOrders(ordersList);
     } catch (error) {
       console.error("Failed to fetch admin data", error);
-      toast.error("Failed to load admin data.");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (isAuthenticated && user?.role === "admin") {
+      fetchData();
+    }
+  }, [fetchData, isAuthenticated, user]);
 
   // Product operations
   const addProduct = async (product: any) => {

@@ -105,7 +105,10 @@ export function ProductForm({
         safeParse(initialData?.discount, { discountedPrice: 0 })
           .discountedPrice ?? 0,
       specifications: safeParse(initialData?.specifications, {}),
-      categoryID: initialData?.categoryID || "",
+      categoryID:
+        typeof initialData?.categoryID === "object"
+          ? (initialData?.categoryID as any)?._id || ""
+          : initialData?.categoryID || "",
     },
   });
 
@@ -113,13 +116,46 @@ export function ProductForm({
     async function fetchCategories() {
       try {
         const response = await categoryService.getCategories();
-        setCategories(response.data || []);
+        const cats = response.data || [];
+        setCategories(cats);
+
+        // CRITICAL FIX: If editing and categoryID exists, ensure it's set in the form
+        // This must happen AFTER categories are loaded so the Select can find the matching option
+        if (initialData?.categoryID && cats.length > 0) {
+          // Extract the actual ID string (categoryID might be an object {_id, name})
+          const categoryId =
+            typeof initialData.categoryID === "object"
+              ? (initialData.categoryID as any)._id
+              : initialData.categoryID;
+
+          const categoryExists = cats.find((c) => c._id === categoryId);
+          if (categoryExists) {
+            // Force the form to update the value with proper options
+            form.setValue("categoryID", categoryId, {
+              shouldValidate: false,
+              shouldDirty: false,
+              shouldTouch: false,
+            });
+            console.log(
+              "ProductForm: ✅ Set categoryID to:",
+              categoryId,
+              "Category:",
+              categoryExists.name
+            );
+          } else {
+            console.warn(
+              "ProductForm: ⚠️ Category ID not found in loaded categories:",
+              categoryId
+            );
+          }
+        }
       } catch (error) {
+        console.error("ProductForm: Failed to load categories", error);
         toast.error("Failed to load categories");
       }
     }
     fetchCategories();
-  }, []);
+  }, [initialData?.categoryID, form]);
 
   const handlePrimaryImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -346,10 +382,7 @@ export function ProductForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />

@@ -3,13 +3,13 @@ import { Github, Twitter, Linkedin, Mail } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/40 bg-background/95 backdrop-blur mt-20">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="border-t border-border/40 bg-background/95 backdrop-blur mt-12 md:mt-20">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-8 text-center md:text-left">
           {/* About */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Itlinkers</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mx-auto md:mx-0 max-w-xs md:max-w-none">
               Your trusted source for premium laptops, components, and
               accessories.
             </p>
@@ -96,7 +96,7 @@ export function Footer() {
           {/* Social */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Connect</h3>
-            <div className="flex gap-3">
+            <div className="flex gap-3 justify-center md:justify-start">
               <a
                 href="https://github.com"
                 target="_blank"
@@ -131,7 +131,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
+        <div className="mt-8 md:mt-12 pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
           <p>
             &copy; {new Date().getFullYear()} Itlinkers. All rights reserved.
           </p>

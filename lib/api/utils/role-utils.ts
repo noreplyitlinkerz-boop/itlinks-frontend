@@ -31,7 +31,7 @@ export function isAdmin(): boolean {
  */
 export function isCustomer(): boolean {
   const user = UserStorage.getUser<User>();
-  return user?.role === UserRole.CUSTOMER;
+  return user?.role === UserRole.USER;
 }
 
 /**

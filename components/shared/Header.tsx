@@ -49,15 +49,17 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <Image
-              className="w-8 h-8 text-primary group-hover:rotate-12 transition-transform"
-              src="/logo.png"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
-            <span className="text-2xl font-bold bg-linear-to-r from-primary via-blue-500 to-accent bg-clip-text text-transparent">
-              Itlinkers
+            <div className="relative flex items-center justify-center p-1 rounded-xl border border-border/50 bg-background/50 backdrop-blur-md shadow-sm w-12 h-12 md:w-auto md:h-auto md:border-none md:bg-transparent md:backdrop-blur-none md:shadow-none md:p-0 transition-all duration-300 group-hover:scale-105">
+              <Image
+                className="w-6 h-8 md:w-7 md:h-8 mix-blend-multiply dark:mix-blend-screen dark:invert"
+                src="/logo-01.png"
+                alt="Logo"
+                width={24}
+                height={24}
+              />
+            </div>
+            <span className="hidden md:block text-2xl font-bold bg-linear-to-r from-primary via-blue-500 to-accent bg-clip-text text-transparent -ml-3 -mb-2">
+              tlinkers
             </span>
           </Link>
 
@@ -69,7 +71,7 @@ export function Header() {
                 "text-sm font-medium transition-colors hover:text-primary relative py-1",
                 pathname === "/"
                   ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             >
               Home
@@ -80,7 +82,7 @@ export function Header() {
                 "text-sm font-medium transition-colors hover:text-primary relative py-1",
                 pathname.startsWith("/products")
                   ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             >
               Products
@@ -91,7 +93,7 @@ export function Header() {
                 "text-sm font-medium transition-colors hover:text-primary relative py-1",
                 pathname === "/about"
                   ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             >
               About
@@ -102,7 +104,7 @@ export function Header() {
                 "text-sm font-medium transition-colors hover:text-primary relative py-1",
                 pathname === "/contact"
                   ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             >
               Contact
@@ -133,13 +135,13 @@ export function Header() {
                   "relative transition-colors",
                   pathname === "/wishlist"
                     ? "text-primary bg-primary/10"
-                    : "text-foreground"
+                    : "text-foreground",
                 )}
               >
                 <Heart
                   className={cn(
                     "w-5 h-5",
-                    pathname === "/wishlist" && "fill-current"
+                    pathname === "/wishlist" && "fill-current",
                   )}
                 />
                 {wishlistItems.length > 0 && (
@@ -158,7 +160,7 @@ export function Header() {
                   "relative transition-colors",
                   pathname === "/cart"
                     ? "text-primary bg-primary/10"
-                    : "text-foreground"
+                    : "text-foreground",
                 )}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -256,7 +258,7 @@ export function Header() {
                 "text-sm font-medium transition-colors py-2 px-3 rounded-md",
                 pathname === "/"
                   ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted",
               )}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -268,7 +270,7 @@ export function Header() {
                 "text-sm font-medium transition-colors py-2 px-3 rounded-md",
                 pathname.startsWith("/products")
                   ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted",
               )}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -280,7 +282,7 @@ export function Header() {
                 "text-sm font-medium transition-colors py-2 px-3 rounded-md",
                 pathname === "/about"
                   ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted",
               )}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -292,7 +294,7 @@ export function Header() {
                 "text-sm font-medium transition-colors py-2 px-3 rounded-md",
                 pathname === "/contact"
                   ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted",
               )}
               onClick={() => setMobileMenuOpen(false)}
             >

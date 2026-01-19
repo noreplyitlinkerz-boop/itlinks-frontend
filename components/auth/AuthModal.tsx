@@ -25,8 +25,8 @@ export function AuthModal() {
 
   return (
     <Dialog open={isLoginModalOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-none rounded-3xl shadow-2xl bg-card">
-        <div className="p-8">
+      <DialogContent className="sm:max-w-[450px] p-0 border-none rounded-3xl shadow-2xl bg-card overflow-hidden max-h-[95vh] flex flex-col">
+        <div className="overflow-y-auto flex-1 custom-scrollbar p-8">
           <DialogHeader className="mb-6">
             <DialogTitle className="text-center text-3xl font-black tracking-tight">
               {view === "login" ? "Welcome Back" : "Join the Future"}
@@ -70,7 +70,7 @@ export function AuthModal() {
             )}
           </div>
         </div>
-        <div className="bg-muted/30 p-4 text-center text-[10px] text-muted-foreground border-t border-border/50">
+        <div className="bg-muted/30 p-4 text-center text-[10px] text-muted-foreground border-t border-border/50 shrink-0">
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </div>
       </DialogContent>

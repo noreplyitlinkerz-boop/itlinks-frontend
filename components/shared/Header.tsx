@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   Package,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -149,7 +150,7 @@ export function Header() {
                   className="w-full h-10 pl-10 pr-4 rounded-full bg-muted/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                 />
                 <ShoppingCart className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground hidden" />
-                <Menu className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               </div>
             </div>
 
@@ -308,7 +309,7 @@ export function Header() {
           </div>
 
           {/* Categories Navigation - Desktop */}
-          <div className="hidden md:flex items-center justify-between border-t border-border/40 mt-3 pt-2">
+          <div className="hidden md:flex items-center justify-center border-t border-border/40 mt-3 pt-2">
             <div className="flex items-center gap-8">
               <Link
                 href="/"
@@ -344,7 +345,7 @@ export function Header() {
 
                   {/* Dropdown / Mega-menu */}
                   {activeCategory === cat.name && (
-                    <div className="absolute top-full left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    <div className="absolute top-full left-0 mt-0 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[70vh] overflow-y-auto custom-scrollbar">
                       <div className="grid gap-1.5 px-3">
                         <div className="px-3 mb-2 pb-2 border-b border-border/50">
                           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -380,6 +381,15 @@ export function Header() {
                 )}
               >
                 Contactus
+              </Link>
+              <Link
+                href="/about"
+                className={cn(
+                  "text-sm font-bold uppercase tracking-tight transition-colors hover:text-primary",
+                  pathname === "/about" ? "text-primary" : "text-foreground",
+                )}
+              >
+                About us
               </Link>
             </div>
           </div>

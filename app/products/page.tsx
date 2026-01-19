@@ -117,14 +117,14 @@ function ProductsContent() {
   return (
     <div className="space-y-8">
       {/* Premium Category Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground p-8 md:p-12 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-[#1A2B3C] via-[#1A2B3C]/95 to-[#0B1120] dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-black text-white p-8 md:p-12 shadow-2xl">
         {/* Abstract background shapes */}
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-accent/20 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
 
         <div className="relative z-10 space-y-6">
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground/60">
+          <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-white/60">
             <Link href="/" className="hover:text-accent transition-colors">
               Home
             </Link>
@@ -138,7 +138,7 @@ function ProductsContent() {
             {categoryFromUrl && (
               <>
                 <span>/</span>
-                <span className="text-primary-foreground italic">
+                <span className="text-white italic">
                   {categoryFromUrl.replace(/-/g, " ")}
                 </span>
               </>
@@ -158,12 +158,12 @@ function ProductsContent() {
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-6 pt-4 border-t border-primary-foreground/10">
+          <div className="flex flex-col md:flex-row md:items-center gap-6 pt-4 border-t border-white/10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center font-black text-xl">
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-black text-xl text-white">
                 {sortedProducts.length}
               </div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-primary-foreground/40 leading-tight">
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/40 leading-tight">
                 Premium Items
                 <br />
                 Available
@@ -176,7 +176,7 @@ function ProductsContent() {
                   value={searchQuery}
                   onChange={setSearchQuery}
                   placeholder="Filter within results..."
-                  className="bg-primary-foreground/5 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/40 focus:bg-primary-foreground/10 transition-all rounded-2xl h-12"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/30 transition-all rounded-2xl h-12"
                 />
               </div>
 
@@ -184,7 +184,7 @@ function ProductsContent() {
                 value={sortOption}
                 onValueChange={(value) => setSortOption(value as SortOption)}
               >
-                <SelectTrigger className="w-full sm:w-[200px] bg-primary-foreground/5 border-primary-foreground/10 text-primary-foreground rounded-2xl h-12">
+                <SelectTrigger className="w-full sm:w-[200px] bg-white/5 border-white/10 text-white rounded-2xl h-12">
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,10 +228,10 @@ function ProductsContent() {
           <div className="relative w-full max-w-lg aspect-square mb-8 group">
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
             <Image
-              src="/images/no_results.png"
+              src="/images/no_result.png"
               alt="No products found"
-              width={500}
-              height={500}
+              width={220}
+              height={220}
               className="relative w-full h-full object-contain drop-shadow-2xl animate-float"
             />
           </div>
@@ -302,7 +302,7 @@ function ProductsContent() {
                   href={`/products?category=${cat.slug}`}
                   className={cn(
                     "group relative overflow-hidden p-8 rounded-3xl bg-linear-to-br transition-all duration-500 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-2 border border-border/50 flex flex-col items-center",
-                    cat.color,
+                    cat.color.replace("/10", "/20"),
                     "to-transparent",
                   )}
                 >

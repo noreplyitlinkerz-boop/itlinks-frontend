@@ -305,18 +305,6 @@ export function Header() {
                 <Menu className="w-5 h-5" />
               </Button>
             </div>
-
-            {/* Mobile Search Bar - Below Branding */}
-            <div className="flex lg:hidden mt-3 relative">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  className="w-full h-9 pl-9 pr-4 rounded-full bg-muted/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-xs"
-                />
-                <Menu className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              </div>
-            </div>
           </div>
 
           {/* Categories Navigation - Desktop */}

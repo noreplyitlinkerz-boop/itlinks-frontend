@@ -17,7 +17,7 @@ import { safeParse } from "@/lib/utils";
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<FrontendProduct[]>(
-    []
+    [],
   );
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,6 +46,11 @@ export default function HomePage() {
       <Header />
 
       <main className="flex-1">
+        {/* SEO - Hidden H1 */}
+        <h1 className="sr-only">
+          Itlinkers Store - Premium Tech & Electronics
+        </h1>
+
         {/* Banner Carousel with Search */}
         <BannerCarousel />
 
@@ -53,19 +58,19 @@ export default function HomePage() {
         <BrandPromotion />
 
         {/* Featured Products */}
-        <section className="py-20">
+        <section className="py-10 md:py-20">
           <div className="container mx-auto px-4">
-            <div className="text-center space-y-4 mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">
+            <div className="text-center space-y-4 mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-4xl font-bold">
                 Featured Products
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
                 Handpicked selection of our best sellers and newest arrivals
               </p>
             </div>
 
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-8">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
@@ -74,7 +79,7 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-8">
                 {featuredProducts.length > 0 ? (
                   featuredProducts.map((product) => (
                     <div key={product._id} className="animate-slide-in-up">

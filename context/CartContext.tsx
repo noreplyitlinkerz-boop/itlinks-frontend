@@ -115,15 +115,40 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    const currentItem = items.find((item) => item.product._id === productId);
+    if (!currentItem) return;
+
+    const currentQty = currentItem.quantity;
+
     try {
-      const response = await apiCartService.updateQuantity(productId, quantity);
-      const cartData = response.data || response;
-      if (cartData && cartData.items) {
-        setItems(mapApiCartToItems(cartData.items));
+      if (quantity > currentQty) {
+        // Incrementing: Add the difference
+        const diff = quantity - currentQty;
+        console.log(`CartContext: Incrementing item ${productId} by ${diff}`);
+        const response = await apiCartService.addToCart(productId, diff);
+        const cartData = response.data || response;
+        if (cartData && cartData.items) {
+          setItems(mapApiCartToItems(cartData.items));
+        }
+      } else if (quantity < currentQty) {
+        // Decrementing: Remove and re-add (since backend only supports Additive)
+        console.log(
+          `CartContext: Decrementing item ${productId}. Remove and re-add ${quantity}`,
+        );
+        // 1. Remove
+        await apiCartService.removeFromCart(productId);
+        // 2. Add new quantity
+        const response = await apiCartService.addToCart(productId, quantity);
+        const cartData = response.data || response;
+        if (cartData && cartData.items) {
+          setItems(mapApiCartToItems(cartData.items));
+        }
       }
     } catch (error) {
       console.error("Failed to update quantity", error);
       toast.error("Failed to update quantity");
+      // Refetch to ensure state is consistent
+      await fetchCart();
     }
   };
 

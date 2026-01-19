@@ -110,7 +110,7 @@ export function BannerCarousel() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) =>
-      prev === 0 ? BANNER_SLIDES.length - 1 : prev - 1
+      prev === 0 ? BANNER_SLIDES.length - 1 : prev - 1,
     );
   };
 
@@ -122,14 +122,17 @@ export function BannerCarousel() {
   };
 
   return (
-    <div className="relative w-full h-[600px] overflow-hidden bg-background">
+    <div className="relative w-full h-[50vh] md:h-[600px] overflow-hidden bg-background">
       {/* Slides */}
       <div
         className="flex transition-transform duration-700 ease-in-out h-full"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
         {BANNER_SLIDES.map((slide) => (
-          <div key={slide.id} className="min-w-full relative h-[600px]">
+          <div
+            key={slide.id}
+            className="min-w-full relative h-[50vh] md:h-[600px]"
+          >
             <Image
               src={slide.image}
               alt={slide.title}
@@ -137,17 +140,17 @@ export function BannerCarousel() {
               className="object-cover brightness-[0.4]"
               priority
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 text-white z-10 pb-20">
-              <h2 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 text-white z-10 pb-16 md:pb-20">
+              <h2 className="text-3xl md:text-6xl font-bold mb-2 md:mb-4 animate-fade-in px-2">
                 {slide.title}
               </h2>
-              <p className="text-lg md:text-2xl mb-8 max-w-2xl text-gray-200 animate-slide-in-up">
+              <p className="text-sm md:text-2xl mb-6 md:mb-8 max-w-2xl text-gray-200 animate-slide-in-up px-6 md:px-0">
                 {slide.description}
               </p>
 
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 rounded-full text-lg shadow-lg hover:translate-y-[-2px] transition-transform"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-4 md:px-8 md:py-6 rounded-full text-base md:text-lg shadow-lg hover:translate-y-[-2px] transition-transform"
                 onClick={() => router.push(slide.link)}
               >
                 {slide.cta}
@@ -158,13 +161,13 @@ export function BannerCarousel() {
       </div>
 
       {/* Global Search Bar - Static Overlay */}
-      <div className="absolute bottom-32 left-1/2 -translate-x-1/2 w-full max-w-xl z-30 px-4 animate-scale-in">
+      <div className="absolute bottom-16 md:bottom-32 left-1/2 -translate-x-1/2 w-[90%] md:w-full max-w-xl z-30 px-0 md:px-4 animate-scale-in">
         <div className="relative">
           <form onSubmit={handleSearch} className="relative flex items-center">
             <input
               type="text"
-              placeholder="Search for products, brands, and more..."
-              className="w-full h-14 pl-6 pr-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-xl"
+              placeholder="Search for Products, Categories or Brands..."
+              className="w-full h-12 md:h-14 pl-5 md:pl-6 pr-12 md:pr-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-xl text-sm md:text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowResults(true)}
@@ -172,13 +175,13 @@ export function BannerCarousel() {
             <Button
               type="submit"
               size="icon"
-              className="absolute right-2 top-2 rounded-full bg-accent hover:bg-accent/90 w-10 h-10"
+              className="absolute right-1.5 md:right-2 top-1.5 md:top-2 rounded-full bg-accent hover:bg-accent/90 w-9 h-9 md:w-10 md:h-10"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
             {isSearching && (
-              <div className="absolute right-14 top-1/2 -translate-y-1/2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="absolute right-12 md:right-14 top-1/2 -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-b-2 border-white"></div>
               </div>
             )}
           </form>
@@ -191,7 +194,7 @@ export function BannerCarousel() {
                   className="fixed inset-0 z-10 bg-transparent"
                   onClick={() => setShowResults(false)}
                 />
-                <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden max-h-[60vh] overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden max-h-[50vh] md:max-h-[60vh] overflow-y-auto">
                   {isSearching ? (
                     <div className="p-4 text-center text-sm text-gray-300">
                       Searching...
@@ -201,18 +204,18 @@ export function BannerCarousel() {
                       {searchResults.map((product) => (
                         <div
                           key={product._id}
-                          className="flex items-center gap-4 px-4 py-3 hover:bg-white/10 transition-colors cursor-pointer border-b border-white/5 last:border-0"
+                          className="flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2 md:py-3 hover:bg-white/10 transition-colors cursor-pointer border-b border-white/5 last:border-0"
                           onClick={() => {
                             router.push(`/products/slug/${product.slug}`);
                             setShowResults(false);
                             setSearchQuery("");
                           }}
                         >
-                          <div className="flex-1 flex justify-between items-center min-w-0 gap-4">
-                            <h4 className="text-base font-medium text-primary truncate">
+                          <div className="flex-1 flex justify-between items-center min-w-0 gap-2 md:gap-4">
+                            <h4 className="text-sm md:text-base font-medium text-primary truncate">
                               {product.name}
                             </h4>
-                            <p className="text-sm text-accent font-semibold whitespace-nowrap">
+                            <p className="text-xs md:text-sm text-accent font-semibold whitespace-nowrap">
                               ₹{product.price.toLocaleString()}
                             </p>
                           </div>
@@ -233,26 +236,26 @@ export function BannerCarousel() {
       {/* Navigation Buttons */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full backdrop-blur-sm transition-all z-20"
+        className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full backdrop-blur-sm transition-all z-20"
       >
         <ChevronLeft className="w-8 h-8" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full backdrop-blur-sm transition-all z-20"
+        className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full backdrop-blur-sm transition-all z-20"
       >
         <ChevronRight className="w-8 h-8" />
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-20">
         {BANNER_SLIDES.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
+            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all ${
               currentSlide === index
-                ? "bg-accent w-8"
+                ? "bg-accent w-6 md:w-8"
                 : "bg-white/50 hover:bg-white/80"
             }`}
           />

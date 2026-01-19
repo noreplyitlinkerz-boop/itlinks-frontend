@@ -8,6 +8,21 @@ import { ProductCard } from "@/components/shared/ProductCard";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { toast } from "sonner";
 import {
+  SearchX,
+  PackageSearch,
+  ArrowRight,
+  RefreshCcw,
+  Laptop,
+  Monitor,
+  MousePointer2,
+  Cpu,
+  HardDrive,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -21,7 +36,8 @@ import { safeParse } from "@/lib/utils";
 
 function ProductsContent() {
   const searchParams = useSearchParams();
-  // const categoryFromUrl = searchParams.get("category"); // Ignored as per request
+  const categoryFromUrl = searchParams.get("category");
+  const subcategoryFromUrl = searchParams.get("subcategory");
 
   const [products, setProducts] = useState<FrontendProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,16 +50,15 @@ function ProductsContent() {
       try {
         // Build API params
         const params: any = {
-          limit: 50, // Fetch a substantial amount for now
+          limit: 50,
           page: 1,
         };
 
-        if (searchQuery) {
-          params.search = searchQuery;
-        }
+        if (searchQuery) params.search = searchQuery;
+        if (categoryFromUrl) params.category = categoryFromUrl;
+        if (subcategoryFromUrl) params.subcategory = subcategoryFromUrl;
 
         const response = await productService.getProducts(params);
-
         setProducts(response.data || []);
       } catch (error) {
         console.error("Failed to fetch products", error);
@@ -53,17 +68,32 @@ function ProductsContent() {
       }
     };
 
-    // Debounce search
-    const timeoutId = setTimeout(() => {
-      fetchProducts();
-    }, 500);
-
+    const timeoutId = setTimeout(fetchProducts, searchQuery ? 500 : 0);
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, categoryFromUrl, subcategoryFromUrl]);
 
-  // Client-side sort for the fetched batch
+  // Client-side filter and sort for the fetched batch
   const sortedProducts = useMemo(() => {
-    return [...products].sort((a, b) => {
+    let filtered = [...products];
+
+    // Client-side fallback filter if API doesn't strictly filter by subcategory
+    if (subcategoryFromUrl) {
+      const subName = subcategoryFromUrl.replace(/-/g, " ").toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(subName) ||
+          (p.description && p.description.toLowerCase().includes(subName)) ||
+          (p.keywords &&
+            p.keywords.some((k) => k.toLowerCase().includes(subName))),
+      );
+    } else if (categoryFromUrl) {
+      // Basic category name match if needed
+      const catName = categoryFromUrl.replace(/-/g, " ").toLowerCase();
+      // Only filter if we have some products that definitely don't belong
+      // This is a safety measure
+    }
+
+    return filtered.sort((a, b) => {
       switch (sortOption) {
         case "name-asc":
           return a.name.localeCompare(b.name);
@@ -86,41 +116,86 @@ function ProductsContent() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <div className="space-y-4">
-        <h1 className="text-4xl font-bold">All Products</h1>
-        <p className="text-muted-foreground">
-          Browse our complete collection of premium tech products
-        </p>
-      </div>
+      {/* Premium Category Hero */}
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-primary-foreground p-8 md:p-12 shadow-2xl">
+        {/* Abstract background shapes */}
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-accent/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
 
-      {/* Filters and Search */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        {/* Category Filter removed as per request */}
-        <div className="hidden lg:block w-1/4"></div>
+        <div className="relative z-10 space-y-6">
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground/60">
+            <Link href="/" className="hover:text-accent transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            <Link
+              href="/products"
+              className="hover:text-accent transition-colors"
+            >
+              Products
+            </Link>
+            {categoryFromUrl && (
+              <>
+                <span>/</span>
+                <span className="text-primary-foreground italic">
+                  {categoryFromUrl.replace(/-/g, " ")}
+                </span>
+              </>
+            )}
+          </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search products..."
-          />
+          <div className="space-y-3">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic">
+              {categoryFromUrl
+                ? categoryFromUrl.replace(/-/g, " ")
+                : "All Collection"}
+            </h1>
+            {subcategoryFromUrl && (
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-[10px] font-black uppercase tracking-widest">
+                {subcategoryFromUrl.replace(/-/g, " ")}
+              </div>
+            )}
+          </div>
 
-          <Select
-            value={sortOption}
-            onValueChange={(value) => setSortOption(value as SortOption)}
-          >
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="price-asc">Price: Low to High</SelectItem>
-              <SelectItem value="price-desc">Price: High to Low</SelectItem>
-              <SelectItem value="name-asc">Name: A to Z</SelectItem>
-              <SelectItem value="name-desc">Name: Z to A</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col md:flex-row md:items-center gap-6 pt-4 border-t border-primary-foreground/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center font-black text-xl">
+                {sortedProducts.length}
+              </div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-primary-foreground/40 leading-tight">
+                Premium Items
+                <br />
+                Available
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1 group">
+                <SearchBar
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Filter within results..."
+                  className="bg-primary-foreground/5 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/40 focus:bg-primary-foreground/10 transition-all rounded-2xl h-12"
+                />
+              </div>
+
+              <Select
+                value={sortOption}
+                onValueChange={(value) => setSortOption(value as SortOption)}
+              >
+                <SelectTrigger className="w-full sm:w-[200px] bg-primary-foreground/5 border-primary-foreground/10 text-primary-foreground rounded-2xl h-12">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Featured First</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  <SelectItem value="name-asc">A - Z</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -149,11 +224,102 @@ function ProductsContent() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20">
-          <p className="text-xl text-muted-foreground">No products found</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Try adjusting your search query
-          </p>
+        <div className="py-12 md:py-20 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-5 duration-1000">
+          <div className="relative w-full max-w-lg aspect-square mb-8 group">
+            <div className="absolute inset-0 bg-primary/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
+            <Image
+              src="/images/no_results.png"
+              alt="No products found"
+              width={500}
+              height={500}
+              className="relative w-full h-full object-contain drop-shadow-2xl animate-float"
+            />
+          </div>
+
+          <div className="max-w-xl px-4">
+            <h2 className="text-3xl md:text-4xl font-black mb-4 tracking-tighter bg-linear-to-b from-foreground to-foreground/60 bg-clip-text text-transparent italic uppercase">
+              Opps! Nothing Here Yet
+            </h2>
+            <p className="text-muted-foreground text-base md:text-lg mb-10 leading-relaxed font-medium">
+              We couldn't find any products matching your current selection. Our
+              team is constantly updating our inventory with premium refurbished
+              tech.
+            </p>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
+              <Button
+                variant="default"
+                size="lg"
+                onClick={() => {
+                  setSearchQuery("");
+                  window.history.replaceState(null, "", "/products");
+                  window.location.reload();
+                }}
+                className="rounded-full px-8 h-12 text-sm font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+              >
+                <RefreshCcw className="w-4 h-4 mr-2 animate-spin-slow" />
+                Reset All Filters
+              </Button>
+            </div>
+          </div>
+
+          <div className="w-full max-w-5xl pt-16 border-t border-border/40 relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 bg-background">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">
+                Explore Our Best Sellers
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-8">
+              {[
+                {
+                  name: "Premium Laptops",
+                  icon: Laptop,
+                  slug: "refurbished-laptop",
+                  color: "from-blue-500/10",
+                },
+                {
+                  name: "Workstations",
+                  icon: Monitor,
+                  slug: "refurbished-desktop",
+                  color: "from-purple-500/10",
+                },
+                {
+                  name: "Pro Components",
+                  icon: Cpu,
+                  slug: "accessories",
+                  color: "from-emerald-500/10",
+                },
+                {
+                  name: "Accessories",
+                  icon: MousePointer2,
+                  slug: "accessories",
+                  color: "from-orange-500/10",
+                },
+              ].map((cat) => (
+                <Link
+                  key={cat.name}
+                  href={`/products?category=${cat.slug}`}
+                  className={cn(
+                    "group relative overflow-hidden p-8 rounded-3xl bg-linear-to-br transition-all duration-500 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-2 border border-border/50 flex flex-col items-center",
+                    cat.color,
+                    "to-transparent",
+                  )}
+                >
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative p-4 rounded-2xl bg-background shadow-sm mb-4 group-hover:scale-110 transition-transform duration-500">
+                    <cat.icon className="w-8 h-8 text-foreground/80 group-hover:text-primary transition-colors" />
+                  </div>
+                  <span className="relative font-bold text-sm tracking-tight">
+                    {cat.name}
+                  </span>
+                  <div className="relative mt-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                    Browse <ArrowRight className="w-3 h-3" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

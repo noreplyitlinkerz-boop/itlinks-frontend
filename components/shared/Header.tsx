@@ -261,8 +261,11 @@ export function Header() {
                     </Link>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      className="text-red-500 focus:text-red-500"
-                      onClick={logout}
+                      className="text-red-500 focus:text-red-500 cursor-pointer"
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        logout();
+                      }}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
@@ -353,7 +356,7 @@ export function Header() {
 
                   {/* Dropdown / Mega-menu */}
                   {activeCategory === cat.name && (
-                    <div className="absolute top-full left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="absolute top-full left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[70vh] overflow-y-auto custom-scrollbar">
                       <div className="grid gap-1.5 px-3">
                         <div className="px-3 mb-2 pb-2 border-b border-border/50">
                           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -482,7 +485,19 @@ export function Header() {
                 Contact
               </Link>
 
-              {!isAuthenticated && (
+              {isAuthenticated ? (
+                <Button
+                  variant="outline"
+                  className="w-full text-sm font-bold uppercase tracking-wider text-red-500 border-red-500 hover:bg-red-50 rounded-xl px-4 py-4 mt-4"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log Out
+                </Button>
+              ) : (
                 <Button
                   variant="default"
                   className="w-full text-sm font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white rounded-xl px-4 py-4 mt-4 shadow-lg shadow-primary/20"

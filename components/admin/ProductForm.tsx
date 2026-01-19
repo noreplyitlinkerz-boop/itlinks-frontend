@@ -56,8 +56,8 @@ export function ProductForm({
   const [primaryImage, setPrimaryImage] = useState<File | null>(null);
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>(
     getFullImageUrl(
-      initialData?.product_primary_image_url || initialData?.images?.[0]
-    )
+      initialData?.product_primary_image_url || initialData?.images?.[0],
+    ),
   );
   const [additionalImages, setAdditionalImages] = useState<File[]>([]);
   const [additionalImagesPreviews, setAdditionalImagesPreviews] = useState<
@@ -65,7 +65,7 @@ export function ProductForm({
   >(initialData?.images?.map((img) => getFullImageUrl(img)) || []);
   const [videos, setVideos] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>(
-    initialData?.product_videos_url?.map((vid) => getFullImageUrl(vid)) || []
+    initialData?.product_videos_url?.map((vid) => getFullImageUrl(vid)) || [],
   );
 
   // Default specs for new products
@@ -81,11 +81,11 @@ export function ProductForm({
           ([key, value]) => ({
             key,
             value: String(value),
-          })
+          }),
         )
       : initialData
-      ? []
-      : defaultSpecs
+        ? []
+        : defaultSpecs,
   );
 
   const form = useForm<ProductFormValues>({
@@ -140,12 +140,12 @@ export function ProductForm({
               "ProductForm: ✅ Set categoryID to:",
               categoryId,
               "Category:",
-              categoryExists.name
+              categoryExists.name,
             );
           } else {
             console.warn(
               "ProductForm: ⚠️ Category ID not found in loaded categories:",
-              categoryId
+              categoryId,
             );
           }
         }
@@ -156,6 +156,24 @@ export function ProductForm({
     }
     fetchCategories();
   }, [initialData?.categoryID, form]);
+
+  // Auto-generate slug from name
+  const productName = form.watch("name");
+  useEffect(() => {
+    // Only auto-generate slug for new products
+    if (!initialData && productName) {
+      const generatedSlug = productName
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "") // Remove non-word chars
+        .replace(/[\s_-]+/g, "-") // Replace spaces/underscores with -
+        .replace(/^-+|-+$/g, ""); // Trim leading/trailing -
+
+      form.setValue("slug", generatedSlug, {
+        shouldValidate: true,
+      });
+    }
+  }, [productName, form, initialData]);
 
   const handlePrimaryImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -170,7 +188,7 @@ export function ProductForm({
   };
 
   const handleAdditionalImagesChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
@@ -190,7 +208,7 @@ export function ProductForm({
 
   const removeAdditionalImage = (index: number) => {
     setAdditionalImages((prev) =>
-      prev.filter((_, i) => i !== index - (initialData?.images?.length || 0))
+      prev.filter((_, i) => i !== index - (initialData?.images?.length || 0)),
     );
     setAdditionalImagesPreviews((prev) => prev.filter((_, i) => i !== index));
   };
@@ -209,8 +227,8 @@ export function ProductForm({
   const removeVideo = (index: number) => {
     setVideos((prev) =>
       prev.filter(
-        (_, i) => i !== index - (initialData?.product_videos_url?.length || 0)
-      )
+        (_, i) => i !== index - (initialData?.product_videos_url?.length || 0),
+      ),
     );
     setVideoPreviews((prev) => prev.filter((_, i) => i !== index));
   };
@@ -268,7 +286,7 @@ export function ProductForm({
         JSON.stringify({
           percentage: values.discountPercentage || 0,
           discountedPrice: values.discountedPrice || 0,
-        })
+        }),
       );
     }
 
@@ -280,17 +298,20 @@ export function ProductForm({
     if (initialData) {
       formData.append(
         "existingVideos",
-        JSON.stringify(videoPreviews.filter((p) => p.startsWith("http")))
+        JSON.stringify(videoPreviews.filter((p) => p.startsWith("http"))),
       );
     }
 
     // Add specifications as JSON string if backend expects it or handles it
-    const specsObj = specs.reduce((acc, curr) => {
-      if (curr.key && curr.value) {
-        acc[curr.key] = curr.value;
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const specsObj = specs.reduce(
+      (acc, curr) => {
+        if (curr.key && curr.value) {
+          acc[curr.key] = curr.value;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
     formData.append("specifications", JSON.stringify(specsObj));
 
     // Add images
@@ -306,13 +327,13 @@ export function ProductForm({
     if (initialData) {
       formData.append(
         "existingPrimaryImageUrl",
-        initialData.product_primary_image_url || ""
+        initialData.product_primary_image_url || "",
       );
       formData.append(
         "existingImages",
         JSON.stringify(
-          additionalImagesPreviews.filter((p) => p.startsWith("http"))
-        )
+          additionalImagesPreviews.filter((p) => p.startsWith("http")),
+        ),
       );
     }
 

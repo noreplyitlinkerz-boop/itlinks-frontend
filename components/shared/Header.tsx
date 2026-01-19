@@ -51,7 +51,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative flex items-center justify-center p-1 rounded-xl border border-border/50 bg-background/50 backdrop-blur-md shadow-sm w-12 h-12 md:w-auto md:h-auto md:border-none md:bg-transparent md:backdrop-blur-none md:shadow-none md:p-0 transition-all duration-300 group-hover:scale-105">
               <Image
-                className="w-6 h-8 md:w-7 md:h-8 mix-blend-multiply dark:mix-blend-screen dark:invert"
+                className="w-4 h-6 md:w-7 md:h-8 mix-blend-multiply dark:mix-blend-screen dark:invert"
                 src="/logo-01.png"
                 alt="Logo"
                 width={24}
@@ -304,7 +304,7 @@ export function Header() {
             {!isAuthenticated && (
               <Button
                 variant="default"
-                className="w-full text-sm font-medium text-white bg-primary rounded-lg px-4 py-2 mt-2 text-center items-center justify-center"
+                className="w-full text-sm font-medium text-secondary bg-primary rounded-lg px-4 py-2 mt-2 text-center items-center justify-center"
                 onClick={() => {
                   setMobileMenuOpen(false);
                   openLoginModal();

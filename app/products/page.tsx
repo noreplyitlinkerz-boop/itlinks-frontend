@@ -132,7 +132,7 @@ function ProductsContent() {
 
       {/* Products Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
@@ -141,7 +141,7 @@ function ProductsContent() {
           ))}
         </div>
       ) : sortedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
           {sortedProducts.map((product) => (
             <div key={product._id} className="animate-scale-in">
               <ProductCard product={product} />

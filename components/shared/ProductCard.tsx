@@ -67,16 +67,16 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-3 p-4">
-          <div className="w-full space-y-2">
-            <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
+        <CardFooter className="flex flex-col gap-2 md:gap-3 p-3 md:p-4">
+          <div className="w-full space-y-1 md:space-y-2">
+            <h3 className="font-semibold text-base md:text-lg line-clamp-1 group-hover:text-primary transition-colors">
               {product.name}
             </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="hidden md:line-clamp-3 text-xs md:text-sm text-muted-foreground">
               {product.description}
             </p>
             <div className="flex flex-col">
-              <p className="text-2xl font-bold text-primary">
+              <p className="text-lg md:text-2xl font-bold text-primary">
                 ₹
                 {(product.discount && typeof product.discount === "object"
                   ? product.discount.discountedPrice
@@ -85,10 +85,10 @@ export function ProductCard({ product }: ProductCardProps) {
               </p>
               {product.discount && typeof product.discount === "object" && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground line-through">
+                  <span className="text-xs md:text-sm text-muted-foreground line-through">
                     ₹{product.price.toLocaleString()}
                   </span>
-                  <span className="text-xs font-bold text-green-600">
+                  <span className="text-[10px] md:text-xs font-bold text-green-600">
                     {product.discount.percentage}% OFF
                   </span>
                 </div>
@@ -100,20 +100,20 @@ export function ProductCard({ product }: ProductCardProps) {
             <Button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className="flex-1 group/btn"
+              className="flex-1 group/btn h-8 md:h-9 text-xs md:text-sm"
               size="sm"
             >
-              <ShoppingCart className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+              <ShoppingCart className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 group-hover/btn:scale-110 transition-transform" />
               Add to Cart
             </Button>
             <Button
               onClick={handleToggleWishlist}
               variant={inWishlist ? "default" : "outline"}
               size="sm"
-              className="px-3"
+              className="px-2 md:px-3 h-8 md:h-9"
             >
               <Heart
-                className={`w-4 h-4 transition-all ${
+                className={`w-3 h-3 md:w-4 md:h-4 transition-all ${
                   inWishlist ? "fill-current" : ""
                 }`}
               />

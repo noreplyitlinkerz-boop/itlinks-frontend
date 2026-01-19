@@ -31,20 +31,22 @@ const BRANDS = [
 
 export function BrandPromotion() {
   return (
-    <section className="pt-16 bg-background">
+    <section className="pt-10 md:pt-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">Trusted by Top Brands</h2>
-          <p className="text-muted-foreground">
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">
+            Trusted by Top Brands
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground">
             We partner with the world's leading technology manufacturers.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center justify-items-center opacity-80">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-8 items-center justify-items-center opacity-80">
           {BRANDS.map((brand) => (
             <div
               key={brand.name}
-              className="w-32 h-20 relative grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 hover:scale-110"
+              className="w-24 h-16 md:w-32 md:h-20 relative grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 hover:scale-110"
             >
               <Image
                 src={brand.logo}

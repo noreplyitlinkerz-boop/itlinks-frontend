@@ -8,10 +8,16 @@ import {
   FolderTree,
   ShoppingBag,
   MessageSquare,
-  Store,
+  Sun,
+  Moon,
+  Menu,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminGuard } from "@/components/auth/AdminGuard";
+import { useTheme } from "@/context/ThemeContext";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function AdminLayout({
   children,
@@ -19,6 +25,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
     { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -33,22 +41,65 @@ export default function AdminLayout({
       <div className="min-h-screen bg-background admin-theme">
         {/* Top Bar */}
         <header className="sticky top-0 z-50 w-full border-b border-border/20 bg-background/95 backdrop-blur">
-          <div className="flex h-16 items-center gap-4 px-6">
-            <Link href="/" className="flex items-center gap-2 mr-auto">
-              <Store className="w-6 h-6 text-primary" />
-              <span className="font-bold text-xl">Itlinkers Admin</span>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" size="sm">
-                View Store
+          <div className="flex h-16 items-center gap-4 px-6 justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden border border-border/20"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                {sidebarOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
               </Button>
-            </Link>
+              <Link href="/" className="flex items-center gap-2">
+                <span className="font-bold text-xl hidden sm:inline-block">
+                  Itlinkers Admin
+                </span>
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="transition-transform hover:rotate-12 border border-border/20"
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </Button>
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border border-border/20 hover:bg-primary hover:text-primary-foreground"
+                >
+                  View Store
+                </Button>
+              </Link>
+            </div>
           </div>
         </header>
 
-        <div className="flex">
+        <div className="flex relative">
           {/* Sidebar */}
-          <aside className="w-64 border-r border-border/20 min-h-[calc(100vh-4rem)] p-6 sticky top-16">
+          <aside
+            className={cn(
+              "fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-[calc(100vh-4rem)] md:border-r md:border-border/20 bg-white dark:bg-zinc-950 border-r border-border/20 pt-16 md:pt-6 p-6 shadow-xl md:shadow-none",
+              sidebarOpen ? "translate-x-0" : "-translate-x-full",
+            )}
+          >
+            <h2 className="text-xl font-bold mb-6 border-b border-border/20 pb-4">
+              Admin Panel
+            </h2>
+
             <nav className="space-y-2">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
@@ -57,6 +108,7 @@ export default function AdminLayout({
                     <Button
                       variant={isActive ? "default" : "ghost"}
                       className="w-full justify-start"
+                      onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="w-4 h-4 mr-2" />
                       {item.label}
@@ -67,8 +119,18 @@ export default function AdminLayout({
             </nav>
           </aside>
 
+          {/* Overlay for mobile sidebar */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 z-30 bg-black/50 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
           {/* Main Content */}
-          <main className="flex-1 p-8">{children}</main>
+          <main className="flex-1 p-4 md:p-8 w-full overflow-x-hidden">
+            {children}
+          </main>
         </div>
       </div>
     </AdminGuard>

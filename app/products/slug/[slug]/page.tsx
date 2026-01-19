@@ -23,6 +23,9 @@ import { productService } from "@/lib/api/services";
 import { Product as ApiProduct } from "@/lib/api/types/endpoints";
 import { safeParse, cn } from "@/lib/utils";
 import { ProductImage } from "@/components/shared/ProductImage";
+import { io } from 'socket.io-client';
+
+const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001");
 
 export default function ProductDetailPage({
   params,
@@ -43,41 +46,54 @@ export default function ProductDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeMedia, setActiveMedia] = useState<string>("");
+  const fetchProduct = async () => {
+    setIsLoading(true);
+    try {
+      const response = await productService.getProductBySlug(slug);
+      console.log("Product API Response:", response);
+
+      // API might return data directly or wrapped in response.data
+      const productData = response.data || response;
+
+      console.log("Product Data:", productData);
+      console.log("Has _id?", productData?._id);
+      console.log("Type of productData:", typeof productData);
+
+      if (productData && productData._id) {
+        console.log("✅ Setting product:", productData);
+        setProduct(productData as ApiProduct);
+        setActiveMedia(
+          productData.product_primary_image_url ||
+          productData.images?.[0] ||
+          ""
+        );
+      } else {
+        console.error("❌ No product data in response", response);
+      }
+    } catch (error) {
+      console.error("Failed to fetch product", error);
+      toast.error("Failed to load product details");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchProduct() {
-      setIsLoading(true);
-      try {
-        const response = await productService.getProductBySlug(slug);
-        console.log("Product API Response:", response);
 
-        // API might return data directly or wrapped in response.data
-        const productData = response.data || response;
-
-        console.log("Product Data:", productData);
-        console.log("Has _id?", productData?._id);
-        console.log("Type of productData:", typeof productData);
-
-        if (productData && productData._id) {
-          console.log("✅ Setting product:", productData);
-          setProduct(productData as ApiProduct);
-          setActiveMedia(
-            productData.product_primary_image_url ||
-              productData.images?.[0] ||
-              ""
-          );
-        } else {
-          console.error("❌ No product data in response", response);
-        }
-      } catch (error) {
-        console.error("Failed to fetch product", error);
-        toast.error("Failed to load product details");
-      } finally {
-        setIsLoading(false);
-      }
-    }
     fetchProduct();
   }, [slug]);
+
+  useEffect(() => {
+    socket.on('order_created', (order) => {
+      console.log('New order received:', order);
+      // update UI / reduce quantity / show notification
+      fetchProduct();
+    });
+
+    return () => {
+      socket.off('order_created');
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -325,7 +341,7 @@ export default function ProductDetailPage({
               <div className="md:col-span-9">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {product.specifications &&
-                  Object.entries(safeParse(product.specifications, {})).length >
+                    Object.entries(safeParse(product.specifications, {})).length >
                     0 ? (
                     Object.entries(
                       safeParse(product.specifications, {}) as Record<

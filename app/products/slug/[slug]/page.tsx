@@ -23,9 +23,11 @@ import { productService } from "@/lib/api/services";
 import { Product as ApiProduct } from "@/lib/api/types/endpoints";
 import { safeParse, cn } from "@/lib/utils";
 import { ProductImage } from "@/components/shared/ProductImage";
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 
-const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001");
+const socket = io(
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
+);
 
 export default function ProductDetailPage({
   params,
@@ -64,8 +66,8 @@ export default function ProductDetailPage({
         setProduct(productData as ApiProduct);
         setActiveMedia(
           productData.product_primary_image_url ||
-          productData.images?.[0] ||
-          ""
+            productData.images?.[0] ||
+            "",
         );
       } else {
         console.error("❌ No product data in response", response);
@@ -79,19 +81,18 @@ export default function ProductDetailPage({
   };
 
   useEffect(() => {
-
     fetchProduct();
   }, [slug]);
 
   useEffect(() => {
-    socket.on('order_created', (order) => {
-      console.log('New order received:', order);
+    socket.on("order_created", (order) => {
+      console.log("New order received:", order);
       // update UI / reduce quantity / show notification
       fetchProduct();
     });
 
     return () => {
-      socket.off('order_created');
+      socket.off("order_created");
     };
   }, []);
 
@@ -193,7 +194,7 @@ export default function ProductDetailPage({
                       "relative aspect-square rounded-md overflow-hidden border-2 transition-all",
                       activeMedia === media
                         ? "border-primary shadow-md"
-                        : "border-border/50 hover:border-gray-400"
+                        : "border-border/50 hover:border-gray-400",
                     )}
                   >
                     <ProductImage
@@ -222,7 +223,7 @@ export default function ProductDetailPage({
                   <Heart
                     className={cn(
                       "w-5 h-5",
-                      inWishlist && "fill-red-500 text-red-500"
+                      inWishlist && "fill-red-500 text-red-500",
                     )}
                   />
                 </button>
@@ -341,13 +342,13 @@ export default function ProductDetailPage({
               <div className="md:col-span-9">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {product.specifications &&
-                    Object.entries(safeParse(product.specifications, {})).length >
+                  Object.entries(safeParse(product.specifications, {})).length >
                     0 ? (
                     Object.entries(
                       safeParse(product.specifications, {}) as Record<
                         string,
                         string
-                      >
+                      >,
                     ).map(([key, value]) => (
                       <div
                         key={key}

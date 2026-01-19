@@ -15,6 +15,7 @@ import {
   Moon,
   LayoutDashboard,
   Package,
+  ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -30,305 +31,473 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
+const NAVIGATION_CATEGORIES = [
+  {
+    name: "Buy Refurbished Laptop",
+    href: "/products?category=laptops",
+    subcategories: ["Apple Macbook", "HP", "Lenovo", "Dell"],
+  },
+  {
+    name: "Buy Refurbished Desktop",
+    href: "/products?category=desktops",
+    subcategories: ["HP", "Lenovo", "Dell"],
+  },
+  {
+    name: "HP Brand Refurbished",
+    href: "/products?category=hp-refurbished",
+    subcategories: ["Elitebook", "Probook", "ZBook"],
+  },
+  {
+    name: "Elite Desktop",
+    href: "/products?category=elite-desktop",
+    subcategories: ["Elitedesk", "Prodesk"],
+  },
+  {
+    name: "Accessories",
+    href: "/products?category=accessories",
+    subcategories: [
+      "Motherboard",
+      "Processors",
+      "SSD's/HDD's",
+      "RAM",
+      "Monitors",
+      "Graphics Card",
+      "Antivirus Software",
+      "Cartridges/Ink",
+      "Cable",
+      "Pendrives",
+      "Keyboard",
+      "Mouse",
+      "Cameras",
+      "DVR/NVR",
+      "CCTV Racks",
+      "Headphones",
+      "Speakers",
+    ],
+  },
+];
+
 export function Header() {
   const pathname = usePathname();
   const { totalItems } = useCart();
-
   const { items: wishlistItems } = useWishlist();
   const { theme, toggleTheme } = useTheme();
   const { user, logout, isAuthenticated, openLoginModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState<
+    string | null
+  >(null);
 
   const userInitials = user
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
     : "";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <nav className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative flex items-center justify-center p-1 rounded-xl border border-border/50 bg-background/50 backdrop-blur-md shadow-sm w-12 h-12 md:w-auto md:h-auto md:border-none md:bg-transparent md:backdrop-blur-none md:shadow-none md:p-0 transition-all duration-300 group-hover:scale-105">
-              <Image
-                className="w-4 h-6 md:w-7 md:h-8 mix-blend-multiply dark:mix-blend-screen dark:invert"
-                src="/logo-01.png"
-                alt="Logo"
-                width={24}
-                height={24}
-              />
-            </div>
-            <span className="hidden md:block text-2xl font-bold bg-linear-to-r from-primary via-blue-500 to-accent bg-clip-text text-transparent -ml-3 -mb-2">
-              tlinkers
-            </span>
-          </Link>
+    <>
+      {/* Background Overlay / Backdrop */}
+      {(mobileMenuOpen || activeCategory) && (
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-40 animate-in fade-in duration-300"
+          onClick={() => {
+            setMobileMenuOpen(false);
+            setActiveCategory(null);
+          }}
+        />
+      )}
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+      <header
+        className={cn(
+          "sticky top-0 z-50 w-full border-b transition-all duration-300",
+          mobileMenuOpen || activeCategory
+            ? "border-border/60 bg-background shadow-2xl"
+            : "border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60",
+        )}
+      >
+        <nav className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo */}
             <Link
               href="/"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary relative py-1",
-                pathname === "/"
-                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground",
-              )}
+              className="flex items-center gap-1.5 md:gap-2 group shrink-0"
             >
-              Home
-            </Link>
-            <Link
-              href="/products"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary relative py-1",
-                pathname.startsWith("/products")
-                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground",
-              )}
-            >
-              Products
-            </Link>
-            <Link
-              href="/about"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary relative py-1",
-                pathname === "/about"
-                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground",
-              )}
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary relative py-1",
-                pathname === "/contact"
-                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                  : "text-muted-foreground",
-              )}
-            >
-              Contact
-            </Link>
-          </div>
-
-          {/* Cart and Wishlist Icons */}
-          <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="transition-transform hover:rotate-12"
-            >
-              {theme === "dark" ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </Button>
-
-            <Link href="/wishlist">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "relative transition-colors",
-                  pathname === "/wishlist"
-                    ? "text-primary bg-primary/10"
-                    : "text-foreground",
-                )}
-              >
-                <Heart
-                  className={cn(
-                    "w-5 h-5",
-                    pathname === "/wishlist" && "fill-current",
-                  )}
+              <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                <Image
+                  className="w-7 h-7 md:w-10 md:h-10 mix-blend-multiply dark:mix-blend-screen dark:invert"
+                  src="/logo-01.png"
+                  alt="Logo"
+                  width={40}
+                  height={40}
                 />
-                {wishlistItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
-                    {wishlistItems.length}
-                  </span>
-                )}
-              </Button>
+              </div>
+              <div className="flex flex-col -gap-0.5 md:-gap-1">
+                <span className="text-lg md:text-2xl font-bold bg-linear-to-r from-primary via-blue-500 to-accent bg-clip-text text-transparent leading-none">
+                  ITLINKERS
+                </span>
+                <span className="text-[7px] md:text-[10px] text-muted-foreground font-medium tracking-wider uppercase leading-none">
+                  wired for your world
+                </span>
+              </div>
             </Link>
 
-            <Link href="/cart">
+            {/* Search Bar - Center */}
+            <div className="hidden lg:flex flex-1 max-w-md relative">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search for Products, Categories or Brands..."
+                  className="w-full h-10 pl-10 pr-4 rounded-full bg-muted/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                />
+                <ShoppingCart className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground hidden" />
+                <Menu className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              </div>
+            </div>
+
+            {/* Action Icons */}
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="hidden md:flex flex-col items-end mr-2 text-[11px] leading-tight text-muted-foreground">
+                <span>Contact:</span>
+                <span className="font-semibold text-foreground">
+                  +91 7380817676
+                </span>
+              </div>
+
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "relative transition-colors",
-                  pathname === "/cart"
-                    ? "text-primary bg-primary/10"
-                    : "text-foreground",
-                )}
+                onClick={toggleTheme}
+                className="w-9 h-9"
               >
-                <ShoppingCart className="w-5 h-5" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
-                    {totalItems}
-                  </span>
+                {theme === "dark" ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
                 )}
               </Button>
-            </Link>
 
-            {/* Auth Button/User Profile */}
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative w-9 h-9 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20"
-                  >
-                    <span className="text-xs font-bold">{userInitials}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 mt-2" align="end">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {user?.firstName} {user?.lastName}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground italic">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <Link href="/profile">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
-                  </Link>
-                  {user?.role === "admin" && (
-                    <Link href="/admin">
-                      <DropdownMenuItem className="cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>Admin Dashboard</span>
+              <Link href="/wishlist">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "relative w-9 h-9",
+                    pathname === "/wishlist" && "text-primary bg-primary/10",
+                  )}
+                >
+                  <Heart
+                    className={cn(
+                      "w-5 h-5",
+                      pathname === "/wishlist" && "fill-current",
+                    )}
+                  />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-bold">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              <Link href="/cart">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "relative w-9 h-9",
+                    pathname === "/cart" && "text-primary bg-primary/10",
+                  )}
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-bold">
+                      {totalItems}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-9 h-9 rounded-full bg-primary/10 text-primary border border-primary/20"
+                    >
+                      <span className="text-xs font-bold">{userInitials}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 mt-2" align="end">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <Link href="/profile">
+                      <DropdownMenuItem>
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
                       </DropdownMenuItem>
                     </Link>
-                  )}
-                  <Link href="/orders">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Package className="mr-2 h-4 w-4" />
-                      <span>My Orders</span>
+                    {user?.role === "admin" && (
+                      <Link href="/admin">
+                        <DropdownMenuItem>
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          <span>Admin Dashboard</span>
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
+                    <Link href="/orders">
+                      <DropdownMenuItem>
+                        <Package className="mr-2 h-4 w-4" />
+                        <span>My Orders</span>
+                      </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-red-500 focus:text-red-500"
+                      onClick={logout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
                     </DropdownMenuItem>
-                  </Link>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer text-red-500 focus:text-red-500"
-                    onClick={logout}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={openLoginModal}
+                    className="hidden md:flex text-sm font-semibold"
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={openLoginModal}
-                className="hidden md:flex rounded-full px-5 bg-linear-to-r from-primary to-blue-600 hover:opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-95"
-              >
-                Login
-              </Button>
-            )}
+                    Sign in
+                  </Button>
+                  <span className="hidden md:inline text-muted-foreground/30">
+                    |
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={openLoginModal}
+                    className="hidden md:flex text-sm font-semibold"
+                  >
+                    Account
+                  </Button>
+                </div>
+              )}
 
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 flex flex-col gap-3 border-t border-border/40 pt-4 animate-slide-in-down">
-            <Link
-              href="/"
-              className={cn(
-                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
-                pathname === "/"
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted",
-              )}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              href="/products"
-              className={cn(
-                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
-                pathname.startsWith("/products")
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted",
-              )}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Products
-            </Link>
-            <Link
-              href="/about"
-              className={cn(
-                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
-                pathname === "/about"
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted",
-              )}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              className={cn(
-                "text-sm font-medium transition-colors py-2 px-3 rounded-md",
-                pathname === "/contact"
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-muted",
-              )}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Contact
-            </Link>
-
-            {!isAuthenticated && (
-              <Button
-                variant="default"
-                className="w-full text-sm font-medium text-secondary bg-primary rounded-lg px-4 py-2 mt-2 text-center items-center justify-center"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  openLoginModal();
-                }}
-              >
-                Login
-              </Button>
-            )}
-            {isAuthenticated && (
               <Button
                 variant="ghost"
-                className="justify-start px-0 text-sm font-medium text-red-500 hover:text-red-600 py-2"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  logout();
-                }}
+                size="icon"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
+                <Menu className="w-5 h-5" />
               </Button>
-            )}
+            </div>
+
+            {/* Mobile Search Bar - Below Branding */}
+            <div className="flex lg:hidden mt-3 relative">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="w-full h-9 pl-9 pr-4 rounded-full bg-muted/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-xs"
+                />
+                <Menu className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              </div>
+            </div>
           </div>
-        )}
-      </nav>
-    </header>
+
+          {/* Categories Navigation - Desktop */}
+          <div className="hidden md:flex items-center justify-between border-t border-border/40 mt-3 pt-2">
+            <div className="flex items-center gap-8">
+              <Link
+                href="/"
+                className={cn(
+                  "text-sm font-bold uppercase tracking-tight transition-colors hover:text-primary",
+                  pathname === "/" ? "text-primary" : "text-foreground",
+                )}
+              >
+                Home
+              </Link>
+              {NAVIGATION_CATEGORIES.map((cat) => (
+                <div
+                  key={cat.name}
+                  className="relative group py-1"
+                  onMouseLeave={() => setActiveCategory(null)}
+                >
+                  <button
+                    onClick={() =>
+                      setActiveCategory(
+                        activeCategory === cat.name ? null : cat.name,
+                      )
+                    }
+                    className={cn(
+                      "text-sm font-bold uppercase tracking-tight flex items-center gap-1 transition-colors hover:text-primary",
+                      activeCategory === cat.name
+                        ? "text-primary"
+                        : "text-foreground",
+                    )}
+                  >
+                    {cat.name}
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+
+                  {/* Dropdown / Mega-menu */}
+                  {activeCategory === cat.name && (
+                    <div className="absolute top-full left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300">
+                      <div className="grid gap-1.5 px-3">
+                        <div className="px-3 mb-2 pb-2 border-b border-border/50">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Explore {cat.name}
+                          </p>
+                        </div>
+                        {cat.subcategories.map((sub) => (
+                          <Link
+                            key={sub}
+                            href={`/products?category=${cat.name
+                              .toLowerCase()
+                              .replace(
+                                /\s+/g,
+                                "-",
+                              )}&subcategory=${sub.toLowerCase().replace(/\s+/g, "-")}`}
+                            className="px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 hover:text-primary rounded-lg transition-all font-medium flex items-center justify-between group/item"
+                            onClick={() => setActiveCategory(null)}
+                          >
+                            {sub}
+                            <Package className="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Link
+                href="/contact"
+                className={cn(
+                  "text-sm font-bold uppercase tracking-tight transition-colors hover:text-primary",
+                  pathname === "/contact" ? "text-primary" : "text-foreground",
+                )}
+              >
+                Contactus
+              </Link>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden mt-4 pb-6 flex flex-col gap-3 border-t border-border/40 pt-4 animate-slide-in-down max-h-[80vh] overflow-y-auto">
+              <Link
+                href="/"
+                className={cn(
+                  "text-sm font-bold uppercase tracking-tight transition-colors py-3 px-3 rounded-xl",
+                  pathname === "/"
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground hover:bg-muted",
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              {NAVIGATION_CATEGORIES.map((cat) => (
+                <div
+                  key={cat.name}
+                  className="flex flex-col border-b border-border/10 last:border-0"
+                >
+                  <button
+                    onClick={() =>
+                      setExpandedMobileCategory(
+                        expandedMobileCategory === cat.name ? null : cat.name,
+                      )
+                    }
+                    className={cn(
+                      "flex items-center justify-between py-4 px-3 hover:bg-muted/50 transition-colors text-left rounded-xl",
+                      expandedMobileCategory === cat.name && "bg-primary/5",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "text-sm font-bold uppercase tracking-tight transition-colors",
+                        expandedMobileCategory === cat.name
+                          ? "text-primary"
+                          : "text-foreground",
+                      )}
+                    >
+                      {cat.name}
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "w-4 h-4 transition-transform duration-300",
+                        expandedMobileCategory === cat.name
+                          ? "rotate-180 text-primary"
+                          : "text-muted-foreground",
+                      )}
+                    />
+                  </button>
+
+                  {expandedMobileCategory === cat.name && (
+                    <div className="pl-6 pb-4 flex flex-col gap-1 animate-in slide-in-from-top-2 duration-300">
+                      {cat.subcategories.map((sub) => (
+                        <Link
+                          key={sub}
+                          href={`/products?category=${cat.name
+                            .toLowerCase()
+                            .replace(
+                              /\s+/g,
+                              "-",
+                            )}&subcategory=${sub.toLowerCase().replace(/\s+/g, "-")}`}
+                          className="text-sm py-2.5 text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            setExpandedMobileCategory(null);
+                          }}
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
+                          {sub}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Link
+                href="/contact"
+                className={cn(
+                  "text-sm font-bold uppercase tracking-tight transition-colors py-3 px-3 rounded-xl",
+                  pathname === "/contact"
+                    ? "text-primary bg-primary/10"
+                    : "text-foreground hover:bg-muted",
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+
+              {!isAuthenticated && (
+                <Button
+                  variant="default"
+                  className="w-full text-sm font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white rounded-xl px-4 py-4 mt-4 shadow-lg shadow-primary/20"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openLoginModal();
+                  }}
+                >
+                  Login / Sign up
+                </Button>
+              )}
+            </div>
+          )}
+        </nav>
+      </header>
+    </>
   );
 }

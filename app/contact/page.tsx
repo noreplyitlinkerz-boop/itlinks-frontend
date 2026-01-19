@@ -74,7 +74,7 @@ export default function ContactPage() {
                     <div>
                       <p className="font-semibold">Email</p>
                       <p className="text-muted-foreground">
-                        support@itlinkers.com
+                        contact.itlinkers@gmail.com
                       </p>
                     </div>
                   </div>
@@ -85,7 +85,10 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="font-semibold">Phone</p>
-                      <p className="text-muted-foreground">+91 9898766555</p>
+                      <p className="text-muted-foreground">+91 7380817676</p>
+                      <p className="text-[10px] text-muted-foreground italic">
+                        (9:30 to 18:30 IST)
+                      </p>
                     </div>
                   </div>
 
@@ -95,10 +98,9 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="font-semibold">Office</p>
-                      <p className="text-muted-foreground">
-                        Tech Hub, IT Park
-                        <br />
-                        New Delhi, India
+                      <p className="text-muted-foreground whitespace-pre-line">
+                        IT LINKERS 211, Meghdoot Building Nehru Place, New Delhi
+                        110019
                       </p>
                     </div>
                   </div>
@@ -113,7 +115,7 @@ export default function ContactPage() {
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
+                      <Label htmlFor="name">Full Name</Label>
                       <Input
                         id="name"
                         placeholder="John Doe"
@@ -140,10 +142,10 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone">Mob.</Label>
                     <Input
                       id="phone"
-                      placeholder="9898766555"
+                      placeholder="7380817676"
                       value={formData.phone}
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
@@ -153,10 +155,10 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message">query</Label>
                     <Textarea
                       id="message"
-                      placeholder="Tell us more about your inquiry..."
+                      placeholder="How can we help you?"
                       rows={6}
                       value={formData.message}
                       onChange={(e) =>
@@ -169,16 +171,16 @@ export default function ContactPage() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full"
+                    className="w-full font-bold uppercase"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Sending...
+                        Submitting...
                       </>
                     ) : (
-                      "Send Message"
+                      "Submit"
                     )}
                   </Button>
                 </form>

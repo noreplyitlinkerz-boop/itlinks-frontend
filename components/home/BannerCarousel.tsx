@@ -166,7 +166,7 @@ export function BannerCarousel() {
           <form onSubmit={handleSearch} className="relative flex items-center">
             <input
               type="text"
-              placeholder="Search for products..."
+              placeholder="Search for Products, Categories or Brands..."
               className="w-full h-12 md:h-14 pl-5 md:pl-6 pr-12 md:pr-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-xl text-sm md:text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

@@ -52,7 +52,7 @@ export function Footer() {
           <div className="container mx-auto px-4 ">
             <Image
               className="w-7 h-7 md:w-10 md:h-10 mix-blend-multiply dark:mix-blend-screen dark:invert"
-              src="/logo-01.png"
+              src="/logo-01.svg"
               alt="Logo"
               width={40}
               height={40}

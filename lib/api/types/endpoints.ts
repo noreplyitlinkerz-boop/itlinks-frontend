@@ -64,6 +64,10 @@ export interface UpdateProductRequest extends Partial<CreateProductRequest> {
 export interface GetProductsParams extends PaginationParams {
   featured?: boolean;
   search?: string;
+  category?: string;
+  subcategory?: string;
+  brand?: string;
+  brandID?: string;
 }
 
 export interface SearchProductsParams {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { ProductCard } from "@/components/shared/ProductCard";
@@ -30,63 +30,127 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SortOption, Product as FrontendProduct } from "@/types";
-import { productService } from "@/lib/api/services";
-import { Product as ApiProduct } from "@/lib/api/types/endpoints";
+import { productService, categoryService } from "@/lib/api/services";
+import { Product as ApiProduct, Category } from "@/lib/api/types/endpoints";
 import { safeParse } from "@/lib/utils";
 
 function ProductsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
   const subcategoryFromUrl = searchParams.get("subcategory");
+  const brandFromUrl = searchParams.get("brand");
 
   const [products, setProducts] = useState<FrontendProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
 
+  // State for display names
+  const [categoryDisplayName, setCategoryDisplayName] = useState<string>("");
+  const [subcategoryDisplayName, setSubcategoryDisplayName] =
+    useState<string>("");
+  const [brandDisplayName, setBrandDisplayName] = useState<string>("");
+
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Build API params
-        const params: any = {
-          limit: 50,
-          page: 1,
-        };
+        // 1. Fetch Display Names
+        const displayNamesPromises = [];
 
+        if (categoryFromUrl) {
+          if (
+            categoryFromUrl.length === 24 ||
+            /^[0-9a-fA-F]+$/.test(categoryFromUrl)
+          ) {
+            displayNamesPromises.push(
+              categoryService
+                .getCategoryById(categoryFromUrl)
+                .then((res) => {
+                  if (res.data && res.data.name)
+                    setCategoryDisplayName(res.data.name);
+                  else
+                    setCategoryDisplayName(categoryFromUrl.replace(/-/g, " "));
+                })
+                .catch(() =>
+                  setCategoryDisplayName(categoryFromUrl.replace(/-/g, " ")),
+                ),
+            );
+          } else {
+            setCategoryDisplayName(categoryFromUrl.replace(/-/g, " "));
+          }
+        } else {
+          setCategoryDisplayName("All Collection");
+        }
+
+        if (subcategoryFromUrl) {
+          if (
+            subcategoryFromUrl.length === 24 ||
+            /^[0-9a-fA-F]+$/.test(subcategoryFromUrl)
+          ) {
+            displayNamesPromises.push(
+              categoryService
+                .getCategoryById(subcategoryFromUrl)
+                .then((res) => {
+                  if (res.data && res.data.name)
+                    setSubcategoryDisplayName(res.data.name);
+                  else
+                    setSubcategoryDisplayName(
+                      subcategoryFromUrl.replace(/-/g, " "),
+                    );
+                })
+                .catch(() =>
+                  setSubcategoryDisplayName(
+                    subcategoryFromUrl.replace(/-/g, " "),
+                  ),
+                ),
+            );
+          } else {
+            setSubcategoryDisplayName(subcategoryFromUrl.replace(/-/g, " "));
+          }
+        } else {
+          setSubcategoryDisplayName("");
+        }
+
+        if (brandFromUrl) {
+          setBrandDisplayName(brandFromUrl.replace(/-/g, " "));
+        } else {
+          setBrandDisplayName("");
+        }
+
+        if (displayNamesPromises.length > 0)
+          await Promise.all(displayNamesPromises);
+
+        // 2. Fetch Products
+        const params: any = { limit: 50, page: 1 };
         if (searchQuery) params.search = searchQuery;
         if (categoryFromUrl) params.category = categoryFromUrl;
         if (subcategoryFromUrl) params.subcategory = subcategoryFromUrl;
+        if (brandFromUrl) params.brand = brandFromUrl;
 
         const response = await productService.getProducts(params);
-
-        // Helper to extract array from various response structures
         const getArray = (res: any, key: string) => {
           if (!res) return [];
           if (Array.isArray(res)) return res;
-
-          // Check for paginated response structure: res.data.data arrays
-          if (res.data && res.data.data && Array.isArray(res.data.data)) {
+          if (res.data && res.data.data && Array.isArray(res.data.data))
             return res.data.data;
-          }
-
           if (res.data && Array.isArray(res.data)) return res.data;
           if (res[key] && Array.isArray(res[key])) return res[key];
           return [];
         };
-
         setProducts(getArray(response, "products"));
       } catch (error) {
-        console.error("Failed to fetch products", error);
+        console.error("Failed to fetch data", error);
         toast.error("Failed to load products");
       } finally {
         setIsLoading(false);
       }
     };
 
-    const timeoutId = setTimeout(fetchProducts, searchQuery ? 500 : 0);
+    const timeoutId = setTimeout(fetchData, searchQuery ? 500 : 0);
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, categoryFromUrl, subcategoryFromUrl]);
+  }, [searchQuery, categoryFromUrl, subcategoryFromUrl, brandFromUrl]);
 
   // Client-side filter and sort for the fetched batch
   const sortedProducts = useMemo(() => {
@@ -132,82 +196,123 @@ function ProductsContent() {
 
   return (
     <div className="space-y-8">
-      {/* Premium Category Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-[#1A2B3C] via-[#1A2B3C]/95 to-[#0B1120] dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-black text-white p-8 md:p-12 shadow-2xl">
-        {/* Abstract background shapes */}
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-accent/20 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
+      {/* Premium Category Hero - Refined Lighter Version */}
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-white via-slate-50/50 to-white text-slate-900 p-8 md:p-14 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-200/60">
+        {/* Animated Background Elements - Subtle and Light */}
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none opacity-60" />
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px] pointer-events-none opacity-40" />
+        <div className="absolute inset-0 bg-[url('/images/grid.svg')] bg-center mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-[0.03] pointer-events-none" />
 
-        <div className="relative z-10 space-y-6">
-          {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-white/60">
-            <Link href="/" className="hover:text-accent transition-colors">
+        <div className="relative z-10 space-y-8">
+          {/* Breadcrumbs - Darker for Light Theme */}
+          <nav className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 hover:text-primary transition-all duration-300"
+            >
               Home
             </Link>
-            <span>/</span>
+            <div className="w-1 h-1 rounded-full bg-slate-200" />
             <Link
               href="/products"
-              className="hover:text-accent transition-colors"
+              className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 hover:text-primary transition-all duration-300"
             >
               Products
             </Link>
-            {categoryFromUrl && (
-              <>
-                <span>/</span>
-                <span className="text-white italic">
-                  {categoryFromUrl.replace(/-/g, " ")}
-                </span>
-              </>
-            )}
-          </div>
+            {categoryDisplayName &&
+              categoryDisplayName !== "All Collection" && (
+                <>
+                  <div className="w-1 h-1 rounded-full bg-slate-200" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary/80 italic">
+                    {categoryDisplayName}
+                  </span>
+                </>
+              )}
+          </nav>
 
-          <div className="space-y-3">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic">
-              {categoryFromUrl
-                ? categoryFromUrl.replace(/-/g, " ")
-                : "All Collection"}
-            </h1>
-            {subcategoryFromUrl && (
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-[10px] font-black uppercase tracking-widest">
-                {subcategoryFromUrl.replace(/-/g, " ")}
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-2">
+                <h1 className="text-5xl md:text-7xl font-black tracking-tight uppercase italic leading-[1.1] bg-linear-to-b from-slate-950 via-slate-900 to-slate-700 bg-clip-text text-transparent pr-8">
+                  {brandDisplayName || categoryDisplayName}
+                </h1>
               </div>
-            )}
-          </div>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-6 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-black text-xl text-white">
-                {sortedProducts.length}
-              </div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-white/40 leading-tight">
-                Premium Items
-                <br />
-                Available
+              {/* Enhanced Stats Badge for Light Mode */}
+              <div className="flex items-center gap-4 bg-white/80 backdrop-blur-md border border-slate-200/80 p-2.5 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-3 px-5 py-2.5 bg-primary rounded-xl shadow-lg shadow-primary/10">
+                  <span className="font-black text-2xl text-primary-foreground leading-none">
+                    {sortedProducts.length}
+                  </span>
+                </div>
+                <div className="pr-5 border-r border-slate-200">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 leading-tight">
+                    Premium Items
+                    <br />
+                    Available
+                  </p>
+                </div>
+                <div className="hidden lg:flex flex-col px-2">
+                  <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
+                    Trusted Quality
+                  </p>
+                  <div className="flex gap-1 mt-1.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-primary/20"
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex-1 flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1 group">
-                <SearchBar
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Filter within results..."
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/30 transition-all rounded-2xl h-12"
-                />
-              </div>
+          <div className="flex flex-col xl:flex-row gap-4 pt-8 border-t border-slate-200/60">
+            <div className="relative flex-1 group">
+              <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search premium inventory..."
+                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all duration-500 rounded-2xl h-14 pl-12 text-base shadow-sm"
+              />
+            </div>
 
+            <div className="flex flex-col sm:flex-row gap-4">
               <Select
                 value={sortOption}
                 onValueChange={(value) => setSortOption(value as SortOption)}
               >
-                <SelectTrigger className="w-full sm:w-[200px] bg-white/5 border-white/10 text-white rounded-2xl h-12">
-                  <SelectValue placeholder="Sort" />
+                <SelectTrigger className="w-full sm:w-[220px] bg-white border-slate-200 text-slate-900 rounded-2xl h-14 px-6 hover:bg-slate-50 transition-colors focus:ring-primary/10 shadow-sm">
+                  <SelectValue placeholder="Sort Results" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Featured First</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                  <SelectItem value="name-asc">A - Z</SelectItem>
+                <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl overflow-hidden shadow-2xl">
+                  <SelectItem
+                    value="newest"
+                    className="focus:bg-slate-50 focus:text-primary font-medium"
+                  >
+                    Featured First
+                  </SelectItem>
+                  <SelectItem
+                    value="price-asc"
+                    className="focus:bg-slate-50 focus:text-primary font-medium"
+                  >
+                    Price: Low to High
+                  </SelectItem>
+                  <SelectItem
+                    value="price-desc"
+                    className="focus:bg-slate-50 focus:text-primary font-medium"
+                  >
+                    Price: High to Low
+                  </SelectItem>
+                  <SelectItem
+                    value="name-asc"
+                    className="focus:bg-slate-50 focus:text-primary font-medium"
+                  >
+                    A - Z (Alphabetical)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -268,8 +373,7 @@ function ProductsContent() {
                 size="lg"
                 onClick={() => {
                   setSearchQuery("");
-                  window.history.replaceState(null, "", "/products");
-                  window.location.reload();
+                  router.push("/products");
                 }}
                 className="rounded-full px-8 h-12 text-sm font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95"
               >

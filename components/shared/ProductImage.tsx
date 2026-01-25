@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image, { ImageProps } from "next/image";
 import { API_CONFIG } from "@/lib/api/api-config";
 import { cn } from "@/lib/utils";
@@ -36,14 +37,19 @@ export function ProductImage({
   unoptimized = true,
   ...props
 }: ProductImageProps) {
-  const imageUrl = src ? getFullImageUrl(src) : fallback;
+  const [imgSrc, setImgSrc] = useState(src ? getFullImageUrl(src) : fallback);
+
+  useEffect(() => {
+    setImgSrc(src ? getFullImageUrl(src) : fallback);
+  }, [src, fallback]);
 
   return (
     <Image
-      src={imageUrl}
+      src={imgSrc}
       alt={alt}
       className={cn("object-cover", className)}
       unoptimized={unoptimized}
+      onError={() => setImgSrc(fallback)}
       {...props}
     />
   );

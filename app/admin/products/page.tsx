@@ -313,9 +313,10 @@ export default function AdminProductsPage() {
                       </span>
                       <span className="text-xs text-muted-foreground flex items-center gap-2">
                         <span>
-                          {typeof product.brandID === "object"
+                          {typeof product.brandID === "object" &&
+                          product.brandID !== null
                             ? product.brandID.name
-                            : "No Brand"}
+                            : (product as any).brand || "No Brand"}
                         </span>
                         <span>•</span>
                         <span>

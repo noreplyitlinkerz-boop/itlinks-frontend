@@ -109,6 +109,47 @@ export function Header() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
+  // Helper to determine the correct URL for navigation items
+  const getHref = (navLabel: string, navUrl: string, parentLabel?: string) => {
+    const knownBrands = [
+      "HP",
+      "Lenovo",
+      "Dell",
+      "Apple",
+      "Acer",
+      "Asus",
+      "MSI",
+      "Samsung",
+      "Sony",
+      "Microsoft",
+    ];
+    const upperLabel = navLabel.toUpperCase();
+
+    // If it's a known brand and we're under a category like "Laptop"
+    if (knownBrands.some((brand) => upperLabel.includes(brand))) {
+      const brandName =
+        knownBrands.find((brand) => upperLabel.includes(brand)) || navLabel;
+
+      // If the URL is already a products search/filter URL
+      if (navUrl.includes("/products")) {
+        const url = new URL(navUrl, window.location.origin);
+        // If it was previously using subcategory for the brand, replace it with brand parameter
+        if (
+          url.searchParams.has("subcategory") &&
+          url.searchParams
+            .get("subcategory")
+            ?.toUpperCase()
+            .includes(brandName.toUpperCase())
+        ) {
+          url.searchParams.delete("subcategory");
+        }
+        url.searchParams.set("brand", brandName);
+        return url.pathname + url.search;
+      }
+    }
+    return navUrl;
+  };
+
   return (
     <>
       {/* Background Overlay / Backdrop */}
@@ -140,7 +181,7 @@ export function Header() {
               <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105">
                 <Image
                   className="w-7 h-7 md:w-10 md:h-10 mix-blend-multiply dark:mix-blend-screen dark:invert"
-                  src="/logo-01.png"
+                  src="/logo-01.svg"
                   alt="Logo"
                   width={40}
                   height={40}
@@ -419,7 +460,7 @@ export function Header() {
                           {nav.children.map((child) => (
                             <Link
                               key={child.label}
-                              href={child.url}
+                              href={getHref(child.label, child.url, nav.label)}
                               className="px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 hover:text-primary rounded-lg transition-all font-medium flex items-center justify-between group/item"
                               onClick={() => setActiveCategory(null)}
                             >
@@ -516,7 +557,7 @@ export function Header() {
                       {nav.children.map((child) => (
                         <Link
                           key={child.label}
-                          href={child.url}
+                          href={getHref(child.label, child.url, nav.label)}
                           className="text-sm py-2.5 text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
                           onClick={() => {
                             setMobileMenuOpen(false);

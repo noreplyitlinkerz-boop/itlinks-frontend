@@ -315,3 +315,43 @@ export interface UpdateCartItemRequest {
 }
 
 export type GetCartResponse = Cart;
+
+// ============================================================================
+// Brand Types
+// ============================================================================
+export interface Brand {
+  _id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================================
+// Banner Types
+// ============================================================================
+export interface Banner {
+  _id: string;
+  title: string;
+  description: string;
+  image: string;
+  link: string;
+  ctaText: string;
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================================================
+// Navigation Types
+// ============================================================================
+export interface NavigationItem {
+  _id: string;
+  label: string;
+  url: string;
+  children: { label: string; url: string }[];
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

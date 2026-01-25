@@ -12,6 +12,9 @@ export { categoryService } from "./category-service";
 export { cartService } from "./cart-service";
 export { wishlistService } from "./wishlist-service";
 export { contactService } from "./contact-service";
+export { brandService } from "./brand-service";
+export { bannerService } from "./banner-service";
+export { navigationService } from "./navigation-service";
 
 // Export types
 export * from "../types/endpoints";

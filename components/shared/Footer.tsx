@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail, ArrowUp, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg
@@ -13,6 +15,10 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 export function Footer() {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <>
       {/* Floating WhatsApp Button */}
@@ -29,145 +35,246 @@ export function Footer() {
         </span>
       </a>
 
-      <footer className="border-t border-border/40 bg-background/95 backdrop-blur mt-12 md:mt-20 relative">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-8 text-center md:text-left">
-            {/* About */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">ITLINKERS</h3>
-              <p className="text-sm text-muted-foreground mx-auto md:mx-0 max-w-xs md:max-w-none">
-                IT LINKERS - wired for your world. Your trusted source for
-                premium laptops, components, and accessories.
-              </p>
-            </div>
+      {/* Back to Top */}
+      <button
+        className="fixed bottom-24 right-6 z-50 text-black "
+        onClick={scrollToTop}
+      >
+        <div className="p-4 rounded-full animate-bounce bg-white border border-black/5 shadow-2xl shadow-gray-500 hover:scale-110 transition-transform active:scale-95 group animate-bounce-slow">
+          <ArrowUp className="w-4 h-4" />
+        </div>
+      </button>
 
-            {/* Quick Links */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Quick Links</h3>
-              <ul className="space-y-2 text-sm font-medium">
-                <li>
-                  <Link
-                    href="/"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Products
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/about"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/contact"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Contact
-                  </Link>
-                </li>
-              </ul>
+      <footer className="border-t border-border/40 bg-background/95 backdrop-blur relative">
+        <div className="container mx-auto px-4 flex pt-6 md:pt-8 ">
+          <div className="container mx-auto px-4 ">
+            <Image
+              className="w-7 h-7 md:w-10 md:h-10 mix-blend-multiply dark:mix-blend-screen dark:invert"
+              src="/logo-01.png"
+              alt="Logo"
+              width={40}
+              height={40}
+            />
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-sm font-bold uppercase text-foreground">
+              Follow Us On:
+            </h4>
+            <div className="flex gap-4">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all"
+              >
+                <span className="font-bold text-xs">F</span>
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-[#E4405F] hover:text-white hover:border-[#E4405F] transition-all"
+              >
+                <span className="font-bold text-xs">I</span>
+              </a>
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000] transition-all"
+              >
+                <span className="font-bold text-xs">Y</span>
+              </a>
             </div>
-
-            {/* Categories */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Categories</h3>
-              <ul className="space-y-2 text-sm font-medium">
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-6 md:py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-left">
+            {/* 1. ABOUT US */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
+                ABOUT US
+              </h3>
+              <ul className="space-y-3 text-sm font-medium">
                 <li>
                   <Link
                     href="/products?category=laptops"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
                   >
-                    Refurbished Laptops
+                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
+                    About Itlinkers
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/products?category=desktops"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
                   >
-                    Refurbished Desktops
+                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
+                    Refurbishing story
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/products?category=accessories"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    href="/products?category=hp-refurbished"
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
                   >
-                    Computer Accessories
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products?category=components"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    IT Components
+                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
+                    Our Story
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Social */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Connect</h3>
-              <div className="flex gap-3 justify-center md:justify-start">
-                <a
-                  href="https://wa.me/917380817676"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-muted hover:bg-[#25D366] hover:text-white transition-colors"
-                >
-                  <WhatsAppIcon className="w-5 h-5" />
-                </a>
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Github className="w-5 h-5" />
-                </a>
-                <a
-                  href="https://linkedin.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Linkedin className="w-5 h-5" />
-                </a>
-                <a
-                  href="mailto:contact.itlinkers@gmail.com"
-                  className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <Mail className="w-5 h-5" />
-                </a>
-              </div>
-              <div className="pt-2">
-                <p className="text-xs text-muted-foreground font-semibold">
-                  Customer Support:
-                </p>
-                <p className="text-sm font-bold text-foreground">
-                  +91 7380817676
-                </p>
+            {/* 2. OUR PRODUCTS */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
+                Our Products
+              </h3>
+              <ul className="space-y-3 text-sm font-medium">
+                <li>
+                  <Link
+                    href="/products?category=laptops"
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
+                    Laptops
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/products?category=desktops"
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
+                    Desktops
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/products?category=hp-refurbished"
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
+                    HP Laptops
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/products?category=accessories"
+                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
+                    Accessories
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* 3. HELP */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
+                Help
+              </h3>
+              <ul className="space-y-3 text-sm font-medium">
+                <li>
+                  <Link
+                    href="/contact"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/shipping"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Shipping Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/returns"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Return Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/warranty"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Warranty Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* 4. CONTACTS & NEWSLETTER */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
+                Contacts
+              </h3>
+
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
+                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
+                    Reach out to us
+                  </p>
+                  <p className="text-lg font-bold text-foreground">
+                    +91 7380817676
+                  </p>
+                  <p className="text-sm text-primary break-all">
+                    contact.itlinkers@gmail.com
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-sm font-bold uppercase text-foreground">
+                    Sign Up Our Newsletter
+                  </h4>
+                  <form className="relative flex items-center">
+                    <input
+                      type="email"
+                      placeholder="Enter Email ->"
+                      className="w-full h-10 pl-4 pr-10 rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 text-primary hover:text-primary/80"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 md:mt-12 pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
+          <div className="mt-16 pt-8 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground font-medium uppercase tracking-wider">
             <p>
               &copy; {new Date().getFullYear()} ITLINKERS. All rights reserved.
+            </p>
+            <p className="opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
+              Designed & Developed for Excellence
             </p>
           </div>
         </div>

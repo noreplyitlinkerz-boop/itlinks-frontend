@@ -11,8 +11,6 @@ import {
   ShoppingCart,
   Heart,
   Menu,
-  Sun,
-  Moon,
   LayoutDashboard,
   Package,
   ChevronDown,
@@ -32,51 +30,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-const NAVIGATION_CATEGORIES = [
-  {
-    name: "Buy Refurbished Laptop",
-    href: "/products?category=laptops",
-    subcategories: ["Apple Macbook", "HP", "Lenovo", "Dell"],
-  },
-  {
-    name: "Buy Refurbished Desktop",
-    href: "/products?category=desktops",
-    subcategories: ["HP", "Lenovo", "Dell"],
-  },
-  {
-    name: "HP Brand Refurbished",
-    href: "/products?category=hp-refurbished",
-    subcategories: ["Elitebook", "Probook", "ZBook"],
-  },
-  {
-    name: "Elite Desktop",
-    href: "/products?category=elite-desktop",
-    subcategories: ["Elitedesk", "Prodesk"],
-  },
-  {
-    name: "Accessories",
-    href: "/products?category=accessories",
-    subcategories: [
-      "Motherboard",
-      "Processors",
-      "SSD's/HDD's",
-      "RAM",
-      "Monitors",
-      "Graphics Card",
-      "Antivirus Software",
-      "Cartridges/Ink",
-      "Cable",
-      "Pendrives",
-      "Keyboard",
-      "Mouse",
-      "Cameras",
-      "DVR/NVR",
-      "CCTV Racks",
-      "Headphones",
-      "Speakers",
-    ],
-  },
-];
+import { navigationService, productService } from "@/lib/api/services";
+import { NavigationItem } from "@/lib/api/types/endpoints";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+interface SearchResultItem {
+  _id: string;
+  slug: string;
+  name: string;
+  price: number;
+}
 
 export function Header() {
   const pathname = usePathname();
@@ -90,9 +54,60 @@ export function Header() {
     string | null
   >(null);
 
+  const router = useRouter();
+  const [navItems, setNavItems] = useState<NavigationItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
   const userInitials = user
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
     : "";
+
+  useEffect(() => {
+    const fetchNavigation = async () => {
+      try {
+        const response = await navigationService.getNavigation();
+        if (response.success && response.data) {
+          setNavItems(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch navigation", error);
+      }
+    };
+    fetchNavigation();
+  }, []);
+
+  // Debounced Search Effect
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.length >= 2) {
+        setIsSearching(true);
+        try {
+          const response = await productService.searchProducts({
+            search: searchQuery,
+            limit: 10,
+          });
+          if (response && response.data && Array.isArray(response.data)) {
+            setSearchResults(response.data);
+          } else {
+            setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Search failed", error);
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+          setShowResults(true);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   return (
     <>
@@ -144,13 +159,74 @@ export function Header() {
             {/* Search Bar - Center */}
             <div className="hidden lg:flex flex-1 max-w-md relative">
               <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search for Products, Categories or Brands..."
-                  className="w-full h-10 pl-10 pr-4 rounded-full bg-muted/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
-                />
-                <ShoppingCart className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground hidden" />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (searchQuery.trim()) {
+                      router.push(
+                        `/products?search=${encodeURIComponent(searchQuery)}`,
+                      );
+                      setShowResults(false);
+                    }
+                  }}
+                  className="relative w-full"
+                >
+                  <input
+                    type="text"
+                    placeholder="Search for Products, Categories or Brands..."
+                    className="w-full h-10 pl-10 pr-4 rounded-full bg-muted/50 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowResults(true)}
+                  />
+                  <ShoppingCart className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground hidden" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                </form>
+
+                {/* Search Results Dropdown */}
+                {showResults &&
+                  (searchQuery.length >= 2 || searchResults.length > 0) && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10 bg-transparent"
+                        onClick={() => setShowResults(false)}
+                      />
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-20 overflow-hidden max-h-[50vh] md:max-h-[60vh] overflow-y-auto">
+                        {isSearching ? (
+                          <div className="p-4 text-center text-sm text-muted-foreground">
+                            Searching...
+                          </div>
+                        ) : searchResults.length > 0 ? (
+                          <div className="py-2">
+                            {searchResults.map((product) => (
+                              <div
+                                key={product._id}
+                                className="flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2 md:py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/10 last:border-0"
+                                onClick={() => {
+                                  router.push(`/products/slug/${product.slug}`);
+                                  setShowResults(false);
+                                  setSearchQuery("");
+                                }}
+                              >
+                                <div className="flex-1 flex justify-between items-center min-w-0 gap-2 md:gap-4">
+                                  <h4 className="text-sm font-medium text-foreground truncate">
+                                    {product.name}
+                                  </h4>
+                                  <p className="text-xs text-primary font-semibold whitespace-nowrap">
+                                    ₹{product.price.toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : searchQuery.length >= 2 ? (
+                          <div className="p-4 text-center text-sm text-muted-foreground">
+                            No products found
+                          </div>
+                        ) : null}
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -162,19 +238,6 @@ export function Header() {
                   +91 7380817676
                 </span>
               </div>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="w-9 h-9"
-              >
-                {theme === "dark" ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
-              </Button>
 
               <Link href="/wishlist">
                 <Button
@@ -320,57 +383,53 @@ export function Header() {
               >
                 Home
               </Link>
-              {NAVIGATION_CATEGORIES.map((cat) => (
+              {navItems.map((nav) => (
                 <div
-                  key={cat.name}
+                  key={nav.label}
                   className="relative group py-1"
+                  onMouseEnter={() => setActiveCategory(nav.label)}
                   onMouseLeave={() => setActiveCategory(null)}
                 >
-                  <button
-                    onClick={() =>
-                      setActiveCategory(
-                        activeCategory === cat.name ? null : cat.name,
-                      )
-                    }
+                  <Link
+                    href={nav.url || "#"}
                     className={cn(
                       "text-sm font-bold uppercase tracking-tight flex items-center gap-1 transition-colors hover:text-primary",
-                      activeCategory === cat.name
+                      activeCategory === nav.label
                         ? "text-primary"
                         : "text-foreground",
                     )}
                   >
-                    {cat.name}
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
+                    {nav.label}
+                    {nav.children && nav.children.length > 0 && (
+                      <ChevronDown className="w-3 h-3" />
+                    )}
+                  </Link>
 
                   {/* Dropdown / Mega-menu */}
-                  {activeCategory === cat.name && (
-                    <div className="absolute top-full left-0 mt-0 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                      <div className="grid gap-1.5 px-3">
-                        <div className="px-3 mb-2 pb-2 border-b border-border/50">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                            Explore {cat.name}
-                          </p>
+                  {nav.children &&
+                    nav.children.length > 0 &&
+                    activeCategory === nav.label && (
+                      <div className="absolute top-full left-0 mt-0 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                        <div className="grid gap-1.5 px-3">
+                          <div className="px-3 mb-2 pb-2 border-b border-border/50">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                              Explore {nav.label}
+                            </p>
+                          </div>
+                          {nav.children.map((child) => (
+                            <Link
+                              key={child.label}
+                              href={child.url}
+                              className="px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 hover:text-primary rounded-lg transition-all font-medium flex items-center justify-between group/item"
+                              onClick={() => setActiveCategory(null)}
+                            >
+                              {child.label}
+                              <Package className="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                            </Link>
+                          ))}
                         </div>
-                        {cat.subcategories.map((sub) => (
-                          <Link
-                            key={sub}
-                            href={`/products?category=${cat.name
-                              .toLowerCase()
-                              .replace(
-                                /\s+/g,
-                                "-",
-                              )}&subcategory=${sub.toLowerCase().replace(/\s+/g, "-")}`}
-                            className="px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 hover:text-primary rounded-lg transition-all font-medium flex items-center justify-between group/item"
-                            onClick={() => setActiveCategory(null)}
-                          >
-                            {sub}
-                            <Package className="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                          </Link>
-                        ))}
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               ))}
               <Link
@@ -409,53 +468,55 @@ export function Header() {
               >
                 Home
               </Link>
-              {NAVIGATION_CATEGORIES.map((cat) => (
+              {navItems.map((nav) => (
                 <div
-                  key={cat.name}
+                  key={nav.label}
                   className="flex flex-col border-b border-border/10 last:border-0"
                 >
-                  <button
-                    onClick={() =>
-                      setExpandedMobileCategory(
-                        expandedMobileCategory === cat.name ? null : cat.name,
-                      )
-                    }
-                    className={cn(
-                      "flex items-center justify-between py-4 px-3 hover:bg-muted/50 transition-colors text-left rounded-xl",
-                      expandedMobileCategory === cat.name && "bg-primary/5",
-                    )}
-                  >
-                    <span
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={nav.url || "#"}
+                      onClick={() => {
+                        if (!nav.children || nav.children.length === 0)
+                          setMobileMenuOpen(false);
+                      }}
                       className={cn(
-                        "text-sm font-bold uppercase tracking-tight transition-colors",
-                        expandedMobileCategory === cat.name
-                          ? "text-primary"
-                          : "text-foreground",
+                        "flex-1 py-4 px-3 hover:bg-muted/50 transition-colors text-left rounded-xl text-sm font-bold uppercase tracking-tight",
+                        expandedMobileCategory === nav.label && "bg-primary/5",
                       )}
                     >
-                      {cat.name}
-                    </span>
-                    <ChevronDown
-                      className={cn(
-                        "w-4 h-4 transition-transform duration-300",
-                        expandedMobileCategory === cat.name
-                          ? "rotate-180 text-primary"
-                          : "text-muted-foreground",
-                      )}
-                    />
-                  </button>
+                      {nav.label}
+                    </Link>
+                    {nav.children && nav.children.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setExpandedMobileCategory(
+                            expandedMobileCategory === nav.label
+                              ? null
+                              : nav.label,
+                          );
+                        }}
+                        className="p-4"
+                      >
+                        <ChevronDown
+                          className={cn(
+                            "w-4 h-4 transition-transform duration-300",
+                            expandedMobileCategory === nav.label
+                              ? "rotate-180 text-primary"
+                              : "text-muted-foreground",
+                          )}
+                        />
+                      </button>
+                    )}
+                  </div>
 
-                  {expandedMobileCategory === cat.name && (
+                  {expandedMobileCategory === nav.label && nav.children && (
                     <div className="pl-6 pb-4 flex flex-col gap-1 animate-in slide-in-from-top-2 duration-300">
-                      {cat.subcategories.map((sub) => (
+                      {nav.children.map((child) => (
                         <Link
-                          key={sub}
-                          href={`/products?category=${cat.name
-                            .toLowerCase()
-                            .replace(
-                              /\s+/g,
-                              "-",
-                            )}&subcategory=${sub.toLowerCase().replace(/\s+/g, "-")}`}
+                          key={child.label}
+                          href={child.url}
                           className="text-sm py-2.5 text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
                           onClick={() => {
                             setMobileMenuOpen(false);
@@ -463,7 +524,7 @@ export function Header() {
                           }}
                         >
                           <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
-                          {sub}
+                          {child.label}
                         </Link>
                       ))}
                     </div>

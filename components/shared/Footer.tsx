@@ -48,7 +48,7 @@ export function Footer() {
       </button>
 
       <footer className="border-t border-border/40 bg-background/95 backdrop-blur relative">
-        <div className="container mx-auto px-4 flex pt-6 md:pt-8 ">
+        <div className="container mx-auto px-0 flex pt-6 md:pt-8 ">
           <div className="container mx-auto px-4 ">
             {/* Logo */}
             <Link
@@ -106,8 +106,9 @@ export function Footer() {
             </div>
           </div>
         </div>
-        <div className="container mx-auto px-4 py-6 md:py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-left">
+
+        <div className="container mx-auto px-4 pt-6 md:pt-8 pb-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 text-left">
             {/* 1. ABOUT US */}
             <div className="space-y-6">
               <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
@@ -247,42 +248,42 @@ export function Footer() {
             </div>
 
             {/* 4. CONTACTS & NEWSLETTER */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
-                Contacts
-              </h3>
-
+            <div className="space-y-8 col-span-2 lg:col-span-1">
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
-                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
+                <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
+                  Contacts
+                </h3>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm space-y-2">
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
                     Reach out to us
                   </p>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-lg font-black text-slate-900 tracking-tight">
                     +91 7380817676
                   </p>
-                  <p className="text-sm text-primary break-all">
+                  <p className="text-xs font-bold text-[#10BBE6] break-all">
                     contact.itlinkers@gmail.com
                   </p>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold uppercase text-foreground">
-                    Sign Up Our Newsletter
-                  </h4>
-                  <form className="relative flex items-center">
-                    <input
-                      type="email"
-                      placeholder="Enter Email ->"
-                      className="w-full h-10 pl-4 pr-10 rounded-lg bg-background border border-border focus:outline-none focus:ring-1 focus:ring-primary text-sm"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-2 text-primary hover:text-primary/80"
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
-                  </form>
-                </div>
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Newsletter
+                </h4>
+                <form className="relative flex items-center group">
+                  <div className="absolute inset-0 bg-primary/5 rounded-xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                  <input
+                    type="email"
+                    placeholder="Enter Email"
+                    className="relative w-full h-11 pl-4 pr-12 rounded-xl bg-white border border-slate-200 focus:border-[#10BBE6]/50 focus:ring-0 text-sm transition-all duration-300"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-1.5 w-8 h-8 rounded-lg bg-[#10BBE6] text-white flex items-center justify-center hover:bg-[#10BBE6]/90 transition-all shadow-lg shadow-[#10BBE6]/20"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </form>
               </div>
             </div>
           </div>

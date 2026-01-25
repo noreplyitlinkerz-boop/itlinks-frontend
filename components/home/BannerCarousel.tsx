@@ -74,6 +74,7 @@ export function BannerCarousel() {
               fill
               className="object-cover brightness-[0.4]"
               priority
+              unoptimized={true}
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 text-white z-10 pb-16 md:pb-20">
               <h2 className="text-3xl md:text-6xl font-bold mb-2 md:mb-4 animate-fade-in px-2">

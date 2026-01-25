@@ -210,6 +210,7 @@ export default function AdminBannersPage() {
                           alt={banner.title}
                           fill
                           className="object-cover"
+                          unoptimized={true}
                         />
                       ) : (
                         <ImageIcon className="w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-muted-foreground" />

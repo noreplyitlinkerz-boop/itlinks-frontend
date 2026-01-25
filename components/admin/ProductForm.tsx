@@ -41,8 +41,8 @@ import {
   ProductFormValues,
   AdminProductFormProps,
 } from "@/types/admin-product-types";
-import { categoryService } from "@/lib/api/services";
-import { Category } from "@/lib/api/types/endpoints";
+import { categoryService, brandService } from "@/lib/api/services";
+import { Category, Brand } from "@/lib/api/types/endpoints";
 import { safeParse } from "@/lib/utils";
 import { getFullImageUrl } from "@/components/shared/ProductImage";
 
@@ -53,6 +53,7 @@ export function ProductForm({
   onCancel,
 }: AdminProductFormProps) {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [primaryImage, setPrimaryImage] = useState<File | null>(null);
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>(
     getFullImageUrl(
@@ -92,7 +93,10 @@ export function ProductForm({
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
       name: initialData?.name || "",
-      brand: initialData?.brand || "",
+      brandID:
+        typeof (initialData as any)?.brandID === "object"
+          ? (initialData as any)?.brandID?._id || "" // Handle populated brandID
+          : (initialData as any)?.brandID || "", // Handle brandID string
       slug: initialData?.slug || "",
       description: initialData?.description || "",
       price: initialData?.price || 0,
@@ -112,50 +116,143 @@ export function ProductForm({
     },
   });
 
+  // Sync state when initialData changes
   useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await categoryService.getCategories();
-        const cats = response.data || [];
-        setCategories(cats);
+    if (initialData) {
+      const primaryImg = getFullImageUrl(
+        initialData?.product_primary_image_url || initialData?.images?.[0],
+      );
+      setPrimaryImagePreview(primaryImg);
+      setPrimaryImage(null);
 
-        // CRITICAL FIX: If editing and categoryID exists, ensure it's set in the form
-        // This must happen AFTER categories are loaded so the Select can find the matching option
+      // Filter out primary image from additional images to prevent duplication in UI
+      const additionalImgs =
+        initialData?.images
+          ?.map((img) => getFullImageUrl(img))
+          .filter((img) => img !== primaryImg) || [];
+      setAdditionalImagesPreviews(additionalImgs);
+      setAdditionalImages([]);
+
+      const vids =
+        initialData?.product_videos_url?.map((vid) => getFullImageUrl(vid)) ||
+        [];
+      setVideoPreviews(vids);
+      setVideos([]);
+
+      if (initialData.specifications) {
+        setSpecs(
+          Object.entries(safeParse(initialData.specifications, {})).map(
+            ([key, value]) => ({
+              key,
+              value: String(value),
+            }),
+          ),
+        );
+      } else {
+        setSpecs([]);
+      }
+
+      form.reset({
+        name: initialData.name || "",
+        brandID:
+          typeof (initialData as any)?.brandID === "object"
+            ? (initialData as any)?.brandID?._id || ""
+            : (initialData as any)?.brandID || "",
+        slug: initialData.slug || "",
+        description: initialData.description || "",
+        price: initialData.price || 0,
+        stock: initialData.stock || 0,
+        featured: initialData.featured || false,
+        isVisible: initialData.isVisible ?? true,
+        discountPercentage:
+          safeParse(initialData.discount, { percentage: 0 }).percentage ?? 0,
+        discountedPrice:
+          safeParse(initialData.discount, { discountedPrice: 0 })
+            .discountedPrice ?? 0,
+        specifications: safeParse(initialData.specifications, {}),
+        categoryID:
+          typeof initialData.categoryID === "object"
+            ? (initialData.categoryID as any)?._id || ""
+            : initialData.categoryID || "",
+      });
+    } else {
+      // Reset for create mode
+      setPrimaryImagePreview("");
+      setPrimaryImage(null);
+      setAdditionalImagesPreviews([]);
+      setAdditionalImages([]);
+      setVideoPreviews([]);
+      setVideos([]);
+      setSpecs(defaultSpecs);
+      form.reset({
+        name: "",
+        brandID: "",
+        slug: "",
+        description: "",
+        price: 0,
+        stock: 0,
+        featured: false,
+        isVisible: true,
+        discountPercentage: 0,
+        discountedPrice: 0,
+        specifications: {},
+        categoryID: "",
+      });
+    }
+  }, [initialData, form]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [catResponse, brandResponse] = await Promise.all([
+          categoryService.getCategories(),
+          brandService.getBrands(),
+        ]);
+
+        const cats: Category[] = Array.isArray(catResponse.data)
+          ? catResponse.data
+          : (catResponse.data as any)?.data || [];
+        const brandsData: Brand[] = Array.isArray(brandResponse.data)
+          ? brandResponse.data
+          : (brandResponse.data as any)?.data || [];
+
+        setCategories(cats);
+        setBrands(brandsData);
+
+        // Handle Category pre-selection
         if (initialData?.categoryID && cats.length > 0) {
-          // Extract the actual ID string (categoryID might be an object {_id, name})
           const categoryId =
             typeof initialData.categoryID === "object"
               ? (initialData.categoryID as any)._id
               : initialData.categoryID;
-
           const categoryExists = cats.find((c) => c._id === categoryId);
           if (categoryExists) {
-            // Force the form to update the value with proper options
-            form.setValue("categoryID", categoryId, {
-              shouldValidate: false,
-              shouldDirty: false,
-              shouldTouch: false,
-            });
-            console.log(
-              "ProductForm: ✅ Set categoryID to:",
-              categoryId,
-              "Category:",
-              categoryExists.name,
-            );
-          } else {
-            console.warn(
-              "ProductForm: ⚠️ Category ID not found in loaded categories:",
-              categoryId,
-            );
+            form.setValue("categoryID", categoryId, { shouldValidate: false });
+          }
+        }
+
+        // Handle Brand pre-selection
+        let initialBrandId = "";
+        if (initialData?.brandID) {
+          initialBrandId =
+            typeof initialData.brandID === "object"
+              ? (initialData.brandID as any)._id
+              : initialData.brandID;
+        }
+
+        if (initialBrandId && brandsData.length > 0) {
+          const brandExists = brandsData.find((b) => b._id === initialBrandId);
+          if (brandExists) {
+            form.setValue("brandID", initialBrandId, { shouldValidate: false });
           }
         }
       } catch (error) {
-        console.error("ProductForm: Failed to load categories", error);
-        toast.error("Failed to load categories");
+        console.error("ProductForm: Failed to load data", error);
+        toast.error("Failed to load categories or brands");
       }
     }
-    fetchCategories();
-  }, [initialData?.categoryID, form]);
+    fetchData();
+  }, [initialData, form]);
 
   // Auto-generate slug from name
   const productName = form.watch("name");
@@ -262,6 +359,9 @@ export function ProductForm({
         key !== "specifications" &&
         key !== "categoryID" &&
         key !== "discountPercentage" &&
+        key !== "categoryID" &&
+        key !== "brandID" &&
+        key !== "discountPercentage" &&
         key !== "discountedPrice"
       ) {
         if (key === "price" || key === "stock") {
@@ -273,8 +373,9 @@ export function ProductForm({
       }
     });
 
-    // Explicitly append categoryID
+    // Explicitly append IDs
     formData.append("categoryID", values.categoryID);
+    formData.append("brandID", values.brandID);
 
     // Add discount
     if (
@@ -370,13 +471,24 @@ export function ProductForm({
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="brand"
+                name="brandID"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Brand</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Apple" {...field} />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a brand" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand._id} value={brand._id}>
+                            {brand.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

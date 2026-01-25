@@ -10,6 +10,9 @@ import {
   MessageSquare,
   Menu,
   X,
+  Tag,
+  Image as ImageIcon,
+  Map,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminGuard } from "@/components/auth/AdminGuard";
@@ -31,6 +34,9 @@ export default function AdminLayout({
     { href: "/admin/products", icon: Package, label: "Products" },
     { href: "/admin/categories", icon: FolderTree, label: "Categories" },
     { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
+    { href: "/admin/brands", icon: Tag, label: "Brands" },
+    { href: "/admin/banners", icon: ImageIcon, label: "Banners" },
+    { href: "/admin/navigation", icon: Map, label: "Navigation" },
     { href: "/admin/contacts", icon: MessageSquare, label: "Messages" },
   ];
 
@@ -61,7 +67,6 @@ export default function AdminLayout({
             </div>
 
             <div className="flex items-center gap-3">
-             
               <Link href="/">
                 <Button
                   variant="outline"
@@ -89,7 +94,10 @@ export default function AdminLayout({
 
             <nav className="space-y-2">
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive =
+                  item.href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(item.href);
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button

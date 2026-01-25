@@ -26,6 +26,21 @@ class ProductService extends BaseService {
   async getProducts(params?: GetProductsParams): Promise<GetProductsResponse> {
     const response = await this.get<any>("", params);
 
+    // Handle nested pagination structure: { data: { data: [], total: ... } }
+    if (response.data && Array.isArray(response.data.data)) {
+      const limit = Number(response.data.limit) || 10;
+      const total = Number(response.data.total) || 0;
+      return {
+        data: response.data.data,
+        pagination: {
+          page: Number(response.data.page) || 1,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit) || 1,
+        },
+      };
+    }
+
     // Handle flat response structure where pagination is missing
     if (!response.pagination && typeof response.total !== "undefined") {
       const limit = Number(response.limit) || 10;
@@ -51,7 +66,7 @@ class ProductService extends BaseService {
    * @endpoint GET /products/search/list
    */
   async searchProducts(
-    params: SearchProductsParams
+    params: SearchProductsParams,
   ): Promise<SearchProductsResponse> {
     return this.get<SearchProductsResponse>("/search/list", params);
   }
@@ -86,11 +101,11 @@ class ProductService extends BaseService {
    * Uses FormData for file uploads
    */
   async createProduct(
-    data: CreateProductRequest
+    data: CreateProductRequest,
   ): Promise<ApiResponse<Product>> {
     return this.postFormData<ApiResponse<Product>>(
       "",
-      data as unknown as Record<string, unknown>
+      data as unknown as Record<string, unknown>,
     );
   }
 
@@ -102,11 +117,11 @@ class ProductService extends BaseService {
    */
   async updateProduct(
     id: string,
-    data: UpdateProductRequest
+    data: UpdateProductRequest,
   ): Promise<ApiResponse<Product>> {
     return this.putFormData<ApiResponse<Product>>(
       `/${id}`,
-      data as unknown as Record<string, unknown>
+      data as unknown as Record<string, unknown>,
     );
   }
 

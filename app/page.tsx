@@ -54,9 +54,6 @@ export default function HomePage() {
         {/* Banner Carousel with Search */}
         <BannerCarousel />
 
-        {/* Brand Promotion */}
-        <BrandPromotion />
-
         {/* Featured Products */}
         <section className="py-10 md:py-20">
           <div className="container mx-auto px-4">
@@ -104,6 +101,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Brand Promotion */}
+        <BrandPromotion />
 
         {/* FAQ Section */}
         <FaqSection />

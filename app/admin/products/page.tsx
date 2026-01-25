@@ -311,8 +311,18 @@ export default function AdminProductsPage() {
                       <span className="font-normal text-foreground line-clamp-2 leading-snug">
                         {product.name}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {product.brand}
+                      <span className="text-xs text-muted-foreground flex items-center gap-2">
+                        <span>
+                          {typeof product.brandID === "object"
+                            ? product.brandID.name
+                            : "No Brand"}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {typeof product.categoryID === "object"
+                            ? product.categoryID.name
+                            : "No Category"}
+                        </span>
                       </span>
                     </div>
                   </TableCell>

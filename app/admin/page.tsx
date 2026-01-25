@@ -23,33 +23,38 @@ import { Badge } from "@/components/ui/badge";
 export default function AdminDashboard() {
   const { products, categories, orders } = useAdmin();
 
+  // Ensure all data is always an array
+  const productsList = Array.isArray(products) ? products : [];
+  const categoriesList = Array.isArray(categories) ? categories : [];
+  const ordersList = Array.isArray(orders) ? orders : [];
+
   // Calculate stats
-  const totalRevenue = orders
+  const totalRevenue = ordersList
     .filter((o) => o.orderStatus !== "cancelled")
     .reduce((sum, order) => sum + order.totalAmount, 0);
 
-  const pendingOrders = orders.filter(
-    (o) => o.orderStatus === "pending"
+  const pendingOrders = ordersList.filter(
+    (o) => o.orderStatus === "pending",
   ).length;
 
   // Recent orders (last 5)
-  const recentOrders = [...orders]
+  const recentOrders = [...ordersList]
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
     .slice(0, 5);
 
   const stats = [
     {
       title: "Total Products",
-      value: products.length,
+      value: productsList.length,
       icon: Package,
-      description: `${products.filter((p) => p.stock > 0).length} in stock`,
+      description: `${productsList.filter((p) => p.stock > 0).length} in stock`,
     },
     {
       title: "Categories",
-      value: categories.length,
+      value: categoriesList.length,
       icon: FolderTree,
       description: "Active categories",
     },

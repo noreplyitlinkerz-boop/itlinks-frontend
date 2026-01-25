@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { Github, Linkedin, Mail, ArrowUp, Send } from "lucide-react";
+import { ArrowUp, Send, Youtube, Facebook, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
@@ -67,7 +69,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all"
               >
-                <span className="font-bold text-xs">F</span>
+                <Facebook className="w-4 h-4" />
               </a>
               <a
                 href="https://instagram.com"
@@ -75,7 +77,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-[#E4405F] hover:text-white hover:border-[#E4405F] transition-all"
               >
-                <span className="font-bold text-xs">I</span>
+                <Instagram className="w-4 h-4" />
               </a>
               <a
                 href="https://youtube.com"
@@ -83,7 +85,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000] transition-all"
               >
-                <span className="font-bold text-xs">Y</span>
+                <Youtube className="w-4 h-4" />
               </a>
             </div>
           </div>

@@ -59,7 +59,23 @@ function ProductsContent() {
         if (subcategoryFromUrl) params.subcategory = subcategoryFromUrl;
 
         const response = await productService.getProducts(params);
-        setProducts(response.data || []);
+
+        // Helper to extract array from various response structures
+        const getArray = (res: any, key: string) => {
+          if (!res) return [];
+          if (Array.isArray(res)) return res;
+
+          // Check for paginated response structure: res.data.data arrays
+          if (res.data && res.data.data && Array.isArray(res.data.data)) {
+            return res.data.data;
+          }
+
+          if (res.data && Array.isArray(res.data)) return res.data;
+          if (res[key] && Array.isArray(res[key])) return res[key];
+          return [];
+        };
+
+        setProducts(getArray(response, "products"));
       } catch (error) {
         console.error("Failed to fetch products", error);
         toast.error("Failed to load products");

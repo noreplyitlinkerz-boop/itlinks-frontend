@@ -29,7 +29,7 @@ export class ContactService extends BaseService {
    * Submit a contact message
    */
   async submitContactMessage(
-    data: CreateContactRequest
+    data: CreateContactRequest,
   ): Promise<ContactMessage> {
     return this.post<ContactMessage>("", data);
   }
@@ -38,9 +38,16 @@ export class ContactService extends BaseService {
    * Get all contact messages (Admin only)
    */
   async getContacts(
-    params?: GetContactsParams
+    params?: GetContactsParams,
   ): Promise<PaginatedResponse<ContactMessage>> {
-    return this.get<PaginatedResponse<ContactMessage>>("", params);
+    const response = await this.get<any>("", params);
+
+    // Handle nested structure: { success: true, data: { data: [], pagination: { ... } } }
+    if (response.data && response.data.pagination) {
+      return response.data;
+    }
+
+    return response as PaginatedResponse<ContactMessage>;
   }
 }
 

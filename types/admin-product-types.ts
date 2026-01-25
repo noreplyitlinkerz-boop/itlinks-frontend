@@ -7,7 +7,7 @@ import {
 
 export const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  brand: z.string().min(2, "Brand must be at least 2 characters"),
+  brandID: z.string().min(1, "Brand is required"),
   slug: z.string().min(2, "Slug must be at least 2 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   price: z.coerce.number().min(0, "Price must be at least 0"),

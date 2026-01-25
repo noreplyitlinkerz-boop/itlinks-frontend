@@ -29,7 +29,7 @@ interface AdminContextType {
   deleteCategory: (id: string) => Promise<void>;
   updateOrderStatus: (
     id: string,
-    status: Order["orderStatus"]
+    status: Order["orderStatus"],
   ) => Promise<void>;
 }
 
@@ -46,19 +46,62 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [productsRes, categoriesRes, ordersRes] = await Promise.all([
-        productService.getProducts({ limit: 100 }), // Get a good amount for the dashboard/context
-        categoryService.getCategories(),
-        orderService.getAllOrders(),
-      ]);
+      // Convert to Promise.allSettled or just await individually with local error handling
+      // to prevents one failure from clearing all data
 
-      setProducts(productsRes.data || []);
-      setCategories(categoriesRes.data || []);
-      // Handle different response structures for orders
-      const ordersList = ordersRes.data || (ordersRes as any).orders || [];
-      setOrders(ordersList);
+      const getArray = (res: any, key: string) => {
+        if (!res) return [];
+        if (Array.isArray(res)) return res;
+
+        // Extract from res.data if it exists
+        const data = res.data !== undefined ? res.data : res;
+
+        if (Array.isArray(data)) return data;
+
+        // Check for common nested keys
+        if (data && Array.isArray(data.data)) return data.data;
+        if (data && Array.isArray(data[key])) return data[key];
+
+        return [];
+      };
+
+      try {
+        // Fetch products
+        try {
+          const productsRes = await productService.getProducts({ limit: 100 });
+          setProducts(getArray(productsRes, "products"));
+        } catch (e) {
+          console.error("Failed to fetch products", e);
+          setProducts([]);
+        }
+
+        // Fetch categories
+        try {
+          const categoriesRes = await categoryService.getCategories();
+          setCategories(getArray(categoriesRes, "categories"));
+        } catch (e) {
+          console.error("Failed to fetch categories", e);
+          setCategories([]);
+        }
+
+        // Fetch orders
+        try {
+          const ordersRes = await orderService.getAllOrders();
+          setOrders(getArray(ordersRes, "orders"));
+        } catch (e) {
+          console.error("Failed to fetch orders", e);
+          setOrders([]);
+        }
+      } catch (globalError) {
+        // Should not happen due to inner catches, but for safety
+        console.error("Critical error in admin data fetch", globalError);
+      }
     } catch (error) {
       console.error("Failed to fetch admin data", error);
+      // Ensure we always have arrays even on error
+      setProducts([]);
+      setCategories([]);
+      setOrders([]);
     } finally {
       setIsLoading(false);
     }
@@ -128,14 +171,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   // Order operations
   const updateOrderStatus = async (
     id: string,
-    status: Order["orderStatus"]
+    status: Order["orderStatus"],
   ) => {
     try {
       await orderService.updateOrderStatus(id, { orderStatus: status });
       setOrders((prev) =>
         prev.map((order) =>
-          order._id === id ? { ...order, orderStatus: status } : order
-        )
+          order._id === id ? { ...order, orderStatus: status } : order,
+        ),
       );
       toast.success("Order status updated");
     } catch (error) {

@@ -13,7 +13,7 @@ export interface Product {
   _id: string;
   slug: string;
   name: string;
-  brand: string;
+  brandID: string | { _id: string; name: string };
   description: string;
   price: number;
   stock: number;
@@ -34,14 +34,14 @@ export interface Product {
   keywords?: string[];
   createdAt?: string;
   updatedAt?: string;
-  categoryID: string;
+  categoryID: string | Category;
   __v?: number;
 }
 
 export interface CreateProductRequest {
   slug: string;
   name: string;
-  brand: string;
+  brandID: string;
   description: string;
   price: number;
   stock: number;

@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { bannerService } from "@/lib/api/services";
 import { Banner } from "@/lib/api/types/endpoints";
+import { getFullImageUrl } from "@/components/shared/ProductImage";
 
 export function BannerCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -68,7 +69,7 @@ export function BannerCarousel() {
             className="min-w-full relative h-[50vh] md:h-[600px]"
           >
             <Image
-              src={slide.image}
+              src={getFullImageUrl(slide.image)}
               alt={slide.title}
               fill
               className="object-cover brightness-[0.4]"

@@ -15,6 +15,7 @@ import {
   Package,
   ChevronDown,
   Search,
+  Phone,
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -180,15 +181,15 @@ export function Header() {
             >
               <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105">
                 <Image
-                  className="w-7 h-7 md:w-10 md:h-10 mix-blend-multiply dark:mix-blend-screen dark:invert"
+                  className="w-4 h-12 md:w-4 md:h-16 fill-black"
                   src="/logo-01.svg"
                   alt="Logo"
-                  width={40}
-                  height={40}
+                  width={20}
+                  height={20}
                 />
               </div>
               <div className="flex flex-col -gap-0.5 md:-gap-1">
-                <span className="text-lg md:text-2xl font-bold bg-linear-to-r from-primary via-blue-500 to-accent bg-clip-text text-transparent leading-none">
+                <span className="text-lg md:text-2xl font-bold text-[#10BBE6]">
                   ITLINKERS
                 </span>
                 <span className="text-[7px] md:text-[10px] text-muted-foreground font-medium tracking-wider uppercase leading-none">
@@ -273,12 +274,15 @@ export function Header() {
 
             {/* Action Icons */}
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="hidden md:flex flex-col items-end mr-2 text-[11px] leading-tight text-muted-foreground">
-                <span>Contact:</span>
-                <span className="font-semibold text-foreground">
-                  +91 7380817676
-                </span>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex w-9 h-9 text-muted-foreground hover:text-primary transition-colors"
+                onClick={() => window.open("tel:+917380817676")}
+                title="+91 7380817676"
+              >
+                <Phone className="w-5 h-5" />
+              </Button>
 
               <Link href="/wishlist">
                 <Button
@@ -411,89 +415,92 @@ export function Header() {
               </Button>
             </div>
           </div>
+        </nav>
 
-          {/* Categories Navigation - Desktop */}
-          <div className="hidden md:flex items-center justify-center border-t border-border/40 mt-3 pt-2">
-            <div className="flex items-center gap-8">
-              <Link
-                href="/"
-                className={cn(
-                  "text-sm font-bold uppercase tracking-tight transition-colors hover:text-primary",
-                  pathname === "/" ? "text-primary" : "text-foreground",
-                )}
+        {/* Categories Navigation - Desktop - Full Width */}
+        <div className="hidden md:flex items-center justify-center bg-[#10BBE6] text-white">
+          <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-8">
+            <Link
+              href="/"
+              className={cn(
+                "text-sm font-bold uppercase tracking-tight transition-colors hover:text-white/80",
+                pathname === "/" ? "text-white" : "text-white/90",
+              )}
+            >
+              Home
+            </Link>
+            {navItems.map((nav) => (
+              <div
+                key={nav.label}
+                className="relative group py-1"
+                onMouseEnter={() => setActiveCategory(nav.label)}
+                onMouseLeave={() => setActiveCategory(null)}
               >
-                Home
-              </Link>
-              {navItems.map((nav) => (
-                <div
-                  key={nav.label}
-                  className="relative group py-1"
-                  onMouseEnter={() => setActiveCategory(nav.label)}
-                  onMouseLeave={() => setActiveCategory(null)}
+                <Link
+                  href={nav.url || "#"}
+                  className={cn(
+                    "text-sm font-bold uppercase tracking-tight flex items-center gap-1 transition-colors hover:text-white/80",
+                    activeCategory === nav.label
+                      ? "text-white"
+                      : "text-white/90",
+                  )}
                 >
-                  <Link
-                    href={nav.url || "#"}
-                    className={cn(
-                      "text-sm font-bold uppercase tracking-tight flex items-center gap-1 transition-colors hover:text-primary",
-                      activeCategory === nav.label
-                        ? "text-primary"
-                        : "text-foreground",
-                    )}
-                  >
-                    {nav.label}
-                    {nav.children && nav.children.length > 0 && (
-                      <ChevronDown className="w-3 h-3" />
-                    )}
-                  </Link>
+                  {nav.label}
+                  {nav.children && nav.children.length > 0 && (
+                    <ChevronDown className="w-3 h-3" />
+                  )}
+                </Link>
 
-                  {/* Dropdown / Mega-menu */}
-                  {nav.children &&
-                    nav.children.length > 0 &&
-                    activeCategory === nav.label && (
-                      <div className="absolute top-full left-0 mt-0 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                        <div className="grid gap-1.5 px-3">
-                          <div className="px-3 mb-2 pb-2 border-b border-border/50">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                              Explore {nav.label}
-                            </p>
-                          </div>
-                          {nav.children.map((child) => (
-                            <Link
-                              key={child.label}
-                              href={getHref(child.label, child.url, nav.label)}
-                              className="px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 hover:text-primary rounded-lg transition-all font-medium flex items-center justify-between group/item"
-                              onClick={() => setActiveCategory(null)}
-                            >
-                              {child.label}
-                              <Package className="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                            </Link>
-                          ))}
+                {/* Dropdown / Mega-menu */}
+                {nav.children &&
+                  nav.children.length > 0 &&
+                  activeCategory === nav.label && (
+                    <div className="absolute top-full left-0 mt-0 w-72 bg-card border border-border shadow-2xl rounded-xl z-50 py-5 animate-in fade-in slide-in-from-top-4 duration-300 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                      <div className="grid gap-1.5 px-3">
+                        <div className="px-3 mb-2 pb-2 border-b border-border/50">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Explore {nav.label}
+                          </p>
                         </div>
+                        {nav.children.map((child) => (
+                          <Link
+                            key={child.label}
+                            href={getHref(child.label, child.url, nav.label)}
+                            className="px-3 py-2.5 text-sm text-foreground hover:bg-primary/5 hover:text-primary rounded-lg transition-all font-medium flex items-center justify-between group/item"
+                            onClick={() => setActiveCategory(null)}
+                          >
+                            {child.label}
+                            <Package className="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                          </Link>
+                        ))}
                       </div>
-                    )}
-                </div>
-              ))}
-              <Link
-                href="/contact"
-                className={cn(
-                  "text-sm font-bold uppercase tracking-tight transition-colors hover:text-primary",
-                  pathname === "/contact" ? "text-primary" : "text-foreground",
-                )}
-              >
-                Contactus
-              </Link>
-              <Link
-                href="/about"
-                className={cn(
-                  "text-sm font-bold uppercase tracking-tight transition-colors hover:text-primary",
-                  pathname === "/about" ? "text-primary" : "text-foreground",
-                )}
-              >
-                About us
-              </Link>
-            </div>
+                    </div>
+                  )}
+              </div>
+            ))}
+            <Link
+              href="/contact"
+              className={cn(
+                "text-sm font-bold uppercase tracking-tight transition-colors hover:text-white/80",
+                pathname === "/contact" ? "text-white" : "text-white/90",
+              )}
+            >
+              Contactus
+            </Link>
+            <Link
+              href="/about"
+              className={cn(
+                "text-sm font-bold uppercase tracking-tight transition-colors hover:text-white/80",
+                pathname === "/about" ? "text-white" : "text-white/90",
+              )}
+            >
+              About us
+            </Link>
           </div>
+        </div>
 
+        {/* Categories Navigation - Mobile - Fallback/Padding for mobile menu */}
+        <nav className="container mx-auto px-4 md:hidden">
           {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden mt-4 pb-6 flex flex-col gap-3 border-t border-border/40 pt-4 animate-slide-in-down max-h-[80vh] overflow-y-auto">

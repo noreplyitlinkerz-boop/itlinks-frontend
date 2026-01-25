@@ -50,13 +50,29 @@ export function Footer() {
       <footer className="border-t border-border/40 bg-background/95 backdrop-blur relative">
         <div className="container mx-auto px-4 flex pt-6 md:pt-8 ">
           <div className="container mx-auto px-4 ">
-            <Image
-              className="w-7 h-7 md:w-10 md:h-10 mix-blend-multiply dark:mix-blend-screen dark:invert"
-              src="/logo-01.svg"
-              alt="Logo"
-              width={40}
-              height={40}
-            />
+            {/* Logo */}
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 md:gap-2 group shrink-0"
+            >
+              <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                <Image
+                  className="w-4 h-12 md:w-4 md:h-16 fill-black"
+                  src="/logo-01.svg"
+                  alt="Logo"
+                  width={20}
+                  height={20}
+                />
+              </div>
+              <div className="flex flex-col -gap-0.5 md:-gap-1">
+                <span className="text-lg md:text-2xl font-bold text-[#10BBE6]">
+                  ITLINKERS
+                </span>
+                <span className="text-[7px] md:text-[10px] text-muted-foreground font-medium tracking-wider uppercase leading-none">
+                  wired for your world
+                </span>
+              </div>
+            </Link>
           </div>
           <div className="space-y-2">
             <h4 className="text-sm font-bold uppercase text-foreground">

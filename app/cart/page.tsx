@@ -182,7 +182,7 @@ export default function CartPage() {
                   Proceed to Checkout
                 </Button>
               </Link>
-
+              <div className="h-1"></div>
               <Link href="/products">
                 <Button variant="outline" className="w-full">
                   Continue Shopping

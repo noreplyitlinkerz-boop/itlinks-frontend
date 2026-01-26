@@ -179,21 +179,26 @@ export function Header() {
               href="/"
               className="flex items-center gap-1.5 md:gap-2 group shrink-0"
             >
-              <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105">
-                <Image
-                  className="w-4 h-12 md:w-4 md:h-16 fill-black"
-                  src="/logo-01.svg"
-                  alt="Logo"
-                  width={20}
-                  height={20}
-                />
-              </div>
               <div className="flex flex-col -gap-0.5 md:-gap-1">
-                <span className="text-lg md:text-2xl font-bold text-[#10BBE6]">
-                  ITLINKERS
-                </span>
-                <span className="text-[7px] md:text-[10px] text-muted-foreground font-medium tracking-wider uppercase leading-none">
-                  wired for your world
+                <div className="flex items-center">
+                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -mr-[3px]">
+                    ITL
+                  </span>
+                  <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-100 mb-2">
+                    <Image
+                      className="w-3 h-5 md:w-5 md:h-7"
+                      src="/logo-01.svg"
+                      alt="Logo"
+                      width={16}
+                      height={16}
+                    />
+                  </div>
+                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -ml-[4px]">
+                    NKERS
+                  </span>
+                </div>
+                <span className="text-[6px] md:text-[8px] text-center w-full  text-muted-foreground font-medium tracking-tighter uppercase leading-none">
+                  Where Technology Connects
                 </span>
               </div>
             </Link>
@@ -274,16 +279,6 @@ export function Header() {
 
             {/* Action Icons */}
             <div className="flex items-center gap-2 md:gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden md:flex w-9 h-9 text-muted-foreground hover:text-primary transition-colors"
-                onClick={() => window.open("tel:+917380817676")}
-                title="+91 7380817676"
-              >
-                <Phone className="w-5 h-5" />
-              </Button>
-
               <Link href="/wishlist">
                 <Button
                   variant="ghost"
@@ -325,86 +320,90 @@ export function Header() {
                 </Button>
               </Link>
 
-              {isAuthenticated ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-9 h-9 rounded-full bg-primary/10 text-primary border border-primary/20"
-                    >
-                      <span className="text-xs font-bold">{userInitials}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 mt-2" align="end">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium">
-                          {user?.firstName} {user?.lastName}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {user?.email}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <Link href="/profile">
-                      <DropdownMenuItem>
-                        <UserIcon className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
-                      </DropdownMenuItem>
-                    </Link>
-                    {user?.role === "admin" && (
-                      <Link href="/admin">
+              {/* User Profile & Contact Info Group */}
+              <div className="flex flex-col items-center">
+                {isAuthenticated ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-9 h-9 rounded-full bg-primary/10 text-primary border border-primary/20"
+                      >
+                        <span className="text-xs font-bold">
+                          {userInitials}
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56 mt-2" align="end">
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium">
+                            {user?.firstName} {user?.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {user?.email}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <Link href="/profile">
                         <DropdownMenuItem>
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
-                          <span>Admin Dashboard</span>
+                          <UserIcon className="mr-2 h-4 w-4" />
+                          <span>Profile</span>
                         </DropdownMenuItem>
                       </Link>
-                    )}
-                    <Link href="/orders">
-                      <DropdownMenuItem>
-                        <Package className="mr-2 h-4 w-4" />
-                        <span>My Orders</span>
+                      {user?.role === "admin" && (
+                        <Link href="/admin">
+                          <DropdownMenuItem>
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Admin Dashboard</span>
+                          </DropdownMenuItem>
+                        </Link>
+                      )}
+                      <Link href="/orders">
+                        <DropdownMenuItem>
+                          <Package className="mr-2 h-4 w-4" />
+                          <span>My Orders</span>
+                        </DropdownMenuItem>
+                      </Link>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-500 focus:text-red-500 cursor-pointer"
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          logout();
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
                       </DropdownMenuItem>
-                    </Link>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-red-500 focus:text-red-500 cursor-pointer"
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        logout();
-                      }}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={openLoginModal}
+                      className="hidden md:flex text-sm font-semibold"
                     >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={openLoginModal}
-                    className="hidden md:flex text-sm font-semibold"
-                  >
-                    Sign in
-                  </Button>
-                  <span className="hidden md:inline text-muted-foreground/30">
-                    |
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={openLoginModal}
-                    className="hidden md:flex text-sm font-semibold"
-                  >
-                    Account
-                  </Button>
-                </div>
-              )}
-
+                      Sign in
+                    </Button>
+                    <span className="hidden md:inline text-muted-foreground/30">
+                      |
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={openLoginModal}
+                      className="hidden md:flex text-sm font-semibold"
+                    >
+                      Account
+                    </Button>
+                  </div>
+                )}
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
@@ -416,6 +415,16 @@ export function Header() {
             </div>
           </div>
         </nav>
+        {/* Phone Number below Profile */}
+        <div className="container mx-auto px-4 flex justify-end">
+          <button
+            onClick={() => window.open("tel:+917380817676")}
+            className="hidden md:flex items-center gap-1 text-[10px] font-bold text-muted-foreground hover:text-primary transition-colors -mt-1 mb-1"
+          >
+            <Phone className="w-2.5 h-2.5" />
+            +91 7380817676
+          </button>
+        </div>
 
         {/* Categories Navigation - Desktop - Full Width */}
         <div className="hidden md:flex items-center justify-center bg-[#10BBE6] text-white">

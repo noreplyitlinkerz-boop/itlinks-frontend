@@ -279,6 +279,16 @@ export function Header() {
 
             {/* Action Icons */}
             <div className="flex items-center gap-2 md:gap-3">
+              <button
+                onClick={() => window.open("tel:+917380817676")}
+                className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10BBE6]/5 border border-[#10BBE6]/10 text-[#10BBE6] hover:bg-[#10BBE6] hover:text-white transition-all duration-300 group mr-2"
+              >
+                <Phone className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                <span className="text-[12px] font-bold tracking-tight">
+                  +91 7380817676
+                </span>
+              </button>
+
               <Link href="/wishlist">
                 <Button
                   variant="ghost"
@@ -415,16 +425,6 @@ export function Header() {
             </div>
           </div>
         </nav>
-        {/* Phone Number below Profile */}
-        <div className="container mx-auto px-4 flex justify-end">
-          <button
-            onClick={() => window.open("tel:+917380817676")}
-            className="hidden md:flex items-center gap-1 text-[14px] font-bold text-muted-foreground hover:text-primary transition-colors -mt-1 mb-1 tracking-wider"
-          >
-            <Phone className="w-3 h-3" />
-            +91 7380817676
-          </button>
-        </div>
 
         {/* Categories Navigation - Desktop - Full Width */}
         <div className="hidden md:flex items-center justify-center bg-[#10BBE6] text-white">

@@ -23,14 +23,20 @@ class AuthService extends BaseService {
    * @endpoint POST /api/auth/signup
    */
   async signup(data: SignupRequest): Promise<AuthResponse> {
-    const response = await this.post<AuthResponse>("/signup", data);
+    const response = await this.post<any>("/signup", data);
+    // Robustly extract user data
+    const userData = response.user || response.data?.user || response.data;
 
     // Store user data (session handled by browser cookies)
-    if (response.user) {
-      UserStorage.setUser(response.user);
+    if (userData) {
+      UserStorage.setUser(userData);
     }
 
-    return response;
+    // Return in the format expected by components
+    return {
+      ...response,
+      user: userData,
+    };
   }
 
   /**
@@ -39,14 +45,22 @@ class AuthService extends BaseService {
    * @endpoint POST /api/auth/login
    */
   async login(data: LoginRequest): Promise<AuthResponse> {
-    const response = await this.post<AuthResponse>("/login", data);
+    const response = await this.post<any>("/login", data);
+    // Robustly extract user data based on known nested structure
+    const userData = response.user || response.data?.user || response.data;
+
+    console.log("authService.login: Extracted user data:", userData);
 
     // Store user data (session handled by browser cookies)
-    if (response.user) {
-      UserStorage.setUser(response.user);
+    if (userData && userData._id) {
+      UserStorage.setUser(userData);
     }
 
-    return response;
+    // Return in the format expected by components, ensuring .user is populated
+    return {
+      ...response,
+      user: userData,
+    };
   }
 
   /**
@@ -56,9 +70,8 @@ class AuthService extends BaseService {
    */
   async logout(): Promise<ApiResponse<{ message: string }>> {
     try {
-      const response = await this.post<ApiResponse<{ message: string }>>(
-        "/logout"
-      );
+      const response =
+        await this.post<ApiResponse<{ message: string }>>("/logout");
       return response;
     } finally {
       // Clear stored data regardless of API response

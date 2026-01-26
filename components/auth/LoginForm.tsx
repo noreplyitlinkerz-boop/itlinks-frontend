@@ -48,15 +48,22 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
     try {
       const response = await authService.login(data);
 
+      // Validate that we actually have user data
+      if (!response || !response.user) {
+        throw new Error("Login succeeded but user data was not received.");
+      }
+
+      const user = response.user;
+
       // Update global auth state
-      setAuthUser(response.user);
+      setAuthUser(user);
 
       toast.success("Welcome back!", {
-        description: `Logged in as ${response.user.firstName}.`,
+        description: `Logged in as ${user.firstName || "User"}.`,
       });
 
       // Redirect based on role
-      if (response.user.role === "admin") {
+      if (user.role === "admin") {
         router.push("/admin");
         if (onSuccess) onSuccess(); // Close modal if used as modal
         return;

@@ -18,32 +18,29 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  // Permanently force light mode
+  const [theme] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Check localStorage for saved theme preference
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) {
-      setTheme(savedTheme);
+    // Remove any legacy theme preference from localStorage
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("theme");
     }
   }, []);
 
   useEffect(() => {
     if (mounted) {
       const root = document.documentElement;
-      if (theme === "dark") {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
-      localStorage.setItem("theme", theme);
+      // Always ensure "dark" class is removed
+      root.classList.remove("dark");
     }
-  }, [theme, mounted]);
+  }, [mounted]);
 
+  // Make toggleTheme a no-op to maintain permanent light mode
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    console.log("Theme is fixed to light mode.");
   };
 
   return (

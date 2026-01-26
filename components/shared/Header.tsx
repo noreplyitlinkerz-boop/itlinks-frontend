@@ -419,9 +419,9 @@ export function Header() {
         <div className="container mx-auto px-4 flex justify-end">
           <button
             onClick={() => window.open("tel:+917380817676")}
-            className="hidden md:flex items-center gap-1 text-[10px] font-bold text-muted-foreground hover:text-primary transition-colors -mt-1 mb-1"
+            className="hidden md:flex items-center gap-1 text-[14px] font-bold text-muted-foreground hover:text-primary transition-colors -mt-1 mb-1 tracking-wider"
           >
-            <Phone className="w-2.5 h-2.5" />
+            <Phone className="w-3 h-3" />
             +91 7380817676
           </button>
         </div>

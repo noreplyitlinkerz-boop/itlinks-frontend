@@ -181,7 +181,7 @@ export function Header() {
             >
               <div className="flex flex-col -gap-0.5 md:-gap-1">
                 <div className="flex items-center">
-                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -mr-[3px]">
+                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -mr-[0.1em]">
                     ITL
                   </span>
                   <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-100 mb-2">
@@ -193,7 +193,7 @@ export function Header() {
                       height={16}
                     />
                   </div>
-                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -ml-[4px]">
+                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -ml-[0.1em]">
                     NKERS
                   </span>
                 </div>

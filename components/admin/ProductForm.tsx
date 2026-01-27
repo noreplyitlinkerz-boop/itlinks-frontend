@@ -71,9 +71,13 @@ export function ProductForm({
 
   // Default specs for new products
   const defaultSpecs = [
-    { key: "screenSize", value: '15.6"' },
-    { key: "ramSize", value: "16GB" },
-    { key: "cpuModel", value: "Intel i7" },
+    { key: "Screen size", value: '15.6"' },
+    { key: "RAM", value: "16GB" },
+    { key: "Processor", value: "Intel i7" },
+    { key: "Storage", value: "" },
+    { key: "Generation", value: "" },
+    { key: "Touch", value: "" },
+    { key: "Graphics", value: "" },
   ];
 
   const [specs, setSpecs] = useState<Array<{ key: string; value: string }>>(

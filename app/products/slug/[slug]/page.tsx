@@ -23,6 +23,7 @@ import { productService } from "@/lib/api/services";
 import { Product as ApiProduct } from "@/lib/api/types/endpoints";
 import { safeParse, cn } from "@/lib/utils";
 import { ProductImage } from "@/components/shared/ProductImage";
+import { ProductSpecsGrid } from "@/components/products/ProductSpecsGrid";
 import { io } from "socket.io-client";
 
 const socket = io(
@@ -333,41 +334,21 @@ export default function ProductDetailPage({
             </div>
 
             {/* Specs Section */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-8">
               <div className="md:col-span-3">
                 <h3 className="text-muted-foreground font-medium">
                   Specifications
                 </h3>
               </div>
               <div className="md:col-span-9">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {product.specifications &&
-                  Object.entries(safeParse(product.specifications, {})).length >
-                    0 ? (
-                    Object.entries(
-                      safeParse(product.specifications, {}) as Record<
-                        string,
-                        string
-                      >,
-                    ).map(([key, value]) => (
-                      <div
-                        key={key}
-                        className="flex flex-col border-b border-border pb-2"
-                      >
-                        <span className="text-xs text-muted-foreground mb-1 capitalize">
-                          {key}
-                        </span>
-                        <span className="text-sm font-medium text-foreground">
-                          {value}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No specifications available.
-                    </p>
-                  )}
-                </div>
+                <ProductSpecsGrid
+                  specifications={
+                    safeParse(product.specifications, {}) as Record<
+                      string,
+                      string
+                    >
+                  }
+                />
               </div>
             </div>
 

@@ -105,11 +105,12 @@ const formatKey = (key: string) => {
 
 export const ProductSpecsGrid = ({ specifications }: ProductSpecsGridProps) => {
   const specsEntries = Object.entries(specifications).filter(
-    ([_, value]) =>
+    ([key, value]) =>
       value &&
       String(value).trim() !== "" &&
       value !== "undefined" &&
-      value !== "null",
+      value !== "null" &&
+      !["id", "_id", "__v", "technical"].includes(key.toLowerCase()),
   );
 
   if (specsEntries.length === 0) {

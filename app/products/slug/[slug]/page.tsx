@@ -24,6 +24,7 @@ import { Product as ApiProduct } from "@/lib/api/types/endpoints";
 import { safeParse, cn } from "@/lib/utils";
 import { ProductImage } from "@/components/shared/ProductImage";
 import { ProductSpecsGrid } from "@/components/products/ProductSpecsGrid";
+import { TechnicalSpecsTable } from "@/components/products/TechnicalSpecsTable";
 import { io } from "socket.io-client";
 
 const socket = io(
@@ -64,6 +65,12 @@ export default function ProductDetailPage({
 
       if (productData && productData._id) {
         console.log("✅ Setting product:", productData);
+        if (productData.technicalSpecifications) {
+          console.log(
+            "🔧 TEchnical Specs raw:",
+            productData.technicalSpecifications,
+          );
+        }
         setProduct(productData as ApiProduct);
         setActiveMedia(
           productData.product_primary_image_url ||
@@ -287,21 +294,25 @@ export default function ProductDetailPage({
               <div className="flex items-baseline gap-4">
                 <p className="text-3xl font-bold">
                   ₹
-                  {(product.discount && typeof product.discount === "object"
+                  {(product.discount &&
+                  typeof product.discount === "object" &&
+                  product.discount.percentage > 0
                     ? product.discount.discountedPrice
                     : product.price
                   ).toLocaleString()}
                 </p>
-                {product.discount && typeof product.discount === "object" && (
-                  <>
-                    <p className="text-muted-foreground line-through text-lg">
-                      ₹{product.price.toLocaleString()}
-                    </p>
-                    <p className="text-green-600 text-lg font-bold">
-                      {product.discount.percentage}% off
-                    </p>
-                  </>
-                )}
+                {product.discount &&
+                  typeof product.discount === "object" &&
+                  product.discount.percentage > 0 && (
+                    <>
+                      <p className="text-muted-foreground line-through text-lg">
+                        ₹{product.price.toLocaleString()}
+                      </p>
+                      <p className="text-green-600 text-lg font-bold">
+                        {product.discount.percentage}% off
+                      </p>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -318,6 +329,37 @@ export default function ProductDetailPage({
                 </Badge>
               )}
             </div>
+
+            {/* Technical Specifications Section */}
+            {product.technicalSpecifications &&
+              Object.entries(
+                safeParse(product.technicalSpecifications, {}),
+              ).filter(
+                ([key, value]) =>
+                  value &&
+                  String(value).trim() !== "" &&
+                  !["id", "_id", "__v", "technical"].includes(
+                    key.toLowerCase(),
+                  ),
+              ).length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">
+                  <div className="md:col-span-3">
+                    <h3 className="text-muted-foreground font-medium">
+                      Technical Specifications
+                    </h3>
+                  </div>
+                  <div className="md:col-span-9">
+                    <TechnicalSpecsTable
+                      specifications={
+                        safeParse(
+                          product.technicalSpecifications,
+                          {},
+                        ) as Record<string, string>
+                      }
+                    />
+                  </div>
+                </div>
+              )}
 
             {/* Details Section */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">

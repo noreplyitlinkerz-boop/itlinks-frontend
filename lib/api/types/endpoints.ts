@@ -28,6 +28,7 @@ export interface Product {
         discountedPrice: number;
       };
   specifications?: string | Record<string, string>;
+  technicalSpecifications?: string | Record<string, string>;
   product_primary_image_url?: string;
   product_videos_url?: string[];
   images?: string[];

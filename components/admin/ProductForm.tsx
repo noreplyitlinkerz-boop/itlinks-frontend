@@ -93,6 +93,74 @@ export function ProductForm({
         : defaultSpecs,
   );
 
+  // Default technical specs from backend
+  const defaultTechnicalSpecs = [
+    { key: "os", value: "" },
+    { key: "productDimensions", value: "" },
+    { key: "itemModelNumber", value: "" },
+    { key: "connectivityTechnologies", value: "" },
+    { key: "gps", value: "" },
+    { key: "otherDisplayFeatures", value: "" },
+    { key: "deviceInterfacePrimary", value: "" },
+    { key: "resolution", value: "" },
+    { key: "otherCameraFeatures", value: "" },
+    { key: "formFactor", value: "" },
+    { key: "batteryPowerRating", value: "" },
+    { key: "whatsInTheBox", value: "" },
+    { key: "manufacturer", value: "" },
+    { key: "countryOfOrigin", value: "" },
+    { key: "itemWeight", value: "" },
+  ];
+
+  const [techSpecs, setTechSpecs] = useState<
+    Array<{ key: string; value: string }>
+  >(() => {
+    let existingRaw =
+      initialData?.technicalSpecifications ||
+      safeParse(initialData?.technicalSpecifications, {});
+
+    let existing: Record<string, any> = {};
+
+    // Handle array case (legacy/bad data)
+    if (Array.isArray(existingRaw)) {
+      existingRaw.forEach((item) => {
+        if (typeof item === "string") {
+          try {
+            const parsed = JSON.parse(item);
+            existing = { ...existing, ...parsed };
+          } catch {
+            // treat as value if needed, or ignore
+          }
+        } else if (typeof item === "object" && item !== null) {
+          existing = { ...existing, ...item };
+        }
+      });
+    } else if (typeof existingRaw === "object" && existingRaw !== null) {
+      existing = existingRaw;
+    }
+
+    const merged = defaultTechnicalSpecs.map((def) => ({
+      key: def.key,
+      value: String(existing[def.key] || ""),
+    }));
+
+    // Add any existing fields that are NOT in defaults
+    const defaultKeys = new Set(defaultTechnicalSpecs.map((d) => d.key));
+    const internalKeys = new Set(["_id", "id", "__v"]);
+    Object.entries(existing).forEach(([key, value]) => {
+      // Avoid adding numerical keys from arrays (0, 1, etc.)
+      if (
+        !defaultKeys.has(key) &&
+        !internalKeys.has(key) &&
+        isNaN(Number(key))
+      ) {
+        merged.push({ key, value: String(value) });
+      }
+    });
+
+    return merged;
+  });
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
@@ -107,12 +175,23 @@ export function ProductForm({
       stock: initialData?.stock || 0,
       featured: initialData?.featured || false,
       isVisible: initialData?.isVisible ?? true,
+      isVerified: initialData?.isVerified ?? false,
+      modelName: (initialData as any)?.modelName || "",
+      keywords: initialData?.keywords?.join(", ") || "",
       discountPercentage:
         safeParse(initialData?.discount, { percentage: 0 }).percentage ?? 0,
       discountedPrice:
         safeParse(initialData?.discount, { discountedPrice: 0 })
           .discountedPrice ?? 0,
+      discountStartDate:
+        safeParse(initialData?.discount, { startDate: "" }).startDate || "",
+      discountEndDate:
+        safeParse(initialData?.discount, { endDate: "" }).endDate || "",
       specifications: safeParse(initialData?.specifications, {}),
+      technicalSpecifications: safeParse(
+        initialData?.technicalSpecifications,
+        {},
+      ),
       categoryID:
         typeof initialData?.categoryID === "object"
           ? (initialData?.categoryID as any)?._id || ""
@@ -145,16 +224,36 @@ export function ProductForm({
 
       if (initialData.specifications) {
         setSpecs(
-          Object.entries(safeParse(initialData.specifications, {})).map(
-            ([key, value]) => ({
+          Object.entries(safeParse(initialData.specifications, {}))
+            .filter(([key]) => key !== "_id" && key !== "id" && key !== "__v")
+            .map(([key, value]) => ({
               key,
               value: String(value),
-            }),
-          ),
+            })),
         );
       } else {
         setSpecs([]);
       }
+
+      const existingTech = safeParse(
+        initialData.technicalSpecifications,
+        {},
+      ) as Record<string, any>;
+      const mergedTech = defaultTechnicalSpecs.map((def) => ({
+        key: def.key,
+        value: String(existingTech[def.key] || ""),
+      }));
+
+      // Add any existing fields that are NOT in defaults
+      const defaultKeys = new Set(defaultTechnicalSpecs.map((d) => d.key));
+      const internalKeys = new Set(["_id", "id", "__v"]);
+      Object.entries(existingTech).forEach(([key, value]) => {
+        if (!defaultKeys.has(key) && !internalKeys.has(key)) {
+          mergedTech.push({ key, value: String(value) });
+        }
+      });
+
+      setTechSpecs(mergedTech);
 
       form.reset({
         name: initialData.name || "",
@@ -168,12 +267,23 @@ export function ProductForm({
         stock: initialData.stock || 0,
         featured: initialData.featured || false,
         isVisible: initialData.isVisible ?? true,
+        isVerified: initialData.isVerified ?? false,
+        modelName: (initialData as any).modelName || "",
+        keywords: initialData.keywords?.join(", ") || "",
         discountPercentage:
           safeParse(initialData.discount, { percentage: 0 }).percentage ?? 0,
         discountedPrice:
           safeParse(initialData.discount, { discountedPrice: 0 })
             .discountedPrice ?? 0,
+        discountStartDate:
+          safeParse(initialData.discount, { startDate: "" }).startDate || "",
+        discountEndDate:
+          safeParse(initialData.discount, { endDate: "" }).endDate || "",
         specifications: safeParse(initialData.specifications, {}),
+        technicalSpecifications: safeParse(
+          initialData.technicalSpecifications,
+          {},
+        ),
         categoryID:
           typeof initialData.categoryID === "object"
             ? (initialData.categoryID as any)?._id || ""
@@ -197,11 +307,18 @@ export function ProductForm({
         stock: 0,
         featured: false,
         isVisible: true,
+        isVerified: false,
+        modelName: "",
+        keywords: "",
         discountPercentage: 0,
         discountedPrice: 0,
+        discountStartDate: "",
+        discountEndDate: "",
         specifications: {},
+        technicalSpecifications: {},
         categoryID: "",
       });
+      setTechSpecs(defaultTechnicalSpecs);
     }
   }, [initialData, form]);
 
@@ -348,6 +465,24 @@ export function ProductForm({
     setSpecs(specs.filter((_, i) => i !== index));
   };
 
+  const addTechSpec = () => {
+    setTechSpecs([...techSpecs, { key: "", value: "" }]);
+  };
+
+  const updateTechSpec = (
+    index: number,
+    field: "key" | "value",
+    value: string,
+  ) => {
+    const newTechSpecs = [...techSpecs];
+    newTechSpecs[index][field] = value;
+    setTechSpecs(newTechSpecs);
+  };
+
+  const removeTechSpec = (index: number) => {
+    setTechSpecs(techSpecs.filter((_, i) => i !== index));
+  };
+
   const handleFormSubmit = async (values: ProductFormValues) => {
     // Validate Primary Image
     if (!initialData && !primaryImage) {
@@ -361,12 +496,14 @@ export function ProductForm({
     Object.entries(values).forEach(([key, value]) => {
       if (
         key !== "specifications" &&
-        key !== "categoryID" &&
-        key !== "discountPercentage" &&
+        key !== "technicalSpecifications" &&
         key !== "categoryID" &&
         key !== "brandID" &&
         key !== "discountPercentage" &&
-        key !== "discountedPrice"
+        key !== "discountedPrice" &&
+        key !== "discountStartDate" &&
+        key !== "discountEndDate" &&
+        key !== "keywords"
       ) {
         if (key === "price" || key === "stock") {
           // Ensure numbers are not empty strings
@@ -377,23 +514,33 @@ export function ProductForm({
       }
     });
 
+    // Add keywords as array
+    if (values.keywords) {
+      const keywordsArray = values.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter((k) => k !== "");
+      keywordsArray.forEach((keyword) => {
+        formData.append("keywords[]", keyword);
+      });
+      // Also potentially send as simple 'keywords' if backend expects it differently
+      // formData.append("keywords", JSON.stringify(keywordsArray));
+    }
+
     // Explicitly append IDs
     formData.append("categoryID", values.categoryID);
     formData.append("brandID", values.brandID);
 
     // Add discount
-    if (
-      (values.discountPercentage && values.discountPercentage > 0) ||
-      (values.discountedPrice && values.discountedPrice > 0)
-    ) {
-      formData.append(
-        "discount",
-        JSON.stringify({
-          percentage: values.discountPercentage || 0,
-          discountedPrice: values.discountedPrice || 0,
-        }),
-      );
-    }
+    formData.append(
+      "discount",
+      JSON.stringify({
+        percentage: values.discountPercentage || 0,
+        discountedPrice: values.discountedPrice || 0,
+        startDate: values.discountStartDate || undefined,
+        endDate: values.discountEndDate || undefined,
+      }),
+    );
 
     // Add videos
     videos.forEach((file) => {
@@ -418,6 +565,18 @@ export function ProductForm({
       {} as Record<string, string>,
     );
     formData.append("specifications", JSON.stringify(specsObj));
+
+    // Add technical specifications
+    const techSpecsObj = techSpecs.reduce(
+      (acc, curr) => {
+        if (curr.key && curr.value) {
+          acc[curr.key] = curr.value;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+    formData.append("technicalSpecifications", JSON.stringify(techSpecsObj));
 
     // Add images
     if (primaryImage) {
@@ -474,7 +633,7 @@ export function ProductForm({
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="brandID"
                 render={({ field }) => (
                   <FormItem>
@@ -498,7 +657,47 @@ export function ProductForm({
                 )}
               />
               <FormField
-                control={form.control}
+                control={form.control as any}
+                name="modelName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Model Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. A2833" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control as any}
+                name="categoryID"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category._id} value={category._id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control as any}
                 name="slug"
                 render={({ field }) => (
                   <FormItem>
@@ -512,31 +711,6 @@ export function ProductForm({
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control as any}
-              name="categoryID"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category._id} value={category._id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <FormField
               control={form.control as any}
@@ -555,8 +729,21 @@ export function ProductForm({
                 </FormItem>
               )}
             />
-          </div>
 
+            <FormField
+              control={form.control as any}
+              name="keywords"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Keywords (Comma separated)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. laptop, gaming, dell" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           {/* Product Media */}
           <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
             <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
@@ -729,18 +916,18 @@ export function ProductForm({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="featured"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Featured *</FormLabel>
+                    <FormLabel>Featured</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value === "true")
                       }
-                      defaultValue={field.value ? "true" : "false"}
+                      value={field.value ? "true" : "false"}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -767,7 +954,34 @@ export function ProductForm({
                       onValueChange={(value) =>
                         field.onChange(value === "true")
                       }
-                      defaultValue={field.value ? "true" : "false"}
+                      value={field.value ? "true" : "false"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="true">True</SelectItem>
+                        <SelectItem value="false">False</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isVerified"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Verified</FormLabel>
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "true")
+                      }
+                      value={field.value ? "true" : "false"}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -785,19 +999,63 @@ export function ProductForm({
               />
             </div>
 
-            <FormField
-              control={form.control as any}
-              name="discount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Discount Percentage (%)</FormLabel>
-                  <FormControl>
-                    <Input type="number" min="0" max="100" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control as any}
+                name="discountPercentage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discount Percentage (%)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" max="100" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control as any}
+                name="discountedPrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discounted Price ($)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control as any}
+                name="discountStartDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discount Start Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control as any}
+                name="discountEndDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discount End Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
 
           {/* Specifications */}
@@ -843,6 +1101,62 @@ export function ProductForm({
                     variant="ghost"
                     size="icon"
                     onClick={() => removeSpec(index)}
+                    className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Technical Specifications */}
+          <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
+                Technical Specifications
+              </h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={addTechSpec}
+                className="h-8 text-xs text-primary hover:text-primary hover:bg-primary/10"
+              >
+                <PlusCircle className="mr-1 w-3 h-3" />
+                Add Tech Specification
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {techSpecs.length === 0 && (
+                <p className="text-xs text-center text-muted-foreground/60 py-4">
+                  No technical specifications added yet
+                </p>
+              )}
+              {techSpecs.map((spec, index) => (
+                <div key={index} className="flex gap-2 items-start">
+                  <Input
+                    placeholder="e.g. Manufacturer"
+                    className="flex-1 h-9 text-xs"
+                    value={spec.key}
+                    onChange={(e) =>
+                      updateTechSpec(index, "key", e.target.value)
+                    }
+                  />
+                  <Input
+                    placeholder="Value"
+                    className="flex-1 h-9 text-xs"
+                    value={spec.value}
+                    onChange={(e) =>
+                      updateTechSpec(index, "value", e.target.value)
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeTechSpec(index)}
                     className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-500/10"
                   >
                     <Trash2 className="w-4 h-4" />

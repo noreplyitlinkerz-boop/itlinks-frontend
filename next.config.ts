@@ -1,6 +1,21 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Disable source maps in production for obfuscation
+  productionBrowserSourceMaps: false,
+
+  // Configure API Proxy to hide backend URL
+  async rewrites() {
+    return [
+      {
+        source: "/api/proxy/:path*",
+        destination: `${
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
+        }/:path*`,
+      },
+    ];
+  },
+
   images: {
     remotePatterns: [
       {

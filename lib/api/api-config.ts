@@ -5,7 +5,8 @@
 
 export const API_CONFIG = {
   // Base URL - should be set via environment variable
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
+  // Base URL - point to the Next.js proxy instead of direct backend
+  BASE_URL: "/api/proxy",
 
   // Timeout settings (in milliseconds)
   TIMEOUT: 30000, // 30 seconds

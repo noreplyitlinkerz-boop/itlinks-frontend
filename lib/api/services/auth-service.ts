@@ -49,8 +49,6 @@ class AuthService extends BaseService {
     // Robustly extract user data based on known nested structure
     const userData = response.user || response.data?.user || response.data;
 
-    console.log("authService.login: Extracted user data:", userData);
-
     // Store user data (session handled by browser cookies)
     if (userData && userData._id) {
       UserStorage.setUser(userData);
@@ -89,7 +87,7 @@ class AuthService extends BaseService {
     // Extract user from .user or .data or fallback to response itself
     const userData = response.user || response.data || response;
 
-    console.log("authService: Extracted user data:", userData);
+    // console.log("authService: Extracted user data:", userData);
 
     // Update stored user data
     if (userData && userData._id) {

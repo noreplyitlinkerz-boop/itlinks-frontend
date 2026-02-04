@@ -31,6 +31,18 @@ const socket = io(
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
 );
 
+// Helper function to generate a stable number between 0 and 1 based on a string seed
+const getStableRandom = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const positiveHash = Math.abs(hash);
+  return (positiveHash % 10000) / 10000;
+};
+
 export default function ProductDetailPage({
   params,
 }: {
@@ -273,8 +285,12 @@ export default function ProductDetailPage({
                   <span className="text-[10px]">★</span>
                 </div>
                 <span className="text-sm font-medium text-muted-foreground">
-                  {Math.floor(Math.random() * 500) + 100} Ratings &{" "}
-                  {Math.floor(Math.random() * 100) + 10} Reviews
+                  {Math.floor(getStableRandom(product._id + "ratings") * 500) +
+                    100}{" "}
+                  Ratings &{" "}
+                  {Math.floor(getStableRandom(product._id + "reviews") * 100) +
+                    10}{" "}
+                  Reviews
                 </span>
                 {/* <img
                   src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/fa_62673a.png"

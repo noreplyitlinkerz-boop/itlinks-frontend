@@ -78,21 +78,26 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex flex-col">
               <p className="text-lg md:text-2xl font-bold text-primary">
                 ₹
-                {(product.discount && typeof product.discount === "object"
+                {(product.discount &&
+                typeof product.discount === "object" &&
+                product.discount.percentage > 0 &&
+                product.discount.discountedPrice > 0
                   ? product.discount.discountedPrice
                   : product.price
                 ).toLocaleString()}
               </p>
-              {product.discount && typeof product.discount === "object" && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs md:text-sm text-muted-foreground line-through">
-                    ₹{product.price.toLocaleString()}
-                  </span>
-                  <span className="text-[10px] md:text-xs font-bold text-green-600">
-                    {product.discount.percentage}% OFF
-                  </span>
-                </div>
-              )}
+              {product.discount &&
+                typeof product.discount === "object" &&
+                product.discount.percentage > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs md:text-sm text-muted-foreground line-through">
+                      ₹{product.price.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] md:text-xs font-bold text-green-600">
+                      {product.discount.percentage}% OFF
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
 

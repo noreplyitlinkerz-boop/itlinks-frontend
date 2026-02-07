@@ -174,7 +174,10 @@ export default function ProductDetailPage({
   ].filter(Boolean);
 
   const discountAmount =
-    product.discount && typeof product.discount === "object"
+    product.discount &&
+    typeof product.discount === "object" &&
+    product.discount.percentage > 0 &&
+    product.discount.discountedPrice > 0
       ? product.price - product.discount.discountedPrice
       : 0;
 
@@ -271,6 +274,33 @@ export default function ProductDetailPage({
                 BUY NOW
               </Button>
             </div>
+
+            {/* Technical Specifications Section */}
+            {product.technicalSpecifications &&
+              Object.entries(
+                safeParse(product.technicalSpecifications, {}),
+              ).filter(
+                ([key, value]) =>
+                  value &&
+                  String(value).trim() !== "" &&
+                  !["id", "_id", "__v", "technical"].includes(
+                    key.toLowerCase(),
+                  ),
+              ).length > 0 && (
+                <div className="pt-6 mt-6 border-t">
+                  <h3 className="text-muted-foreground font-medium mb-3 text-sm">
+                    Technical Specifications
+                  </h3>
+                  <TechnicalSpecsTable
+                    specifications={
+                      safeParse(product.technicalSpecifications, {}) as Record<
+                        string,
+                        string
+                      >
+                    }
+                  />
+                </div>
+              )}
           </div>
 
           {/* Right Column: Info & Details */}
@@ -312,7 +342,8 @@ export default function ProductDetailPage({
                   ₹
                   {(product.discount &&
                   typeof product.discount === "object" &&
-                  product.discount.percentage > 0
+                  product.discount.percentage > 0 &&
+                  product.discount.discountedPrice > 0
                     ? product.discount.discountedPrice
                     : product.price
                   ).toLocaleString()}
@@ -345,37 +376,6 @@ export default function ProductDetailPage({
                 </Badge>
               )}
             </div>
-
-            {/* Technical Specifications Section */}
-            {product.technicalSpecifications &&
-              Object.entries(
-                safeParse(product.technicalSpecifications, {}),
-              ).filter(
-                ([key, value]) =>
-                  value &&
-                  String(value).trim() !== "" &&
-                  !["id", "_id", "__v", "technical"].includes(
-                    key.toLowerCase(),
-                  ),
-              ).length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">
-                  <div className="md:col-span-3">
-                    <h3 className="text-muted-foreground font-medium">
-                      Technical Specifications
-                    </h3>
-                  </div>
-                  <div className="md:col-span-9">
-                    <TechnicalSpecsTable
-                      specifications={
-                        safeParse(
-                          product.technicalSpecifications,
-                          {},
-                        ) as Record<string, string>
-                      }
-                    />
-                  </div>
-                </div>
-              )}
 
             {/* Details Section */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">

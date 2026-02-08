@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, authService } from "@/lib/api/services";
+import { User, authService, userService } from "@/lib/api/services";
 
 interface AuthContextType {
   user: User | null;
@@ -17,7 +17,7 @@ interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -71,14 +71,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const action = pendingAction;
       setPendingActionState(null); // Clear first to prevent double execution
       Promise.resolve(action()).catch((err) =>
-        console.error("AuthContext: Pending action failed", err)
+        console.error("AuthContext: Pending action failed", err),
       );
     }
   }, [user, pendingAction]);
 
   const refreshUser = async () => {
     try {
-      const response = await authService.getCurrentUser();
+      // Use the new /users/profile endpoint as requested to ensure latest data
+      const response = await userService.getProfile();
       const userData = (response as any).user || response.data || response;
 
       if (userData && userData._id) {

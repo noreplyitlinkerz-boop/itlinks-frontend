@@ -24,6 +24,15 @@ class UserService extends BaseService {
     return this.patch<ApiResponse<User>>("/profile", data);
   }
 
+  /**
+   * Get user profile
+   * @authenticated Requires authentication
+   * @endpoint GET /users/profile
+   */
+  async getProfile(): Promise<ApiResponse<User>> {
+    return this.get<ApiResponse<User>>("/profile");
+  }
+
   // ============================================================================
   // Wishlist Methods
   // ============================================================================
@@ -45,7 +54,7 @@ class UserService extends BaseService {
    * @endpoint POST /wishlist
    */
   async addToWishlist(
-    data: AddToWishlistRequest
+    data: AddToWishlistRequest,
   ): Promise<ApiResponse<Wishlist>> {
     return this.post<ApiResponse<Wishlist>>("/wishlist", data, {
       baseURL: "", // Use root path
@@ -63,7 +72,7 @@ class UserService extends BaseService {
       undefined,
       {
         baseURL: "", // Use root path
-      }
+      },
     );
   }
 
@@ -78,7 +87,7 @@ class UserService extends BaseService {
       undefined,
       {
         baseURL: "", // Use root path
-      }
+      },
     );
   }
 }

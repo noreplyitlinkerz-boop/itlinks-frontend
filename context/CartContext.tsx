@@ -38,6 +38,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return {
         product: p,
         quantity: item.quantity,
+        _id: item._id,
+        price: item.price,
+        specifications: item.specifications,
       };
     });
   };
@@ -75,7 +78,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     try {
       console.log("CartContext: Adding item...", product._id, quantity);
-      const response = await apiCartService.addToCart(product._id, quantity);
+
+      // Extract custom specs and price from the product object if present
+      // e.g. from page.tsx modified object
+      const specifications = product.specifications as
+        | Record<string, string>
+        | undefined;
+      const price = product.price;
+
+      const response = await apiCartService.addToCart(
+        product._id,
+        quantity,
+        specifications,
+        price,
+      );
+
       console.log("CartContext: API Response", response);
       const cartData = response.data || response;
 
@@ -93,10 +110,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const removeItem = async (productId: string) => {
+  const removeItem = async (itemId: string) => {
     if (!isAuthenticated) return;
     try {
-      const response = await apiCartService.removeFromCart(productId);
+      const response = await apiCartService.removeFromCart(itemId);
       const cartData = response.data || response;
       if (cartData && cartData.items) {
         setItems(mapApiCartToItems(cartData.items));
@@ -108,37 +125,70 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateQuantity = async (productId: string, quantity: number) => {
+  const updateQuantity = async (itemId: string, quantity: number) => {
     if (!isAuthenticated) return;
     if (quantity <= 0) {
-      await removeItem(productId);
+      await removeItem(itemId);
       return;
     }
 
-    const currentItem = items.find((item) => item.product._id === productId);
-    if (!currentItem) return;
+    // Find by item._id (CartItem ID), fallback to product compare if _id missing (legacy)
+    const currentItem = items.find((item) =>
+      item._id ? item._id === itemId : item.product._id === itemId,
+    );
+
+    if (!currentItem) {
+      console.warn("CartContext: Item not found for update", itemId);
+      return;
+    }
 
     const currentQty = currentItem.quantity;
+    const productId = currentItem.product._id;
+    const specifications = currentItem.specifications;
+    const price = currentItem.price;
 
     try {
       if (quantity > currentQty) {
         // Incrementing: Add the difference
         const diff = quantity - currentQty;
-        console.log(`CartContext: Incrementing item ${productId} by ${diff}`);
-        const response = await apiCartService.addToCart(productId, diff);
+        // Must pass specs/price again to ensure matching same item on backend
+        // (Our backend addToCart uses specs to match)
+        const response = await apiCartService.addToCart(
+          productId,
+          diff,
+          specifications,
+          price,
+        );
         const cartData = response.data || response;
         if (cartData && cartData.items) {
           setItems(mapApiCartToItems(cartData.items));
         }
       } else if (quantity < currentQty) {
-        // Decrementing: Remove and re-add (since backend only supports Additive)
+        // Decrementing: Remove and re-add (since backend only supports Additive usually?)
+        // Backend `addToCart` is additive.
+        // We don't have a `decrement` or `update` with absolute value endpoint that handles variants cleanly yet?
+        // Wait, cartService.updateQuantity endpoint exists: `put /update/:productId`.
+        // But backend `CartService` doesn't have `updateQuantity` method shown in my read earlier?
+        // Let's check backend `cart.controller.ts`?
+        // Backend `cart.service.ts` shown earlier did NOT have `updateQuantity`.
+        // It had `addToCart`, `removeFromCart`, `clearCart`.
+        // So frontend `updateQuantity` calling `addToCart` negatively?
+        // NO, frontend `cart-service.ts` has `updateQuantity` calling `/update/${productId}`.
+        // DOES IT EXIST on backend?
+
+        // Assuming current logic was: Remove and Re-add.
         console.log(
-          `CartContext: Decrementing item ${productId}. Remove and re-add ${quantity}`,
+          `CartContext: Decrementing item ${itemId}. Remove and re-add ${quantity}`,
         );
-        // 1. Remove
-        await apiCartService.removeFromCart(productId);
-        // 2. Add new quantity
-        const response = await apiCartService.addToCart(productId, quantity);
+        // 1. Remove entire item
+        await apiCartService.removeFromCart(itemId);
+        // 2. Add back new quantity
+        const response = await apiCartService.addToCart(
+          productId,
+          quantity,
+          specifications,
+          price,
+        );
         const cartData = response.data || response;
         if (cartData && cartData.items) {
           setItems(mapApiCartToItems(cartData.items));
@@ -166,6 +216,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => {
+    // Prefer stored item price (dynamic), fallback to product logic
+    if (item.price !== undefined) {
+      return sum + item.price * item.quantity;
+    }
     if (!item.product) return sum;
     const price =
       item.product.discount && typeof item.product.discount === "object"

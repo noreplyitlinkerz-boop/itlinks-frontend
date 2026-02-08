@@ -41,8 +41,13 @@ import {
   ProductFormValues,
   AdminProductFormProps,
 } from "@/types/admin-product-types";
-import { categoryService, brandService } from "@/lib/api/services";
-import { Category, Brand } from "@/lib/api/types/endpoints";
+import {
+  categoryService,
+  brandService,
+  ramService,
+  storageService,
+} from "@/lib/api/services";
+import { Category, Brand, Ram, Storage } from "@/lib/api/types/endpoints";
 import { safeParse } from "@/lib/utils";
 import { getFullImageUrl } from "@/components/shared/ProductImage";
 
@@ -54,6 +59,8 @@ export function ProductForm({
 }: AdminProductFormProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [rams, setRams] = useState<Ram[]>([]);
+  const [storages, setStorages] = useState<Storage[]>([]);
   const [primaryImage, setPrimaryImage] = useState<File | null>(null);
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>(
     getFullImageUrl(
@@ -325,10 +332,13 @@ export function ProductForm({
   useEffect(() => {
     async function fetchData() {
       try {
-        const [catResponse, brandResponse] = await Promise.all([
-          categoryService.getCategories(),
-          brandService.getBrands(),
-        ]);
+        const [catResponse, brandResponse, ramResponse, storageResponse] =
+          await Promise.all([
+            categoryService.getCategories(),
+            brandService.getBrands(),
+            ramService.getRams(),
+            storageService.getStorages(),
+          ]);
 
         const cats: Category[] = Array.isArray(catResponse.data)
           ? catResponse.data
@@ -336,9 +346,17 @@ export function ProductForm({
         const brandsData: Brand[] = Array.isArray(brandResponse.data)
           ? brandResponse.data
           : (brandResponse.data as any)?.data || [];
+        const ramsData: Ram[] = Array.isArray(ramResponse.data)
+          ? ramResponse.data
+          : (ramResponse.data as any)?.data || [];
+        const storagesData: Storage[] = Array.isArray(storageResponse.data)
+          ? storageResponse.data
+          : (storageResponse.data as any)?.data || [];
 
         setCategories(cats);
         setBrands(brandsData);
+        setRams(ramsData);
+        setStorages(storagesData);
 
         // Handle Category pre-selection
         if (initialData?.categoryID && cats.length > 0) {
@@ -1090,12 +1108,56 @@ export function ProductForm({
                     value={spec.key}
                     onChange={(e) => updateSpec(index, "key", e.target.value)}
                   />
-                  <Input
-                    placeholder="e.g. Space Gray"
-                    className="flex-1 h-9 text-xs"
-                    value={spec.value}
-                    onChange={(e) => updateSpec(index, "value", e.target.value)}
-                  />
+                  {spec.key.toLowerCase() === "ram" ? (
+                    <Select
+                      value={spec.value}
+                      onValueChange={(value) =>
+                        updateSpec(index, "value", value)
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger className="flex-1 h-9 text-xs">
+                          <SelectValue placeholder="Select RAM" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {rams.map((ram) => (
+                          <SelectItem key={ram._id} value={ram.label}>
+                            {ram.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : spec.key.toLowerCase() === "storage" ? (
+                    <Select
+                      value={spec.value}
+                      onValueChange={(value) =>
+                        updateSpec(index, "value", value)
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger className="flex-1 h-9 text-xs">
+                          <SelectValue placeholder="Select Storage" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {storages.map((storage) => (
+                          <SelectItem key={storage._id} value={storage.label}>
+                            {storage.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      placeholder="e.g. Space Gray"
+                      className="flex-1 h-9 text-xs"
+                      value={spec.value}
+                      onChange={(e) =>
+                        updateSpec(index, "value", e.target.value)
+                      }
+                    />
+                  )}
                   <Button
                     type="button"
                     variant="ghost"

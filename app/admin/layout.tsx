@@ -13,6 +13,8 @@ import {
   Tag,
   Image as ImageIcon,
   Map,
+  Cpu,
+  HardDrive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminGuard } from "@/components/auth/AdminGuard";
@@ -35,6 +37,8 @@ export default function AdminLayout({
     { href: "/admin/categories", icon: FolderTree, label: "Categories" },
     { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
     { href: "/admin/brands", icon: Tag, label: "Brands" },
+    { href: "/admin/ram", icon: Cpu, label: "RAM" },
+    { href: "/admin/storage", icon: HardDrive, label: "Storage" },
     { href: "/admin/banners", icon: ImageIcon, label: "Banners" },
     { href: "/admin/navigation", icon: Map, label: "Navigation" },
     { href: "/admin/contacts", icon: MessageSquare, label: "Messages" },

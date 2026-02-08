@@ -97,6 +97,44 @@ export interface Category {
 }
 
 // ============================================================================
+// RAM Types
+// ============================================================================
+
+export interface Ram {
+  _id: string;
+  label: string;
+  extraPrice: number;
+  isAvailable: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateRamRequest {
+  label: string;
+  extraPrice: number;
+  isAvailable: boolean;
+}
+
+// ============================================================================
+// Storage Types
+// ============================================================================
+
+export interface Storage {
+  _id: string;
+  label: string;
+  extraPrice: number;
+  isAvailable: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateStorageRequest {
+  label: string;
+  extraPrice: number;
+  isAvailable: boolean;
+}
+
+// ============================================================================
 // Order Types
 // ============================================================================
 
@@ -135,6 +173,8 @@ export interface ShippingAddress {
 export interface OrderItem {
   product: string; // Product ID
   quantity: number;
+  price?: number;
+  specifications?: Record<string, string>;
 }
 
 export interface Order {
@@ -301,6 +341,8 @@ export interface CartItem {
   product: Product;
   quantity: number;
   _id?: string;
+  price?: number;
+  specifications?: Record<string, string>;
 }
 
 export interface Cart {
@@ -313,6 +355,8 @@ export interface Cart {
 export interface AddToCartRequest {
   productId: string;
   quantity: number;
+  price?: number;
+  specifications?: Record<string, string>;
 }
 
 export interface UpdateCartItemRequest {

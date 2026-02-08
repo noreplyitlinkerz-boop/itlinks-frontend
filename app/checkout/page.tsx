@@ -73,7 +73,7 @@ export default function CheckoutPage() {
   }
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setAddress((prev) => ({ ...prev, [name]: value }));
@@ -92,7 +92,7 @@ export default function CheckoutPage() {
     for (const field of required) {
       if (!address[field]) {
         toast.error(
-          `Please fill in ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`
+          `Please fill in ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`,
         );
         return false;
       }
@@ -103,13 +103,13 @@ export default function CheckoutPage() {
   const handleRazorpayPayment = async (
     orderId: string,
     razorpayOrderId: string,
-    amount: number
+    amount: number,
   ) => {
     const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
     if (!razorpayKey) {
       console.error(
-        "Razorpay Key ID is missing! Please ensure NEXT_PUBLIC_RAZORPAY_KEY_ID is set in your .env.local file."
+        "Razorpay Key ID is missing! Please ensure NEXT_PUBLIC_RAZORPAY_KEY_ID is set in your .env.local file.",
       );
       toast.error("Payment initialization failed: Missing API Key", {
         description:
@@ -189,6 +189,8 @@ export default function CheckoutPage() {
         items: items.map((item) => ({
           product: item.product._id,
           quantity: item.quantity,
+          price: item.price,
+          specifications: item.specifications,
         })),
         shippingAddress: address,
         paymentMethod: paymentMethod,
@@ -483,12 +485,22 @@ export default function CheckoutPage() {
                         <h4 className="font-bold text-sm truncate group-hover/item:text-accent transition-colors">
                           {item.product.name}
                         </h4>
+                        {/* Specifications */}
+                        {item.specifications && (
+                          <p className="text-[10px] text-muted-foreground font-medium line-clamp-1">
+                            {Object.entries(item.specifications)
+                              .map(([k, v]) => `${k}: ${v}`)
+                              .join(", ")}
+                          </p>
+                        )}
                         <p className="text-xs text-muted-foreground font-medium line-clamp-1">
                           ₹
-                          {(item.product.discount &&
-                          typeof item.product.discount === "object"
-                            ? item.product.discount.discountedPrice
-                            : item.product.price
+                          {(item.price !== undefined
+                            ? item.price
+                            : item.product.discount &&
+                                typeof item.product.discount === "object"
+                              ? item.product.discount.discountedPrice
+                              : item.product.price
                           ).toLocaleString()}
                         </p>
                       </div>
@@ -496,10 +508,12 @@ export default function CheckoutPage() {
                         <p className="font-bold text-sm tracking-tight">
                           ₹
                           {(
-                            (item.product.discount &&
-                            typeof item.product.discount === "object"
-                              ? item.product.discount.discountedPrice
-                              : item.product.price) * item.quantity
+                            (item.price !== undefined
+                              ? item.price
+                              : item.product.discount &&
+                                  typeof item.product.discount === "object"
+                                ? item.product.discount.discountedPrice
+                                : item.product.price) * item.quantity
                           ).toLocaleString()}
                         </p>
                       </div>

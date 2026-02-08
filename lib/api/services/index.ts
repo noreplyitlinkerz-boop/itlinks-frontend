@@ -14,6 +14,8 @@ export { wishlistService } from "./wishlist-service";
 export { contactService } from "./contact-service";
 export { brandService } from "./brand-service";
 export { bannerService } from "./banner-service";
+export { ramService } from "./ram-service";
+export { storageService } from "./storage-service";
 export { navigationService } from "./navigation-service";
 
 // Export types

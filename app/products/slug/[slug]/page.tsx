@@ -19,12 +19,25 @@ import {
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import { productService } from "@/lib/api/services";
-import { Product as ApiProduct } from "@/lib/api/types/endpoints";
-import { safeParse, cn } from "@/lib/utils";
-import { ProductImage } from "@/components/shared/ProductImage";
 import { ProductSpecsGrid } from "@/components/products/ProductSpecsGrid";
 import { TechnicalSpecsTable } from "@/components/products/TechnicalSpecsTable";
+import { VariantSelector } from "@/components/products/VariantSelector";
+import { safeParse, cn } from "@/lib/utils";
+import { ProductImage } from "@/components/shared/ProductImage";
+import {
+  categoryService,
+  brandService,
+  ramService,
+  storageService,
+  productService,
+} from "@/lib/api/services";
+import {
+  Category,
+  Brand,
+  Ram,
+  Storage,
+  Product as ApiProduct,
+} from "@/lib/api/types/endpoints";
 import { io } from "socket.io-client";
 
 const socket = io(
@@ -62,6 +75,14 @@ export default function ProductDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeMedia, setActiveMedia] = useState<string>("");
+
+  // Variant States
+  const [rams, setRams] = useState<Ram[]>([]);
+  const [storages, setStorages] = useState<Storage[]>([]);
+  const [selectedRam, setSelectedRam] = useState<Ram | null>(null);
+  const [selectedStorage, setSelectedStorage] = useState<Storage | null>(null);
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
+  const [basePrice, setBasePrice] = useState<number>(0);
   const fetchProduct = async () => {
     setIsLoading(true);
     try {
@@ -102,7 +123,91 @@ export default function ProductDetailPage({
 
   useEffect(() => {
     fetchProduct();
+    fetchVariants();
   }, [slug]);
+
+  const fetchVariants = async () => {
+    try {
+      const [ramRes, storageRes] = await Promise.all([
+        ramService.getRams(),
+        storageService.getStorages(),
+      ]);
+      // Handle potential array vs paginated response structure
+      const ramData = Array.isArray(ramRes.data)
+        ? ramRes.data
+        : (ramRes.data as any)?.data || [];
+      const storageData = Array.isArray(storageRes.data)
+        ? storageRes.data
+        : (storageRes.data as any)?.data || [];
+
+      setRams(ramData);
+      setStorages(storageData);
+    } catch (error) {
+      console.error("Failed to fetch variants", error);
+    }
+  };
+
+  // Initialize selection and calculate base price when product or variants mock load
+  useEffect(() => {
+    if (product && rams.length > 0 && storages.length > 0) {
+      const specs = safeParse(product.specifications || {}, {}) as Record<
+        string,
+        string
+      >;
+      const currentRamLabel = specs["RAM"];
+      const currentStorageLabel = specs["Storage"];
+
+      const matchingRam = rams.find((r) => r.label === currentRamLabel);
+      const matchingStorage = storages.find(
+        (s) => s.label === currentStorageLabel,
+      );
+
+      setSelectedRam(matchingRam || null);
+      setSelectedStorage(matchingStorage || null);
+
+      // Determine initial price (use discounted price if available, else standard price)
+      const initialPrice =
+        product.discount &&
+        typeof product.discount === "object" &&
+        Number(product.discount.percentage) > 0 &&
+        Number(product.discount.discountedPrice) > 0
+          ? Number(product.discount.discountedPrice)
+          : Number(product.price);
+
+      // Calculate base price by subtracting the extra costs of the *default* keys
+      // logical assumption: product.price includes the cost of its generic specs
+      const initialExtra =
+        (matchingRam?.extraPrice || 0) + (matchingStorage?.extraPrice || 0);
+      let calculatedBase = initialPrice - initialExtra;
+
+      // Safety check: if base price is somehow <= 0, fallback to initial price
+      if (calculatedBase <= 0) {
+        calculatedBase = initialPrice;
+      }
+
+      setBasePrice(calculatedBase);
+      setCurrentPrice(initialPrice);
+    } else if (product) {
+      // Fallback if variants not yet loaded or empty
+      const initialPrice =
+        product.discount &&
+        typeof product.discount === "object" &&
+        Number(product.discount.percentage) > 0 &&
+        Number(product.discount.discountedPrice) > 0
+          ? Number(product.discount.discountedPrice)
+          : Number(product.price);
+
+      setCurrentPrice(initialPrice);
+      setBasePrice(initialPrice);
+    }
+  }, [product, rams, storages]);
+
+  // Update current price when selection changes
+  useEffect(() => {
+    const extraRam = selectedRam?.extraPrice || 0;
+    const extraStorage = selectedStorage?.extraPrice || 0;
+    setCurrentPrice(basePrice + extraRam + extraStorage);
+  }, [selectedRam, selectedStorage, basePrice]);
 
   useEffect(() => {
     socket.on("order_created", (order) => {
@@ -149,11 +254,32 @@ export default function ProductDetailPage({
   const inWishlist = isInWishlist(product._id);
 
   const handleAddToCart = async () => {
-    await addItem(product, quantity);
+    // Create a modified product object with selected specs and price
+    const modifiedProduct = {
+      ...product,
+      price: currentPrice,
+      specifications: {
+        RAM: selectedRam?.label,
+        Storage: selectedStorage?.label,
+      },
+      // Note: `discount` object in product might show old discountedPrice,
+      // strictly speaking we should update that too if we want perfect accuracy in cart,
+      // but cart usually recalculates or uses 'price'.
+      // For now, trusting 'price' override.
+    };
+    await addItem(modifiedProduct as ApiProduct, quantity);
   };
 
   const handleBuyNow = async () => {
-    await addItem(product, quantity);
+    const modifiedProduct = {
+      ...product,
+      price: currentPrice,
+      specifications: {
+        RAM: selectedRam?.label,
+        Storage: selectedStorage?.label,
+      },
+    };
+    await addItem(modifiedProduct as ApiProduct, quantity);
     router.push("/cart");
   };
 
@@ -304,7 +430,7 @@ export default function ProductDetailPage({
           </div>
 
           {/* Right Column: Info & Details */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-4">
             <div>
               <h1 className="text-xl md:text-2xl font-normal leading-relaxed text-foreground">
                 {product.name}
@@ -339,43 +465,50 @@ export default function ProductDetailPage({
               )}
               <div className="flex items-baseline gap-4">
                 <p className="text-3xl font-bold">
-                  ₹
-                  {(product.discount &&
-                  typeof product.discount === "object" &&
-                  product.discount.percentage > 0 &&
-                  product.discount.discountedPrice > 0
-                    ? product.discount.discountedPrice
-                    : product.price
-                  ).toLocaleString()}
+                  ₹{currentPrice.toLocaleString()}
                 </p>
                 {product.discount &&
                   typeof product.discount === "object" &&
                   product.discount.percentage > 0 && (
                     <>
-                      <p className="text-muted-foreground line-through text-lg">
+                      {/* Show original MRP only if we are taking base price logic. 
+                          If variants add cost, the 'original' price also theoretically increases.
+                          For simplicity, we hide original if it's dynamic or just show it as static guidance.
+                      */}
+                      {/* <p className="text-muted-foreground line-through text-lg">
                         ₹{product.price.toLocaleString()}
-                      </p>
+                      </p> */}
                       <p className="text-green-600 text-lg font-bold">
                         {product.discount.percentage}% off
                       </p>
                     </>
                   )}
               </div>
+              {/* Availability */}
+              <div className="space-y-2">
+                {product.stock < 10 && product.stock > 0 && (
+                  <p className="text-red-500 text-sm font-bold animate-pulse">
+                    Hurry, Only {product.stock} left!
+                  </p>
+                )}
+                {product.stock === 0 && (
+                  <Badge variant="destructive" className="rounded-sm">
+                    Out of Stock
+                  </Badge>
+                )}
+              </div>
             </div>
 
-            {/* Availability */}
-            <div className="space-y-2">
-              {product.stock < 10 && product.stock > 0 && (
-                <p className="text-red-500 text-sm font-bold animate-pulse">
-                  Hurry, Only {product.stock} left!
-                </p>
-              )}
-              {product.stock === 0 && (
-                <Badge variant="destructive" className="rounded-sm">
-                  Out of Stock
-                </Badge>
-              )}
-            </div>
+            {/* Variant Selector */}
+            <VariantSelector
+              rams={rams}
+              storages={storages}
+              selectedRam={selectedRam?.label}
+              selectedStorage={selectedStorage?.label}
+              onRamSelect={setSelectedRam}
+              onStorageSelect={setSelectedStorage}
+              basePrice={basePrice}
+            />
 
             {/* Details Section */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">

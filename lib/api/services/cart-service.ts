@@ -22,19 +22,23 @@ class CartService extends BaseService {
    */
   async addToCart(
     productId: string,
-    quantity: number = 1
+    quantity: number = 1,
+    specifications?: Record<string, string>,
+    price?: number,
   ): Promise<ApiResponse<Cart>> {
     return this.post<ApiResponse<Cart>>("", {
       productId,
       quantity,
+      specifications,
+      price,
     } as AddToCartRequest);
   }
 
   /**
    * Remove item from cart
    */
-  async removeFromCart(productId: string): Promise<ApiResponse<Cart>> {
-    return this.delete<ApiResponse<Cart>>(`/${productId}`);
+  async removeFromCart(itemId: string): Promise<ApiResponse<Cart>> {
+    return this.delete<ApiResponse<Cart>>(`/${itemId}`);
   }
 
   /**
@@ -42,7 +46,7 @@ class CartService extends BaseService {
    */
   async updateQuantity(
     productId: string,
-    quantity: number
+    quantity: number,
   ): Promise<ApiResponse<Cart>> {
     return this.put<ApiResponse<Cart>>(`/update/${productId}`, {
       quantity,

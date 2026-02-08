@@ -8,6 +8,7 @@ import {
   Order as ApiOrder,
   OrderItem as ApiOrderItem,
   OrderStatus as ApiOrderStatus,
+  CartItem as ApiCartItem,
 } from "@/lib/api/types/endpoints";
 
 export type Product = ApiProduct;
@@ -23,10 +24,7 @@ export interface OrderItem {
   price: number;
 }
 
-export interface CartItem {
-  product: Product;
-  quantity: number;
-}
+export type CartItem = ApiCartItem;
 
 export interface WishlistItem {
   product: Product;

@@ -11,7 +11,10 @@ interface VariantSelectorProps {
   onRamSelect: (ram: Ram) => void;
   onStorageSelect: (storage: Storage) => void;
   basePrice: number;
+  productImage?: string;
 }
+
+import Image from "next/image";
 
 export const VariantSelector = ({
   rams,
@@ -21,45 +24,55 @@ export const VariantSelector = ({
   onRamSelect,
   onStorageSelect,
   basePrice,
+  productImage,
 }: VariantSelectorProps) => {
   const currentRamExtra =
     rams.find((r) => r.label === selectedRam)?.extraPrice || 0;
+  const currentStorageExtra =
+    storages.find((s) => s.label === selectedStorage)?.extraPrice || 0;
 
   return (
-    <div className="space-y-8 py-4">
-      {/* RAM */}
+    <div className="space-y-6 py-2">
+      {/* RAM Section */}
       {rams.length > 0 && (
         <div className="space-y-3">
           <div className="text-sm">
-            Computer memory size:
-            <span className="ml-1 font-bold">{selectedRam}</span>
+            <span className="text-muted-foreground mr-1">
+              Computer memory size:
+            </span>
+            <span className="font-bold">{selectedRam}</span>
           </div>
 
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-2.5 flex-wrap">
             {rams
               .filter((r) => r.isAvailable)
               .map((ram) => {
                 const isSelected = ram.label === selectedRam;
-                const price = basePrice + ram.extraPrice;
-                const oldPrice = price + 3000;
+                const totalPrice =
+                  basePrice + ram.extraPrice + currentStorageExtra;
+                const oldPrice = totalPrice * 1.5; // MRP estimate
 
                 return (
                   <button
                     key={ram._id}
                     onClick={() => onRamSelect(ram)}
                     className={cn(
-                      "w-[140px] border rounded-md p-3 text-left",
-                      isSelected ? "border-blue-600 border-2" : "border-border",
+                      "min-w-[100px] p-2 text-left border rounded-md transition-all duration-200",
+                      isSelected
+                        ? "border-[#10BBE6] ring-1 ring-[#10BBE6] bg-[#10BBE6]/5 shadow-sm"
+                        : "border-gray-200 hover:border-gray-400 bg-background",
                     )}
                   >
-                    <div className="text-sm font-semibold">{ram.label}</div>
-
-                    <div className="text-sm font-bold mt-1">
-                      ₹{price.toLocaleString()}
+                    <div className="text-sm font-bold text-foreground">
+                      {ram.label}
                     </div>
-
-                    <div className="text-xs text-muted-foreground line-through">
-                      ₹{oldPrice.toLocaleString()}
+                    <div className="flex flex-col mt-0.5">
+                      <span className="text-sm font-semibold text-foreground">
+                        ₹{totalPrice.toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground line-through opacity-60">
+                        ₹{Math.round(oldPrice).toLocaleString()}
+                      </span>
                     </div>
                   </button>
                 );
@@ -68,12 +81,12 @@ export const VariantSelector = ({
         </div>
       )}
 
-      {/* Storage (same visual system) */}
+      {/* Storage Section - With Laptop Thumbnails */}
       {storages.length > 0 && (
         <div className="space-y-3">
           <div className="text-sm">
-            Hard Disk Size:
-            <span className="ml-1 font-bold">{selectedStorage}</span>
+            <span className="text-muted-foreground mr-1">Hard Disk Size:</span>
+            <span className="font-bold">{selectedStorage}</span>
           </div>
 
           <div className="flex gap-3 flex-wrap">
@@ -81,21 +94,38 @@ export const VariantSelector = ({
               .filter((s) => s.isAvailable)
               .map((storage) => {
                 const isSelected = storage.label === selectedStorage;
-                const price = basePrice + currentRamExtra + storage.extraPrice;
+                const totalPrice =
+                  basePrice + currentRamExtra + storage.extraPrice;
 
                 return (
                   <button
                     key={storage._id}
                     onClick={() => onStorageSelect(storage)}
                     className={cn(
-                      "w-[140px] border rounded-md p-3 text-left",
-                      isSelected ? "border-blue-600 border-2" : "border-border",
+                      "group flex flex-col items-center p-2 border rounded-md transition-all duration-200 min-w-[80px]",
+                      isSelected
+                        ? "border-[#10BBE6] ring-1 ring-[#10BBE6] bg-[#10BBE6]/5 shadow-sm"
+                        : "border-gray-200 hover:border-gray-400 bg-background",
                     )}
                   >
-                    <div className="text-sm font-semibold">{storage.label}</div>
-
-                    <div className="text-sm font-bold mt-1">
-                      ₹{price.toLocaleString()}
+                    <div className="relative w-full aspect-video mb-1">
+                      {productImage ? (
+                        <Image
+                          src="/images/laptop-icon.jpg"
+                          alt={storage.label}
+                          fill
+                          className="object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center rounded">
+                          <span className="text-[10px] text-muted-foreground text-center">
+                            Image
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-[11px] font-bold text-foreground">
+                      {storage.label}
                     </div>
                   </button>
                 );

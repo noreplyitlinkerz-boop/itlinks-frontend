@@ -526,6 +526,9 @@ export default function ProductDetailPage({
                     onRamSelect={setSelectedRam}
                     onStorageSelect={setSelectedStorage}
                     basePrice={basePrice}
+                    productImage={
+                      product.product_primary_image_url || product.images?.[0]
+                    }
                   />
                 );
               }

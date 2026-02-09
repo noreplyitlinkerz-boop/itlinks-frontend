@@ -81,6 +81,7 @@ export default function ProductDetailPage({
   const [storages, setStorages] = useState<Storage[]>([]);
   const [selectedRam, setSelectedRam] = useState<Ram | null>(null);
   const [selectedStorage, setSelectedStorage] = useState<Storage | null>(null);
+  const [productCategory, setProductCategory] = useState<Category | null>(null);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [basePrice, setBasePrice] = useState<number>(0);
   const fetchProduct = async () => {
@@ -98,18 +99,31 @@ export default function ProductDetailPage({
 
       if (productData && productData._id) {
         console.log("✅ Setting product:", productData);
-        if (productData.technicalSpecifications) {
-          console.log(
-            "🔧 TEchnical Specs raw:",
-            productData.technicalSpecifications,
-          );
-        }
         setProduct(productData as ApiProduct);
         setActiveMedia(
           productData.product_primary_image_url ||
             productData.images?.[0] ||
             "",
         );
+
+        // Fetch category details if categoryID is a string
+        if (typeof productData.categoryID === "string") {
+          try {
+            const catRes = await categoryService.getCategoryById(
+              productData.categoryID,
+            );
+            if (catRes.success && catRes.data) {
+              setProductCategory(catRes.data);
+            }
+          } catch (err) {
+            console.error("Failed to fetch category", err);
+          }
+        } else if (
+          productData.categoryID &&
+          typeof productData.categoryID === "object"
+        ) {
+          setProductCategory(productData.categoryID as Category);
+        }
       } else {
         console.error("❌ No product data in response", response);
       }
@@ -470,18 +484,14 @@ export default function ProductDetailPage({
                 {product.discount &&
                   typeof product.discount === "object" &&
                   product.discount.percentage > 0 && (
-                    <>
-                      {/* Show original MRP only if we are taking base price logic. 
-                          If variants add cost, the 'original' price also theoretically increases.
-                          For simplicity, we hide original if it's dynamic or just show it as static guidance.
-                      */}
-                      {/* <p className="text-muted-foreground line-through text-lg">
+                    <div className="flex items-center gap-2">
+                      <p className="text-muted-foreground line-through text-lg">
                         ₹{product.price.toLocaleString()}
-                      </p> */}
+                      </p>
                       <p className="text-green-600 text-lg font-bold">
                         {product.discount.percentage}% off
                       </p>
-                    </>
+                    </div>
                   )}
               </div>
               {/* Availability */}
@@ -499,33 +509,31 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Variant Selector */}
-            <VariantSelector
-              rams={rams}
-              storages={storages}
-              selectedRam={selectedRam?.label}
-              selectedStorage={selectedStorage?.label}
-              onRamSelect={setSelectedRam}
-              onStorageSelect={setSelectedStorage}
-              basePrice={basePrice}
-            />
+            {/* Variant Selector - Only for Laptops and Desktops */}
+            {(() => {
+              const categoryName = productCategory?.name?.toLowerCase() || "";
+              const isComputer =
+                categoryName.includes("laptop") ||
+                categoryName.includes("desktop");
 
-            {/* Details Section */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">
-              <div className="md:col-span-3">
-                <h3 className="text-muted-foreground font-medium">
-                  Description
-                </h3>
-              </div>
-              <div className="md:col-span-9">
-                <p className="text-sm leading-relaxed text-foreground">
-                  {product.description}
-                </p>
-              </div>
-            </div>
+              if (isComputer) {
+                return (
+                  <VariantSelector
+                    rams={rams}
+                    storages={storages}
+                    selectedRam={selectedRam?.label}
+                    selectedStorage={selectedStorage?.label}
+                    onRamSelect={setSelectedRam}
+                    onStorageSelect={setSelectedStorage}
+                    basePrice={basePrice}
+                  />
+                );
+              }
+              return null;
+            })()}
 
             {/* Specs Section */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-8">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">
               <div className="md:col-span-3">
                 <h3 className="text-muted-foreground font-medium">
                   Specifications
@@ -540,6 +548,20 @@ export default function ProductDetailPage({
                     >
                   }
                 />
+              </div>
+            </div>
+
+            {/* Details Section (Description) */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-8">
+              <div className="md:col-span-3">
+                <h3 className="text-muted-foreground font-medium">
+                  Description
+                </h3>
+              </div>
+              <div className="md:col-span-9">
+                <p className="text-sm leading-relaxed text-foreground">
+                  {product.description}
+                </p>
               </div>
             </div>
 

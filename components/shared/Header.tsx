@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon, MapPin } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -174,34 +174,60 @@ export function Header() {
       >
         <nav className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 md:gap-2 group shrink-0"
-            >
-              <div className="flex flex-col -gap-0.5 md:-gap-1">
-                <div className="flex items-center">
-                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -mr-[0.1em]">
-                    ITL
-                  </span>
-                  <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-100 mb-2">
-                    <Image
-                      className="w-3 h-5 md:w-5 md:h-7"
-                      src="/logo-01.svg"
-                      alt="Logo"
-                      width={16}
-                      height={16}
-                    />
+            {/* Left Section: Logo & Location */}
+            <div className="flex items-center gap-6">
+              {/* Logo */}
+              <Link
+                href="/"
+                className="flex items-center gap-1.5 md:gap-2 group shrink-0"
+              >
+                <div className="flex flex-col -gap-0.5 md:-gap-1">
+                  <div className="flex items-center">
+                    <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -mr-[0.1em]">
+                      ITL
+                    </span>
+                    <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-100 mb-2">
+                      <Image
+                        className="w-3 h-5 md:w-5 md:h-7"
+                        src="/logo-01.svg"
+                        alt="Logo"
+                        width={16}
+                        height={16}
+                      />
+                    </div>
+                    <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -ml-[0.1em]">
+                      NKERS
+                    </span>
                   </div>
-                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -ml-[0.1em]">
-                    NKERS
+                  <span className="text-[6px] md:text-[8px] text-center w-full  text-muted-foreground font-medium tracking-tighter uppercase leading-none">
+                    Where Technology Connects
                   </span>
                 </div>
-                <span className="text-[6px] md:text-[8px] text-center w-full  text-muted-foreground font-medium tracking-tighter uppercase leading-none">
-                  Where Technology Connects
-                </span>
+              </Link>
+
+              {/* Location Indicator */}
+              <div
+                className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300 cursor-pointer group shrink-0 px-3 py-1.5 rounded-lg hover:bg-primary/5 border border-transparent hover:border-primary/10"
+                onClick={() => {
+                  if (isAuthenticated) {
+                    router.push("/profile");
+                  } else {
+                    openLoginModal();
+                  }
+                }}
+              >
+                <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform text-[#10BBE6]" />
+                <div className="flex flex-col -space-y-0.5">
+                  <span className="text-[10px] font-medium leading-tight opacity-70">
+                    Delivering to {user?.address?.city || "Lucknow"}{" "}
+                    {user?.address?.pincode || "226021"}
+                  </span>
+                  <span className="text-xs font-bold leading-tight group-hover:text-primary">
+                    Update location
+                  </span>
+                </div>
               </div>
-            </Link>
+            </div>
 
             {/* Search Bar - Center */}
             <div className="hidden lg:flex flex-1 max-w-md relative">

@@ -10,7 +10,7 @@ interface VariantSelectorProps {
   selectedStorage?: string;
   onRamSelect: (ram: Ram) => void;
   onStorageSelect: (storage: Storage) => void;
-  basePrice: number; // To calculate and display price for each variant
+  basePrice: number;
 }
 
 export const VariantSelector = ({
@@ -22,49 +22,45 @@ export const VariantSelector = ({
   onStorageSelect,
   basePrice,
 }: VariantSelectorProps) => {
-  // Find current selection costs
   const currentRamExtra =
     rams.find((r) => r.label === selectedRam)?.extraPrice || 0;
-  const currentStorageExtra =
-    storages.find((s) => s.label === selectedStorage)?.extraPrice || 0;
 
   return (
-    <div className="space-y-6 py-4">
-      {/* RAM Selection */}
+    <div className="space-y-8 py-4">
+      {/* RAM */}
       {rams.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              RAM Size:
-            </h3>
-            <span className="text-sm font-bold text-foreground">
-              {selectedRam || "Select"}
-            </span>
+          <div className="text-sm">
+            Computer memory size:
+            <span className="ml-1 font-bold">{selectedRam}</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+
+          <div className="flex gap-3 flex-wrap">
             {rams
               .filter((r) => r.isAvailable)
               .map((ram) => {
                 const isSelected = ram.label === selectedRam;
-                // Price = Base + This RAM Cost + Current Storage Cost
-                const price =
-                  basePrice + (ram.extraPrice || 0) + currentStorageExtra;
+                const price = basePrice + ram.extraPrice;
+                const oldPrice = price + 3000;
 
                 return (
                   <button
                     key={ram._id}
                     onClick={() => onRamSelect(ram)}
                     className={cn(
-                      "flex flex-col items-start p-3 rounded-lg border-2 transition-all w-full",
-                      isSelected
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:border-primary/50 bg-background",
+                      "w-[140px] border rounded-md p-3 text-left",
+                      isSelected ? "border-blue-600 border-2" : "border-border",
                     )}
                   >
-                    <span className="text-sm font-bold">{ram.label}</span>
-                    <span className="text-xs text-muted-foreground mt-1">
+                    <div className="text-sm font-semibold">{ram.label}</div>
+
+                    <div className="text-sm font-bold mt-1">
                       ₹{price.toLocaleString()}
-                    </span>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground line-through">
+                      ₹{oldPrice.toLocaleString()}
+                    </div>
                   </button>
                 );
               })}
@@ -72,41 +68,35 @@ export const VariantSelector = ({
         </div>
       )}
 
-      {/* Storage Selection */}
+      {/* Storage (same visual system) */}
       {storages.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Storage:
-            </h3>
-            <span className="text-sm font-bold text-foreground">
-              {selectedStorage || "Select"}
-            </span>
+          <div className="text-sm">
+            Hard Disk Size:
+            <span className="ml-1 font-bold">{selectedStorage}</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+
+          <div className="flex gap-3 flex-wrap">
             {storages
               .filter((s) => s.isAvailable)
               .map((storage) => {
                 const isSelected = storage.label === selectedStorage;
-                // Price = Base + Current RAM Cost + This Storage Cost
-                const price =
-                  basePrice + currentRamExtra + (storage.extraPrice || 0);
+                const price = basePrice + currentRamExtra + storage.extraPrice;
 
                 return (
                   <button
                     key={storage._id}
                     onClick={() => onStorageSelect(storage)}
                     className={cn(
-                      "flex flex-col items-start p-3 rounded-lg border-2 transition-all w-full",
-                      isSelected
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:border-primary/50 bg-background",
+                      "w-[140px] border rounded-md p-3 text-left",
+                      isSelected ? "border-blue-600 border-2" : "border-border",
                     )}
                   >
-                    <span className="text-sm font-bold">{storage.label}</span>
-                    <span className="text-xs text-muted-foreground mt-1">
+                    <div className="text-sm font-semibold">{storage.label}</div>
+
+                    <div className="text-sm font-bold mt-1">
                       ₹{price.toLocaleString()}
-                    </span>
+                    </div>
                   </button>
                 );
               })}

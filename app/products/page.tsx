@@ -196,123 +196,67 @@ function ProductsContent() {
 
   return (
     <div className="space-y-8">
-      {/* Premium Category Hero - Refined Lighter Version */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-white via-slate-50/50 to-white text-slate-900 p-8 md:p-14 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-200/60">
-        {/* Animated Background Elements - Subtle and Light */}
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none opacity-60" />
-        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px] pointer-events-none opacity-40" />
-        <div className="absolute inset-0 bg-[url('/images/grid.svg')] bg-center mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-[0.03] pointer-events-none" />
+      {/* Integrated Header Section */}
+      <div className="relative pt-2 pb-6">
+        <div className="flex flex-col gap-6">
+          {/* Top Row: Breadcrumbs & Results Info */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <nav className="flex items-center gap-2">
+              <Link
+                href="/"
+                className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
+              >
+                Home
+              </Link>
+              <div className="w-1 h-1 rounded-full bg-border" />
+              <Link
+                href="/products"
+                className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
+              >
+                Products
+              </Link>
+              {categoryDisplayName &&
+                categoryDisplayName !== "All Collection" && (
+                  <>
+                    <div className="w-1 h-1 rounded-full bg-border" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80 italic">
+                      {categoryDisplayName}
+                    </span>
+                  </>
+                )}
+            </nav>
 
-        <div className="relative z-10 space-y-8">
-          {/* Breadcrumbs - Darker for Light Theme */}
-          <nav className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 hover:text-primary transition-all duration-300"
-            >
-              Home
-            </Link>
-            <div className="w-1 h-1 rounded-full bg-slate-200" />
-            <Link
-              href="/products"
-              className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 hover:text-primary transition-all duration-300"
-            >
-              Products
-            </Link>
-            {categoryDisplayName &&
-              categoryDisplayName !== "All Collection" && (
-                <>
-                  <div className="w-1 h-1 rounded-full bg-slate-200" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary/80 italic">
-                    {categoryDisplayName}
-                  </span>
-                </>
-              )}
-          </nav>
-
-          <div className="space-y-4">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="space-y-2">
-                <h1 className="text-5xl md:text-7xl font-black tracking-tight uppercase italic leading-[1.1] bg-linear-to-b from-slate-950 via-slate-900 to-slate-700 bg-clip-text text-transparent pr-8">
-                  {brandDisplayName || categoryDisplayName}
-                </h1>
-              </div>
-
-              {/* Enhanced Stats Badge for Light Mode */}
-              <div className="flex items-center gap-4 bg-white/80 backdrop-blur-md border border-slate-200/80 p-2.5 rounded-2xl shadow-sm">
-                <div className="flex items-center gap-3 px-5 py-2.5 bg-primary rounded-xl shadow-lg shadow-primary/10">
-                  <span className="font-black text-2xl text-primary-foreground leading-none">
-                    {sortedProducts.length}
-                  </span>
-                </div>
-                <div className="pr-5 border-r border-slate-200">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 leading-tight">
-                    Premium Items
-                    <br />
-                    Available
-                  </p>
-                </div>
-                <div className="hidden lg:flex flex-col px-2">
-                  <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-                    Trusted Quality
-                  </p>
-                  <div className="flex gap-1 mt-1.5">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        className="w-1.5 h-1.5 rounded-full bg-primary/20"
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                {sortedProducts.length} Premium Items
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-col xl:flex-row gap-4 pt-8 border-t border-slate-200/60">
+          {/* Main Action Bar */}
+          <div className="flex flex-col lg:flex-row items-stretch gap-3">
             <div className="relative flex-1 group">
-              <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
               <SearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Search premium inventory..."
-                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all duration-500 rounded-2xl h-14 pl-12 text-base shadow-sm"
+                className="bg-white/60 backdrop-blur-md border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all duration-300 rounded-xl h-12 pl-10 text-sm shadow-sm"
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex gap-3">
               <Select
                 value={sortOption}
                 onValueChange={(value) => setSortOption(value as SortOption)}
               >
-                <SelectTrigger className="w-full sm:w-[220px] bg-white border-slate-200 text-slate-900 rounded-2xl h-14 px-6 hover:bg-slate-50 transition-colors focus:ring-primary/10 shadow-sm">
+                <SelectTrigger className="w-full sm:w-[200px] bg-white/60 backdrop-blur-md border-slate-200 text-slate-900 rounded-xl h-12 px-4 hover:bg-white transition-colors focus:ring-primary/10 shadow-sm text-sm">
                   <SelectValue placeholder="Sort Results" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-xl overflow-hidden shadow-2xl">
-                  <SelectItem
-                    value="newest"
-                    className="focus:bg-slate-50 focus:text-primary font-medium"
-                  >
-                    Featured First
-                  </SelectItem>
-                  <SelectItem
-                    value="price-asc"
-                    className="focus:bg-slate-50 focus:text-primary font-medium"
-                  >
-                    Price: Low to High
-                  </SelectItem>
-                  <SelectItem
-                    value="price-desc"
-                    className="focus:bg-slate-50 focus:text-primary font-medium"
-                  >
-                    Price: High to Low
-                  </SelectItem>
-                  <SelectItem
-                    value="name-asc"
-                    className="focus:bg-slate-50 focus:text-primary font-medium"
-                  >
-                    A - Z (Alphabetical)
-                  </SelectItem>
+                  <SelectItem value="newest">Featured First</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  <SelectItem value="name-asc">A - Z (Alphabetical)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

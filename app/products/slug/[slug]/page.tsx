@@ -171,13 +171,17 @@ export default function ProductDetailPage({
       const currentRamLabel = specs["RAM"];
       const currentStorageLabel = specs["Storage"];
 
-      const matchingRam = rams.find((r) => r.label === currentRamLabel);
-      const matchingStorage = storages.find(
-        (s) => s.label === currentStorageLabel,
-      );
+      const initialRam =
+        rams.find((r) => r.label === "8GB") ||
+        rams.find((r) => r.label === currentRamLabel) ||
+        rams[0];
+      const initialStorage =
+        storages.find((s) => s.label === "256GB") ||
+        storages.find((s) => s.label === currentStorageLabel) ||
+        storages[0];
 
-      setSelectedRam(matchingRam || null);
-      setSelectedStorage(matchingStorage || null);
+      setSelectedRam(initialRam || null);
+      setSelectedStorage(initialStorage || null);
 
       // Determine initial price (use discounted price if available, else standard price)
       const initialPrice =
@@ -191,7 +195,7 @@ export default function ProductDetailPage({
       // Calculate base price by subtracting the extra costs of the *default* keys
       // logical assumption: product.price includes the cost of its generic specs
       const initialExtra =
-        (matchingRam?.extraPrice || 0) + (matchingStorage?.extraPrice || 0);
+        (initialRam?.extraPrice || 0) + (initialStorage?.extraPrice || 0);
       let calculatedBase = initialPrice - initialExtra;
 
       // Safety check: if base price is somehow <= 0, fallback to initial price
@@ -222,6 +226,14 @@ export default function ProductDetailPage({
     const extraStorage = selectedStorage?.extraPrice || 0;
     setCurrentPrice(basePrice + extraRam + extraStorage);
   }, [selectedRam, selectedStorage, basePrice]);
+
+  useEffect(() => {
+    const ramLabel = selectedRam?.label ? ` ${selectedRam.label}` : "";
+    const storageLabel = selectedStorage?.label
+      ? ` ${selectedStorage.label}`
+      : "";
+    document.title = `${product?.name || "Product"}${ramLabel}${storageLabel} | Itlinkers`;
+  }, [product?.name, selectedRam, selectedStorage]);
 
   useEffect(() => {
     socket.on("order_created", (order) => {
@@ -448,6 +460,8 @@ export default function ProductDetailPage({
             <div>
               <h1 className="text-xl md:text-2xl font-normal leading-relaxed text-foreground">
                 {product.name}
+                {selectedRam ? `, ${selectedRam.label} RAM` : ""}
+                {selectedStorage ? `/${selectedStorage.label}` : ""}
               </h1>
               <div className="flex items-center gap-3 mt-3">
                 <div className="flex items-center gap-1 bg-green-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">

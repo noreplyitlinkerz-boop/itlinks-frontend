@@ -80,6 +80,45 @@ export function Header() {
     fetchNavigation();
   }, []);
 
+  const [detectedLocation, setDetectedLocation] = useState<{
+    city: string;
+    pincode: string;
+  } | null>(null);
+
+  // Auto-detect location for non-logged-in users
+  useEffect(() => {
+    if (!isAuthenticated && !detectedLocation) {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const { latitude, longitude } = position.coords;
+              const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+              );
+              const data = await res.json();
+              if (data.address) {
+                setDetectedLocation({
+                  city:
+                    data.address.city ||
+                    data.address.town ||
+                    data.address.suburb ||
+                    "Unknown City",
+                  pincode: data.address.postcode || "",
+                });
+              }
+            } catch (error) {
+              console.error("Error fetching location details:", error);
+            }
+          },
+          (error) => {
+            console.log("Location permission denied or error:", error.message);
+          },
+        );
+      }
+    }
+  }, [isAuthenticated, detectedLocation]);
+
   // Debounced Search Effect
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
@@ -219,8 +258,19 @@ export function Header() {
                 <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform text-[#10BBE6]" />
                 <div className="flex flex-col -space-y-0.5">
                   <span className="text-[10px] font-medium leading-tight opacity-70">
-                    Delivering to {user?.address?.city || "Lucknow"}{" "}
-                    {user?.address?.pincode || "226021"}
+                    Delivering to{" "}
+                    {isAuthenticated ? (
+                      <>
+                        {user?.address?.city || "Lucknow"}{" "}
+                        {user?.address?.pincode || "226021"}
+                      </>
+                    ) : detectedLocation ? (
+                      <>
+                        {detectedLocation.city} {detectedLocation.pincode}
+                      </>
+                    ) : (
+                      "Mohali 160062"
+                    )}
                   </span>
                   <span className="text-xs font-bold leading-tight group-hover:text-primary">
                     Update location

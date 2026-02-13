@@ -289,97 +289,97 @@ function ProductsContent() {
           ))}
         </div>
       ) : (
-        <div className="py-12 md:py-20 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-5 duration-1000">
-          <div className="relative w-full max-w-lg aspect-square mb-8 group">
-            <div className="absolute inset-0 bg-primary/10 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
+        <div className="py-4 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-3 duration-700">
+          <div className="relative w-32 h-32 mb-6 group">
+            <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl opacity-40 group-hover:opacity-60 transition-opacity" />
             <Image
               src="/images/no_result.png"
               alt="No products found"
-              width={220}
-              height={220}
-              className="relative w-full h-full object-contain drop-shadow-2xl animate-float"
+              width={150}
+              height={150}
+              className="relative w-full h-full object-contain filter drop-shadow-md opacity-80"
+              priority
             />
           </div>
 
-          <div className="max-w-xl px-4">
-            <h2 className="text-3xl md:text-4xl font-black mb-4 tracking-tighter bg-linear-to-b from-foreground to-foreground/60 bg-clip-text text-transparent italic uppercase">
-              Opps! Nothing Here Yet
+          <div className="max-w-md px-4">
+            <h2 className="text-xl md:text-2xl font-bold mb-2 tracking-tight text-slate-800 uppercase italic">
+              Oops! Nothing Here Yet
             </h2>
-            <p className="text-muted-foreground text-base md:text-lg mb-10 leading-relaxed font-medium">
-              We couldn't find any products matching your current selection. Our
-              team is constantly updating our inventory with premium refurbished
-              tech.
+            <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+              We couldn't find any products matching your current selection. Try
+              resetting your filters to explore our full inventory.
             </p>
 
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
+            <div className="flex justify-center mb-12">
               <Button
                 variant="default"
-                size="lg"
+                size="sm"
                 onClick={() => {
                   setSearchQuery("");
                   router.push("/products");
                 }}
-                className="rounded-full px-8 h-12 text-sm font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+                className="rounded-xl px-6 h-10 text-[10px] font-bold uppercase tracking-wider bg-slate-900 shadow-md transition-all hover:bg-primary"
               >
-                <RefreshCcw className="w-4 h-4 mr-2 animate-spin-slow" />
-                Reset All Filters
+                <RefreshCcw className="w-3.5 h-3.5 mr-2" />
+                Reset Filters
               </Button>
             </div>
           </div>
 
-          <div className="w-full max-w-5xl pt-16 border-t border-border/40 relative">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 bg-background">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">
-                Explore Our Best Sellers
+          <div className="w-full max-w-4xl pt-10 border-t border-slate-100 relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 bg-background">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                Popular Categories
               </p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               {[
                 {
-                  name: "Premium Laptops",
+                  name: "Laptops",
                   icon: Laptop,
                   slug: "refurbished-laptop",
-                  color: "from-blue-500/10",
+                  color: "from-blue-500/5",
                 },
                 {
                   name: "Workstations",
                   icon: Monitor,
                   slug: "refurbished-desktop",
-                  color: "from-purple-500/10",
+                  color: "from-purple-500/5",
                 },
                 {
-                  name: "Pro Components",
+                  name: "Components",
                   icon: Cpu,
                   slug: "accessories",
-                  color: "from-emerald-500/10",
+                  color: "from-emerald-500/5",
                 },
                 {
                   name: "Accessories",
                   icon: MousePointer2,
                   slug: "accessories",
-                  color: "from-orange-500/10",
+                  color: "from-orange-500/5",
                 },
               ].map((cat) => (
                 <Link
                   key={cat.name}
                   href={`/products?category=${cat.slug}`}
                   className={cn(
-                    "group relative overflow-hidden p-8 rounded-3xl bg-linear-to-br transition-all duration-500 hover:shadow-2xl hover:shadow-black/5 hover:-translate-y-2 border border-border/50 flex flex-col items-center",
-                    cat.color.replace("/10", "/20"),
-                    "to-transparent",
+                    "group relative p-6 rounded-2xl border border-slate-100 bg-white hover:border-primary/20 hover:shadow-sm flex flex-col items-center transition-all duration-300",
                   )}
                 >
-                  <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative p-4 rounded-2xl bg-background shadow-sm mb-4 group-hover:scale-110 transition-transform duration-500">
-                    <cat.icon className="w-8 h-8 text-foreground/80 group-hover:text-primary transition-colors" />
+                  <div
+                    className={cn(
+                      "mb-3 p-3 rounded-xl bg-linear-to-br transition-colors",
+                      cat.color,
+                      "to-transparent",
+                    )}
+                  >
+                    <cat.icon className="w-5 h-5 text-slate-600 group-hover:text-primary transition-colors" />
                   </div>
-                  <span className="relative font-bold text-sm tracking-tight">
+                  <span className="font-bold text-[10px] uppercase tracking-wider text-slate-700">
                     {cat.name}
                   </span>
-                  <div className="relative mt-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-                    Browse <ArrowRight className="w-3 h-3" />
-                  </div>
                 </Link>
               ))}
             </div>

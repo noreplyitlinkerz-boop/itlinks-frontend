@@ -71,7 +71,7 @@ export const VariantSelector = ({
                         ₹{totalPrice.toLocaleString()}
                       </span>
                       <span className="text-[10px] text-muted-foreground line-through opacity-60">
-                        ₹{Math.round(oldPrice).toLocaleString()}
+                        ₹{Math.round(basePrice).toLocaleString()}
                       </span>
                     </div>
                   </button>

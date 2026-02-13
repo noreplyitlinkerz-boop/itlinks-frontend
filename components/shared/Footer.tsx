@@ -117,7 +117,7 @@ export function Footer() {
               <ul className="space-y-3 text-sm font-medium">
                 <li>
                   <Link
-                    href="/products?category=laptops"
+                    href="/about"
                     className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
@@ -126,7 +126,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/products?category=desktops"
+                    href="/refurbishing-story"
                     className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
@@ -135,7 +135,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/products?category=hp-refurbished"
+                    href="/our-story"
                     className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>

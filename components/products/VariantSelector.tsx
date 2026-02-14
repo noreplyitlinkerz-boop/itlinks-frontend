@@ -12,6 +12,8 @@ interface VariantSelectorProps {
   onStorageSelect: (storage: Storage) => void;
   basePrice: number;
   productImage?: string;
+  showRam?: boolean;
+  showStorage?: boolean;
 }
 
 import Image from "next/image";
@@ -25,6 +27,8 @@ export const VariantSelector = ({
   onStorageSelect,
   basePrice,
   productImage,
+  showRam = true,
+  showStorage = true,
 }: VariantSelectorProps) => {
   const currentRamExtra =
     rams.find((r) => r.label === selectedRam)?.extraPrice || 0;
@@ -34,7 +38,7 @@ export const VariantSelector = ({
   return (
     <div className="space-y-6 py-2">
       {/* RAM Section */}
-      {rams.length > 0 && (
+      {showRam !== false && rams.length > 0 && (
         <div className="space-y-3">
           <div className="text-sm">
             <span className="text-muted-foreground mr-1">
@@ -82,7 +86,7 @@ export const VariantSelector = ({
       )}
 
       {/* Storage Section - With Laptop Thumbnails */}
-      {storages.length > 0 && (
+      {showStorage !== false && storages.length > 0 && (
         <div className="space-y-3">
           <div className="text-sm">
             <span className="text-muted-foreground mr-1">Hard Disk Size:</span>

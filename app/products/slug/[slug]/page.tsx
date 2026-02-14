@@ -15,6 +15,7 @@ import {
   Minus,
   Plus,
   PlusCircle,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
@@ -285,13 +286,9 @@ export default function ProductDetailPage({
       ...product,
       price: currentPrice,
       specifications: {
-        RAM: selectedRam?.label,
-        Storage: selectedStorage?.label,
+        ...(selectedRam && { RAM: selectedRam.label }),
+        ...(selectedStorage && { Storage: selectedStorage.label }),
       },
-      // Note: `discount` object in product might show old discountedPrice,
-      // strictly speaking we should update that too if we want perfect accuracy in cart,
-      // but cart usually recalculates or uses 'price'.
-      // For now, trusting 'price' override.
     };
     await addItem(modifiedProduct as ApiProduct, quantity);
   };
@@ -301,8 +298,8 @@ export default function ProductDetailPage({
       ...product,
       price: currentPrice,
       specifications: {
-        RAM: selectedRam?.label,
-        Storage: selectedStorage?.label,
+        ...(selectedRam && { RAM: selectedRam.label }),
+        ...(selectedStorage && { Storage: selectedStorage.label }),
       },
     };
     await addItem(modifiedProduct as ApiProduct, quantity);
@@ -464,10 +461,6 @@ export default function ProductDetailPage({
                 {selectedStorage ? `/${selectedStorage.label}` : ""}
               </h1>
               <div className="flex items-center gap-3 mt-3">
-                <div className="flex items-center gap-1 bg-green-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">
-                  <span>{product.rating || "4.1"}</span>
-                  <span className="text-[10px]">★</span>
-                </div>
                 <span className="text-sm font-medium text-muted-foreground">
                   {Math.floor(getStableRandom(product._id + "ratings") * 500) +
                     100}{" "}
@@ -476,11 +469,6 @@ export default function ProductDetailPage({
                     10}{" "}
                   Reviews
                 </span>
-                {/* <img
-                  src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/fa_62673a.png"
-                  alt="assured"
-                  className="h-4"
-                /> */}
               </div>
             </div>
 
@@ -507,6 +495,20 @@ export default function ProductDetailPage({
                       </p>
                     </div>
                   )}
+              </div>
+              {/* Brand & Stock Status */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-wider">
+                    {typeof product.brandID === "object"
+                      ? product.brandID.name
+                      : "Premium Brand"}
+                  </span>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold">
+                    <Star className="w-3.5 h-3.5 fill-accent" />
+                    <span>{product.rating}</span>
+                  </div>
+                </div>
               </div>
               {/* Availability */}
               <div className="space-y-2">
@@ -543,6 +545,8 @@ export default function ProductDetailPage({
                     productImage={
                       product.product_primary_image_url || product.images?.[0]
                     }
+                    showRam={product.hasRam}
+                    showStorage={product.hasStorage}
                   />
                 );
               }

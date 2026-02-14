@@ -12,10 +12,15 @@ import {
   PlusCircle,
   Upload,
   Video,
+  Search,
+  Check,
+  Settings,
+  List,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +42,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   productSchema,
   ProductFormValues,
   AdminProductFormProps,
@@ -46,6 +58,7 @@ import {
   brandService,
   ramService,
   storageService,
+  productService,
 } from "@/lib/api/services";
 import { Category, Brand, Ram, Storage } from "@/lib/api/types/endpoints";
 import { safeParse } from "@/lib/utils";
@@ -168,6 +181,19 @@ export function ProductForm({
     return merged;
   });
 
+  // Related Products State
+  const [relatedConfigs, setRelatedConfigs] = useState<{
+    searchQuery: string;
+    searchResults: { _id: string; name: string; price: number }[];
+    selectedProducts: { _id: string; name: string }[];
+    isSearching: boolean;
+  }>({
+    searchQuery: "",
+    searchResults: [],
+    selectedProducts: [],
+    isSearching: false,
+  });
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
@@ -183,6 +209,8 @@ export function ProductForm({
       featured: initialData?.featured || false,
       isVisible: initialData?.isVisible ?? true,
       isVerified: initialData?.isVerified ?? false,
+      hasRam: (initialData as any)?.hasRam ?? true,
+      hasStorage: (initialData as any)?.hasStorage ?? true,
       modelName: (initialData as any)?.modelName || "",
       keywords: initialData?.keywords?.join(", ") || "",
       discountPercentage:
@@ -203,6 +231,10 @@ export function ProductForm({
         typeof initialData?.categoryID === "object"
           ? (initialData?.categoryID as any)?._id || ""
           : initialData?.categoryID || "",
+      relatedProducts:
+        initialData?.relatedProducts?.map((p: any) =>
+          typeof p === "string" ? p : p._id,
+        ) || [],
     },
   });
 
@@ -262,6 +294,18 @@ export function ProductForm({
 
       setTechSpecs(mergedTech);
 
+      // Populate Related Products
+      if (initialData.relatedProducts) {
+        const selected = initialData.relatedProducts.map((p: any) => ({
+          _id: typeof p === "string" ? p : p._id,
+          name: typeof p === "string" ? "Loading..." : p.name,
+        }));
+        setRelatedConfigs((prev) => ({
+          ...prev,
+          selectedProducts: selected,
+        }));
+      }
+
       form.reset({
         name: initialData.name || "",
         brandID:
@@ -275,6 +319,8 @@ export function ProductForm({
         featured: initialData.featured || false,
         isVisible: initialData.isVisible ?? true,
         isVerified: initialData.isVerified ?? false,
+        hasRam: (initialData as any).hasRam ?? false,
+        hasStorage: (initialData as any).hasStorage ?? false,
         modelName: (initialData as any).modelName || "",
         keywords: initialData.keywords?.join(", ") || "",
         discountPercentage:
@@ -315,6 +361,8 @@ export function ProductForm({
         featured: false,
         isVisible: true,
         isVerified: false,
+        hasRam: true,
+        hasStorage: true,
         modelName: "",
         keywords: "",
         discountPercentage: 0,
@@ -324,8 +372,15 @@ export function ProductForm({
         specifications: {},
         technicalSpecifications: {},
         categoryID: "",
+        relatedProducts: [],
       });
       setTechSpecs(defaultTechnicalSpecs);
+      setRelatedConfigs({
+        searchQuery: "",
+        searchResults: [],
+        selectedProducts: [],
+        isSearching: false,
+      });
     }
   }, [initialData, form]);
 
@@ -501,6 +556,99 @@ export function ProductForm({
     setTechSpecs(techSpecs.filter((_, i) => i !== index));
   };
 
+  /* ---------------- Related Products Handlers ---------------- */
+  const handleSearchRelated = async (query: string) => {
+    setRelatedConfigs((prev) => ({ ...prev, searchQuery: query }));
+    if (query.length < 2) {
+      setRelatedConfigs((prev) => ({ ...prev, searchResults: [] }));
+      return;
+    }
+
+    setRelatedConfigs((prev) => ({ ...prev, isSearching: true }));
+    try {
+      console.log("Searching for:", query);
+      const response = await productService.searchProducts({
+        search: query,
+        limit: 10,
+      });
+      console.log("Search response:", response);
+
+      let products: { _id: string; name: string; price: number }[] = [];
+
+      // Handle different response structures
+      if (Array.isArray(response)) {
+        products = response;
+      } else if (response && Array.isArray(response.data)) {
+        products = response.data;
+      } else if (
+        response &&
+        response.data &&
+        Array.isArray((response as any).data.data)
+      ) {
+        products = (response as any).data.data;
+      } else if (
+        response &&
+        (response as any).products &&
+        Array.isArray((response as any).products)
+      ) {
+        products = (response as any).products;
+      }
+
+      console.log("Products found:", products);
+
+      if (products.length > 0) {
+        // Filter out already selected products and current product
+        // Use functional state update to ensure we have the latest selectedProducts
+        setRelatedConfigs((prev) => {
+          const filtered = products.filter(
+            (p) =>
+              !prev.selectedProducts.some((s) => s._id === p._id) &&
+              p._id !== initialData?._id,
+          );
+          console.log("Filtered products:", filtered);
+          return { ...prev, searchResults: filtered, isSearching: false };
+        });
+      } else {
+        setRelatedConfigs((prev) => ({
+          ...prev,
+          searchResults: [],
+          isSearching: false,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to search products", error);
+      setRelatedConfigs((prev) => ({ ...prev, isSearching: false }));
+    }
+  };
+
+  const addRelatedProduct = (product: { _id: string; name: string }) => {
+    const newSelected = [...relatedConfigs.selectedProducts, product];
+    setRelatedConfigs((prev) => ({
+      ...prev,
+      selectedProducts: newSelected,
+      searchQuery: "",
+      searchResults: [],
+    }));
+    form.setValue(
+      "relatedProducts",
+      newSelected.map((p) => p._id),
+    );
+  };
+
+  const removeRelatedProduct = (productId: string) => {
+    const newSelected = relatedConfigs.selectedProducts.filter(
+      (p) => p._id !== productId,
+    );
+    setRelatedConfigs((prev) => ({
+      ...prev,
+      selectedProducts: newSelected,
+    }));
+    form.setValue(
+      "relatedProducts",
+      newSelected.map((p) => p._id),
+    );
+  };
+
   const handleFormSubmit = async (values: ProductFormValues) => {
     // Validate Primary Image
     if (!initialData && !primaryImage) {
@@ -521,7 +669,10 @@ export function ProductForm({
         key !== "discountedPrice" &&
         key !== "discountStartDate" &&
         key !== "discountEndDate" &&
-        key !== "keywords"
+        key !== "keywords" &&
+        key !== "hasRam" &&
+        key !== "hasStorage" &&
+        key !== "relatedProducts"
       ) {
         if (key === "price" || key === "stock") {
           // Ensure numbers are not empty strings
@@ -539,15 +690,17 @@ export function ProductForm({
         .map((k) => k.trim())
         .filter((k) => k !== "");
       keywordsArray.forEach((keyword) => {
-        formData.append("keywords[]", keyword);
+        formData.append("keywords", keyword);
       });
       // Also potentially send as simple 'keywords' if backend expects it differently
       // formData.append("keywords", JSON.stringify(keywordsArray));
     }
 
-    // Explicitly append IDs
+    // Explicitly append IDs and flags
     formData.append("categoryID", values.categoryID);
     formData.append("brandID", values.brandID);
+    formData.append("hasRam", String(values.hasRam));
+    formData.append("hasStorage", String(values.hasStorage));
 
     // Add discount
     formData.append(
@@ -595,6 +748,12 @@ export function ProductForm({
       {} as Record<string, string>,
     );
     formData.append("technicalSpecifications", JSON.stringify(techSpecsObj));
+
+    // Add Related Products
+    const relatedIds = form.getValues("relatedProducts") || [];
+    relatedIds.forEach((id) => {
+      formData.append("relatedProducts", id);
+    });
 
     // Add images
     if (primaryImage) {
@@ -905,15 +1064,40 @@ export function ProductForm({
               Inventory & Status
             </h3>
 
+            {/* Pricing Section */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price ($)</FormLabel>
+                    <FormLabel className="text-sm font-semibold">
+                      Price ($)
+                    </FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.value);
+                          // Recalculate discount when price changes
+                          const percentage =
+                            parseFloat(
+                              form.getValues("discountPercentage") as any,
+                            ) || 0;
+                          const price = parseFloat(e.target.value) || 0;
+                          if (percentage > 0 && price > 0) {
+                            const discounted = Math.round(
+                              price - (price * percentage) / 100,
+                            );
+                            form.setValue("discountedPrice", discounted as any);
+                          } else {
+                            form.setValue("discountedPrice", price as any);
+                          }
+                        }}
+                        className="text-lg font-semibold"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -924,9 +1108,15 @@ export function ProductForm({
                 name="stock"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Stock Quantity</FormLabel>
+                    <FormLabel className="text-sm font-semibold">
+                      Stock Quantity
+                    </FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input
+                        type="number"
+                        {...field}
+                        className="text-lg font-semibold"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -934,116 +1124,269 @@ export function ProductForm({
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="featured"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Featured</FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(value === "true")
-                      }
-                      value={field.value ? "true" : "false"}
+            {/* Product Flags */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Product Flags
+                </h4>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs gap-2"
                     >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="true">True</SelectItem>
-                        <SelectItem value="false">False</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <Settings className="w-3.5 h-3.5" />
+                      Manage Flags
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Manage Product Flags</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                      <FormField
+                        control={form.control}
+                        name="featured"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Featured</FormLabel>
+                            <Select
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
+                              value={field.value ? "true" : "false"}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">✓ True</SelectItem>
+                                <SelectItem value="false">✗ False</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-              <FormField
-                control={form.control}
-                name="isVisible"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Visible</FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(value === "true")
-                      }
-                      value={field.value ? "true" : "false"}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="true">True</SelectItem>
-                        <SelectItem value="false">False</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormField
+                        control={form.control}
+                        name="isVisible"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Visible</FormLabel>
+                            <Select
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
+                              value={field.value ? "true" : "false"}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">✓ True</SelectItem>
+                                <SelectItem value="false">✗ False</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-              <FormField
-                control={form.control}
-                name="isVerified"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verified</FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(value === "true")
-                      }
-                      value={field.value ? "true" : "false"}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="true">True</SelectItem>
-                        <SelectItem value="false">False</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormField
+                        control={form.control}
+                        name="isVerified"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Verified</FormLabel>
+                            <Select
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
+                              value={field.value ? "true" : "false"}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">✓ True</SelectItem>
+                                <SelectItem value="false">✗ False</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="hasRam"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Has RAM</FormLabel>
+                            <Select
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
+                              value={field.value ? "true" : "false"}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">✓ True</SelectItem>
+                                <SelectItem value="false">✗ False</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="hasStorage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">
+                              Has Storage
+                            </FormLabel>
+                            <Select
+                              onValueChange={(value) =>
+                                field.onChange(value === "true")
+                              }
+                              value={field.value ? "true" : "false"}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">✓ True</SelectItem>
+                                <SelectItem value="false">✗ False</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Summary display of flags */}
+              <div className="flex flex-wrap gap-2">
+                <Badge variant={form.watch("featured") ? "default" : "outline"}>
+                  Featured: {form.watch("featured") ? "Yes" : "No"}
+                </Badge>
+                <Badge
+                  variant={form.watch("isVisible") ? "default" : "outline"}
+                >
+                  Visible: {form.watch("isVisible") ? "Yes" : "No"}
+                </Badge>
+                <Badge
+                  variant={form.watch("isVerified") ? "default" : "outline"}
+                >
+                  Verified: {form.watch("isVerified") ? "Yes" : "No"}
+                </Badge>
+                <Badge variant={form.watch("hasRam") ? "default" : "outline"}>
+                  RAM: {form.watch("hasRam") ? "Yes" : "No"}
+                </Badge>
+                <Badge
+                  variant={form.watch("hasStorage") ? "default" : "outline"}
+                >
+                  Storage: {form.watch("hasStorage") ? "Yes" : "No"}
+                </Badge>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control as any}
-                name="discountPercentage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discount Percentage (%)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" max="100" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control as any}
-                name="discountedPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discounted Price ($)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Discount Section */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-muted-foreground">
+                Discount Settings
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control as any}
+                  name="discountPercentage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold">
+                        Discount Percentage (%)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          {...field}
+                          onChange={(e) => {
+                            const percentage = parseFloat(e.target.value) || 0;
+                            field.onChange(e.target.value);
+
+                            // Auto-calculate discounted price
+                            const price =
+                              parseFloat(form.getValues("price") as any) || 0;
+                            if (percentage > 0 && price > 0) {
+                              const discounted = Math.round(
+                                price - (price * percentage) / 100,
+                              );
+                              form.setValue(
+                                "discountedPrice",
+                                discounted as any,
+                              );
+                            } else {
+                              // If 0% or no discount, show full price
+                              form.setValue(
+                                "discountedPrice",
+                                Math.round(price) as any,
+                              );
+                            }
+                          }}
+                          className="text-lg font-semibold"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control as any}
+                  name="discountedPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold">
+                        Discounted Price ($)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          disabled
+                          className="bg-muted/50 cursor-not-allowed text-lg font-bold text-green-600 dark:text-green-400"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Auto-calculated based on discount %
+                      </p>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -1082,93 +1425,147 @@ export function ProductForm({
               <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
                 Specifications
               </h3>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={addSpec}
-                className="h-8 text-xs text-primary hover:text-primary hover:bg-primary/10"
-              >
-                <PlusCircle className="mr-1 w-3 h-3" />
-                Add Specification
-              </Button>
-            </div>
 
-            <div className="space-y-3">
-              {specs.length === 0 && (
-                <p className="text-xs text-center text-muted-foreground/60 py-4">
-                  No specifications added yet
-                </p>
-              )}
-              {specs.map((spec, index) => (
-                <div key={index} className="flex gap-2 items-start">
-                  <Input
-                    placeholder="e.g. Color"
-                    className="flex-1 h-9 text-xs"
-                    value={spec.key}
-                    onChange={(e) => updateSpec(index, "key", e.target.value)}
-                  />
-                  {spec.key.toLowerCase() === "ram" ? (
-                    <Select
-                      value={spec.value}
-                      onValueChange={(value) =>
-                        updateSpec(index, "value", value)
-                      }
-                    >
-                      <FormControl>
-                        <SelectTrigger className="flex-1 h-9 text-xs">
-                          <SelectValue placeholder="Select RAM" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {rams.map((ram) => (
-                          <SelectItem key={ram._id} value={ram.label}>
-                            {ram.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : spec.key.toLowerCase() === "storage" ? (
-                    <Select
-                      value={spec.value}
-                      onValueChange={(value) =>
-                        updateSpec(index, "value", value)
-                      }
-                    >
-                      <FormControl>
-                        <SelectTrigger className="flex-1 h-9 text-xs">
-                          <SelectValue placeholder="Select Storage" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {storages.map((storage) => (
-                          <SelectItem key={storage._id} value={storage.label}>
-                            {storage.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      placeholder="e.g. Space Gray"
-                      className="flex-1 h-9 text-xs"
-                      value={spec.value}
-                      onChange={(e) =>
-                        updateSpec(index, "value", e.target.value)
-                      }
-                    />
-                  )}
+              <Dialog>
+                <DialogTrigger asChild>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeSpec(index)}
-                    className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-2"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <List className="w-3.5 h-3.5" />
+                    Manage Specifications
                   </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Manage Specifications</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4 max-h-[60vh] overflow-y-auto pr-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={addSpec}
+                      className="w-full mb-4"
+                    >
+                      <PlusCircle className="mr-2 w-4 h-4" />
+                      Add New Specification
+                    </Button>
+
+                    {specs.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        No specifications added. Click the button above to
+                        start.
+                      </p>
+                    )}
+
+                    <div className="space-y-3">
+                      {specs.map((spec, index) => (
+                        <div
+                          key={index}
+                          className="flex gap-2 items-start p-3 rounded-lg border bg-card"
+                        >
+                          <Input
+                            placeholder="e.g. Color"
+                            className="flex-1 h-9 text-xs"
+                            value={spec.key}
+                            onChange={(e) =>
+                              updateSpec(index, "key", e.target.value)
+                            }
+                          />
+                          {spec.key.toLowerCase() === "ram" ? (
+                            <Select
+                              value={spec.value}
+                              onValueChange={(value) =>
+                                updateSpec(index, "value", value)
+                              }
+                            >
+                              <FormControl>
+                                <SelectTrigger className="flex-1 h-9 text-xs">
+                                  <SelectValue placeholder="Select RAM" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {rams.map((ram) => (
+                                  <SelectItem key={ram._id} value={ram.label}>
+                                    {ram.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : spec.key.toLowerCase() === "storage" ? (
+                            <Select
+                              value={spec.value}
+                              onValueChange={(value) =>
+                                updateSpec(index, "value", value)
+                              }
+                            >
+                              <FormControl>
+                                <SelectTrigger className="flex-1 h-9 text-xs">
+                                  <SelectValue placeholder="Select Storage" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {storages.map((storage) => (
+                                  <SelectItem
+                                    key={storage._id}
+                                    value={storage.label}
+                                  >
+                                    {storage.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              placeholder="e.g. Space Gray"
+                              className="flex-1 h-9 text-xs"
+                              value={spec.value}
+                              onChange={(e) =>
+                                updateSpec(index, "value", e.target.value)
+                              }
+                            />
+                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeSpec(index)}
+                            className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="space-y-2">
+              {specs.length === 0 && (
+                <p className="text-xs text-center text-muted-foreground/60 py-4 italic">
+                  No specifications configured
+                </p>
+              )}
+              {specs.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {specs.map((spec, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
+                    >
+                      <span className="font-semibold text-muted-foreground">
+                        {spec.key || "Untitled"}:
+                      </span>
+                      <span>{spec.value || "Empty"}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -1178,53 +1575,213 @@ export function ProductForm({
               <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
                 Technical Specifications
               </h3>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={addTechSpec}
-                className="h-8 text-xs text-primary hover:text-primary hover:bg-primary/10"
-              >
-                <PlusCircle className="mr-1 w-3 h-3" />
-                Add Tech Specification
-              </Button>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-2"
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    Manage Tech Specs
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Manage Technical Specifications</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4 max-h-[60vh] overflow-y-auto pr-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={addTechSpec}
+                      className="w-full mb-4"
+                    >
+                      <PlusCircle className="mr-2 w-4 h-4" />
+                      Add New Tech Spec
+                    </Button>
+
+                    {techSpecs.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        No technical specifications added. Click the button
+                        above to start.
+                      </p>
+                    )}
+
+                    <div className="space-y-3">
+                      {techSpecs.map((spec, index) => (
+                        <div
+                          key={index}
+                          className="flex gap-2 items-start p-3 rounded-lg border bg-card"
+                        >
+                          <Input
+                            placeholder="e.g. Manufacturer"
+                            className="flex-1 h-9 text-xs"
+                            value={spec.key}
+                            onChange={(e) =>
+                              updateTechSpec(index, "key", e.target.value)
+                            }
+                          />
+                          <Input
+                            placeholder="Value"
+                            className="flex-1 h-9 text-xs"
+                            value={spec.value}
+                            onChange={(e) =>
+                              updateTechSpec(index, "value", e.target.value)
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeTechSpec(index)}
+                            className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="space-y-2">
+              {techSpecs.length === 0 && (
+                <p className="text-xs text-center text-muted-foreground/60 py-4 italic">
+                  No technical specifications configured
+                </p>
+              )}
+              {techSpecs.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {techSpecs.map((spec, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
+                    >
+                      <span className="font-semibold text-muted-foreground">
+                        {spec.key || "Untitled"}:
+                      </span>
+                      <span>{spec.value || "Empty"}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Related Products */}
+          <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
+                Related Products
+              </h3>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-2"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    Add Related Products
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Add Related Products</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search products..."
+                        value={relatedConfigs.searchQuery}
+                        onChange={(e) => handleSearchRelated(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+
+                    <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
+                      {relatedConfigs.isSearching ? (
+                        <div className="flex justify-center p-4">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : relatedConfigs.searchResults.length > 0 ? (
+                        relatedConfigs.searchResults.map((product) => (
+                          <div
+                            key={product._id}
+                            className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">
+                                {product.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                ${product.price}
+                              </span>
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => addRelatedProduct(product)}
+                              className="h-7 text-xs"
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        ))
+                      ) : relatedConfigs.searchQuery.length > 1 ? (
+                        <p className="text-sm text-center text-muted-foreground py-4">
+                          No products found.
+                        </p>
+                      ) : (
+                        <p className="text-sm text-center text-muted-foreground py-4">
+                          Type to search products.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             <div className="space-y-3">
-              {techSpecs.length === 0 && (
-                <p className="text-xs text-center text-muted-foreground/60 py-4">
-                  No technical specifications added yet
-                </p>
-              )}
-              {techSpecs.map((spec, index) => (
-                <div key={index} className="flex gap-2 items-start">
-                  <Input
-                    placeholder="e.g. Manufacturer"
-                    className="flex-1 h-9 text-xs"
-                    value={spec.key}
-                    onChange={(e) =>
-                      updateTechSpec(index, "key", e.target.value)
-                    }
-                  />
-                  <Input
-                    placeholder="Value"
-                    className="flex-1 h-9 text-xs"
-                    value={spec.value}
-                    onChange={(e) =>
-                      updateTechSpec(index, "value", e.target.value)
-                    }
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeTechSpec(index)}
-                    className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+              {relatedConfigs.selectedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {relatedConfigs.selectedProducts.map((product) => (
+                    <div
+                      key={product._id}
+                      className="flex items-center justify-between p-3 rounded-xl border border-border bg-background group"
+                    >
+                      <span className="text-sm font-medium truncate pr-2">
+                        {product.name}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeRelatedProduct(product._id)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-8 border-2 border-dashed border-border/50 rounded-xl bg-muted/20">
+                  <p className="text-sm text-muted-foreground">
+                    No related products selected
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

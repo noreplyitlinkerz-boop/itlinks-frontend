@@ -15,6 +15,8 @@ export const productSchema = z.object({
   featured: z.boolean().default(false),
   isVisible: z.boolean().default(true),
   isVerified: z.boolean().default(false),
+  hasRam: z.boolean().default(true),
+  hasStorage: z.boolean().default(true),
   modelName: z.string().optional(),
   keywords: z.string().optional(),
   discountPercentage: z.coerce.number().min(0).max(100).optional(),
@@ -25,6 +27,7 @@ export const productSchema = z.object({
   specifications: z.record(z.string(), z.any()).optional(),
   technicalSpecifications: z.record(z.string(), z.any()).optional(),
   categoryID: z.string().min(1, "Category is required"),
+  relatedProducts: z.array(z.string()).default([]),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;

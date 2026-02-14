@@ -33,9 +33,12 @@ export interface Product {
   product_videos_url?: string[];
   images?: string[];
   keywords?: string[];
+  hasRam?: boolean;
+  hasStorage?: boolean;
   createdAt?: string;
   updatedAt?: string;
   categoryID: string | Category;
+  relatedProducts?: (string | { _id: string; name: string })[];
   __v?: number;
 }
 
@@ -54,6 +57,8 @@ export interface CreateProductRequest {
   images?: File[];
   videos?: File[];
   categoryID: string;
+  hasRam?: boolean;
+  hasStorage?: boolean;
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {

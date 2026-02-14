@@ -29,8 +29,9 @@ export const TechnicalSpecsTable = ({
     ([key, value]) =>
       value &&
       String(value).trim() !== "" &&
-      value !== "undefined" &&
-      value !== "null" &&
+      String(value).toLowerCase() !== "undefined" &&
+      String(value).toLowerCase() !== "null" &&
+      String(value).toLowerCase() !== "empty" &&
       !["id", "_id", "__v", "technical"].includes(key.toLowerCase()),
   );
 

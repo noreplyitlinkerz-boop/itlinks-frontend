@@ -83,21 +83,37 @@ export default function CartPage() {
                       {item.product.description}
                     </p>
 
-                    {/* Specifications (RAM/Storage) */}
-                    {item.specifications && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {Object.entries(item.specifications).map(
-                          ([key, value]) => (
-                            <span
-                              key={key}
-                              className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground border border-border"
-                            >
-                              {key}: {value}
-                            </span>
-                          ),
-                        )}
-                      </div>
-                    )}
+                    {/* Specifications (RAM/Storage) - Only for Laptops/Desktops */}
+                    {(() => {
+                      const isComputer =
+                        (typeof item.product.categoryID === "object" &&
+                          (item.product.categoryID.name
+                            .toLowerCase()
+                            .includes("laptop") ||
+                            item.product.categoryID.name
+                              .toLowerCase()
+                              .includes("desktop"))) ||
+                        item.product.hasRam ||
+                        item.product.hasStorage;
+
+                      return (
+                        isComputer &&
+                        item.specifications && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {Object.entries(item.specifications).map(
+                              ([key, value]) => (
+                                <span
+                                  key={key}
+                                  className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground border border-border"
+                                >
+                                  {key}: {value}
+                                </span>
+                              ),
+                            )}
+                          </div>
+                        )
+                      );
+                    })()}
 
                     <div className="flex flex-col gap-1 mt-2">
                       <p className="text-lg font-bold text-primary">

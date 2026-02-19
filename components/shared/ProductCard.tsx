@@ -76,6 +76,43 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.description}
             </p>
 
+            {/* RAM/Storage Quick Specs - Only for Laptops/Desktops */}
+            {(() => {
+              const isComputer =
+                (typeof product.categoryID === "object" &&
+                  (product.categoryID.name.toLowerCase().includes("laptop") ||
+                    product.categoryID.name
+                      .toLowerCase()
+                      .includes("desktop"))) ||
+                product.hasRam ||
+                product.hasStorage;
+
+              return (
+                isComputer &&
+                product.specifications &&
+                typeof product.specifications === "object" && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {product.specifications.RAM && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[9px] py-0 h-3.5 bg-primary/10 text-primary border-none"
+                      >
+                        {String(product.specifications.RAM)}
+                      </Badge>
+                    )}
+                    {product.specifications.Storage && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[9px] py-0 h-3.5 bg-blue-500/10 text-blue-600 border-none"
+                      >
+                        {String(product.specifications.Storage)}
+                      </Badge>
+                    )}
+                  </div>
+                )
+              );
+            })()}
+
             <div className="flex flex-col">
               <p className="text-base md:text-xl font-bold text-primary">
                 ₹

@@ -11,11 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import {
   ShoppingCart,
   Heart,
-  ChevronLeft,
   Minus,
   Plus,
   PlusCircle,
   Star,
+  ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
@@ -87,13 +87,13 @@ export default function ProductDetailPage({
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [basePrice, setBasePrice] = useState<number>(0);
   const [relatedProducts, setRelatedProducts] = useState<ApiProduct[]>([]);
+
   const fetchProduct = async () => {
     setIsLoading(true);
     try {
       const response = await productService.getProductBySlug(slug);
       console.log("Product API Response:", response);
 
-      // API might return data directly or wrapped in response.data
       const productData = response.data || response;
 
       console.log("Product Data:", productData);
@@ -109,7 +109,6 @@ export default function ProductDetailPage({
             "",
         );
 
-        // Fetch category details if categoryID is a string
         if (typeof productData.categoryID === "string") {
           try {
             const catRes = await categoryService.getCategoryById(
@@ -143,8 +142,6 @@ export default function ProductDetailPage({
       if (!ids || ids.length === 0) return;
 
       console.log("Fetching related products for IDs:", ids);
-      // Fetch details for each related product
-      // Optimization: In a real app, we should have a bulk fetch endpoint
       const productsData = await Promise.all(
         ids.map(async (id) => {
           try {
@@ -186,7 +183,6 @@ export default function ProductDetailPage({
         ramService.getRams(),
         storageService.getStorages(),
       ]);
-      // Handle potential array vs paginated response structure
       const ramData = Array.isArray(ramRes.data)
         ? ramRes.data
         : (ramRes.data as any)?.data || [];
@@ -201,7 +197,6 @@ export default function ProductDetailPage({
     }
   };
 
-  // Initialize selection and calculate base price when product or variants mock load
   useEffect(() => {
     if (product && rams.length > 0 && storages.length > 0) {
       const specs = safeParse(product.specifications || {}, {}) as Record<
@@ -223,7 +218,6 @@ export default function ProductDetailPage({
       setSelectedRam(initialRam || null);
       setSelectedStorage(initialStorage || null);
 
-      // Determine initial price (use discounted price if available, else standard price)
       const initialPrice =
         product.discount &&
         typeof product.discount === "object" &&
@@ -232,13 +226,10 @@ export default function ProductDetailPage({
           ? Number(product.discount.discountedPrice)
           : Number(product.price);
 
-      // Calculate base price by subtracting the extra costs of the *default* keys
-      // logical assumption: product.price includes the cost of its generic specs
       const initialExtra =
         (initialRam?.extraPrice || 0) + (initialStorage?.extraPrice || 0);
       let calculatedBase = initialPrice - initialExtra;
 
-      // Safety check: if base price is somehow <= 0, fallback to initial price
       if (calculatedBase <= 0) {
         calculatedBase = initialPrice;
       }
@@ -246,7 +237,6 @@ export default function ProductDetailPage({
       setBasePrice(calculatedBase);
       setCurrentPrice(initialPrice);
     } else if (product) {
-      // Fallback if variants not yet loaded or empty
       const initialPrice =
         product.discount &&
         typeof product.discount === "object" &&
@@ -260,7 +250,6 @@ export default function ProductDetailPage({
     }
   }, [product, rams, storages]);
 
-  // Update current price when selection changes
   useEffect(() => {
     const extraRam = selectedRam?.extraPrice || 0;
     const extraStorage = selectedStorage?.extraPrice || 0;
@@ -278,7 +267,6 @@ export default function ProductDetailPage({
   useEffect(() => {
     socket.on("order_created", (order) => {
       console.log("New order received:", order);
-      // update UI / reduce quantity / show notification
       fetchProduct();
     });
 
@@ -306,7 +294,7 @@ export default function ProductDetailPage({
         <main className="flex-1 container mx-auto px-4 py-20 text-center">
           <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
           <p className="text-muted-foreground mb-8">
-            The product you're looking for doesn't exist.
+            The product you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link href="/products">
             <Button>Back to Products</Button>
@@ -320,7 +308,6 @@ export default function ProductDetailPage({
   const inWishlist = isInWishlist(product._id);
 
   const handleAddToCart = async () => {
-    // Create a modified product object with selected specs and price
     const modifiedProduct = {
       ...product,
       price: currentPrice,
@@ -369,33 +356,42 @@ export default function ProductDetailPage({
       ? product.price - product.discount.discountedPrice
       : 0;
 
+  const categoryName = productCategory?.name?.toLowerCase() || "";
+  const isComputer =
+    categoryName.includes("laptop") || categoryName.includes("desktop");
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-4">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 py-3 sm:py-4 pb-28 sm:pb-8">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
-          <Link href="/" className="hover:text-primary transition-colors">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+          <Link
+            href="/"
+            className="hover:text-primary transition-colors shrink-0"
+          >
             Home
           </Link>
           <span>›</span>
           <Link
             href="/products"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-colors shrink-0"
           >
             Products
           </Link>
           <span>›</span>
-          <span className="truncate max-w-[200px]">{product.name}</span>
+          <span className="truncate">{product.name}</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20 items-start">
-          {/* Left Column: Vertical Gallery + Main Image + Actions */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
-            <div className="flex gap-4 min-h-[500px]">
+        {/* Main Product Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 lg:gap-8 mb-8 items-start">
+          {/* ===== LEFT COLUMN: Gallery ===== */}
+          <div className="sm:col-span-5 flex flex-col gap-3 sm:gap-4">
+            {/* ── DESKTOP: side-by-side (vertical thumbs left, main image right) ── */}
+            <div className="hidden sm:flex gap-2 lg:gap-3 min-h-[320px] md:min-h-[420px] lg:min-h-[500px]">
               {/* Vertical Thumbnails */}
-              <div className="w-20 flex flex-col gap-3 shrink-0">
+              <div className="w-14 md:w-16 lg:w-20 flex flex-col gap-2 lg:gap-3 shrink-0">
                 {allMedia.map((media, idx) => (
                   <button
                     key={idx}
@@ -418,8 +414,8 @@ export default function ProductDetailPage({
                 ))}
               </div>
 
-              {/* Main Image Container */}
-              <div className="flex-1 relative aspect-4/5 rounded-xl overflow-hidden border border-border/30 bg-white group">
+              {/* Main Image */}
+              <div className="flex-1 relative rounded-xl overflow-hidden border border-border/30 bg-white group min-h-[280px] md:min-h-[380px] lg:min-h-[460px]">
                 <ProductImage
                   src={activeMedia}
                   alt={product.name}
@@ -441,29 +437,80 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Sticky-style Bottom Actions (Flipkart Style) */}
-            <div className="flex gap-4 pt-2">
+            {/* ── MOBILE: main image on top, horizontal scrollable thumbnails below ── */}
+            <div className="sm:hidden flex flex-col gap-2">
+              {/* Main Image — fluid height based on viewport */}
+              <div
+                className="relative w-full rounded-xl overflow-hidden border border-border/30 bg-white group"
+                style={{ height: "calc(100vw - 24px)", maxHeight: "420px" }}
+              >
+                <ProductImage
+                  src={activeMedia}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+                  priority
+                />
+                <button
+                  onClick={handleToggleWishlist}
+                  className="absolute top-3 right-3 w-9 h-9 rounded-full bg-card shadow-lg flex items-center justify-center text-muted-foreground hover:text-red-500 transition-colors z-20 border border-border/50"
+                >
+                  <Heart
+                    className={cn(
+                      "w-5 h-5",
+                      inWishlist && "fill-red-500 text-red-500",
+                    )}
+                  />
+                </button>
+              </div>
+
+              {/* Horizontal thumbnail strip */}
+              {allMedia.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                  {allMedia.map((media, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveMedia(media)}
+                      className={cn(
+                        "relative shrink-0 w-14 h-14 rounded-md overflow-hidden border-2 transition-all",
+                        activeMedia === media
+                          ? "border-primary shadow-md"
+                          : "border-border/50 hover:border-gray-400",
+                      )}
+                    >
+                      <ProductImage
+                        src={media}
+                        fill
+                        alt={`${product.name} thumbnail ${idx}`}
+                        className="object-contain p-1"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop only: Action Buttons below gallery */}
+            <div className="hidden sm:flex gap-2 lg:gap-4 pt-2">
               <Button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="flex-1 h-14 text-lg font-bold bg-[#ff9f00] hover:bg-[#ff9f00]/90 text-white shadow-md rounded-lg"
-                size="lg"
+                className="flex-1 h-10 md:h-12 lg:h-14 text-xs sm:text-sm lg:text-lg font-bold bg-[#ff9f00] hover:bg-[#ff9f00]/90 text-white shadow-md rounded-lg"
               >
-                <ShoppingCart className="w-5 h-5 mr-2" />
+                <ShoppingCart className="w-4 h-4 mr-1 lg:mr-2" />
                 ADD TO CART
               </Button>
               <Button
                 onClick={handleBuyNow}
                 disabled={product.stock === 0}
-                className="flex-1 h-14 text-lg font-bold bg-[#fb641b] hover:bg-[#fb641b]/90 text-white shadow-md rounded-lg"
-                size="lg"
+                className="flex-1 h-10 md:h-12 lg:h-14 text-xs sm:text-sm lg:text-lg font-bold bg-[#fb641b] hover:bg-[#fb641b]/90 text-white shadow-md rounded-lg"
               >
-                <PlusCircle className="w-5 h-5 mr-2" />
+                <PlusCircle className="w-4 h-4 mr-1 lg:mr-2" />
                 BUY NOW
               </Button>
             </div>
 
-            {/* Technical Specifications Section */}
+            {/* Technical Specifications — tablet/desktop: below gallery */}
             {product.technicalSpecifications &&
               Object.entries(
                 safeParse(product.technicalSpecifications, {}),
@@ -475,7 +522,7 @@ export default function ProductDetailPage({
                     key.toLowerCase(),
                   ),
               ).length > 0 && (
-                <div className="pt-6 mt-6 border-t">
+                <div className="hidden sm:block pt-5 mt-2 border-t">
                   <h3 className="text-muted-foreground font-medium mb-3 text-sm">
                     Technical Specifications
                   </h3>
@@ -491,16 +538,20 @@ export default function ProductDetailPage({
               )}
           </div>
 
-          {/* Right Column: Info & Details */}
-          <div className="lg:col-span-7 space-y-4">
+          {/* ===== RIGHT COLUMN: Product Info ===== */}
+          <div className="sm:col-span-7 space-y-3 sm:space-y-4">
+            {/* Product Title */}
             <div>
-              <h1 className="text-xl md:text-2xl font-normal leading-relaxed text-foreground">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-normal leading-snug text-foreground">
                 {product.name}
-                {selectedRam ? `, ${selectedRam.label} RAM` : ""}
-                {selectedStorage ? `/${selectedStorage.label}` : ""}
+                {isComputer && selectedRam ? `, ${selectedRam.label} RAM` : ""}
+                {isComputer && selectedStorage
+                  ? `/${selectedStorage.label}`
+                  : ""}
               </h1>
-              <div className="flex items-center gap-3 mt-3">
-                <span className="text-sm font-medium text-muted-foreground">
+
+              <div className="flex items-center gap-3 mt-2">
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                   {Math.floor(getStableRandom(product._id + "ratings") * 500) +
                     100}{" "}
                   Ratings &{" "}
@@ -511,46 +562,46 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Price block */}
+            {/* Price Block */}
             <div className="space-y-1">
               {discountAmount > 0 && (
                 <p className="text-green-600 text-sm font-bold">
                   Extra ₹{discountAmount.toLocaleString()} off
                 </p>
               )}
-              <div className="flex items-baseline gap-4">
-                <p className="text-3xl font-bold">
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-4">
+                <p className="text-2xl sm:text-3xl font-bold">
                   ₹{currentPrice.toLocaleString()}
                 </p>
                 {product.discount &&
                   typeof product.discount === "object" &&
                   product.discount.percentage > 0 && (
                     <div className="flex items-center gap-2">
-                      <p className="text-muted-foreground line-through text-lg">
+                      <p className="text-muted-foreground line-through text-base sm:text-lg">
                         ₹{product.price.toLocaleString()}
                       </p>
-                      <p className="text-green-600 text-lg font-bold">
+                      <p className="text-green-600 text-base sm:text-lg font-bold">
                         {product.discount.percentage}% off
                       </p>
                     </div>
                   )}
               </div>
-              {/* Brand & Stock Status */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-wider">
-                    {typeof product.brandID === "object"
-                      ? product.brandID.name
-                      : "Premium Brand"}
-                  </span>
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold">
-                    <Star className="w-3.5 h-3.5 fill-accent" />
-                    <span>{product.rating}</span>
-                  </div>
+
+              {/* Brand & Rating */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-wider">
+                  {typeof product.brandID === "object"
+                    ? product.brandID.name
+                    : "Premium Brand"}
+                </span>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-accent/10 text-accent rounded-full text-xs font-bold">
+                  <Star className="w-3.5 h-3.5 fill-accent" />
+                  <span>{product.rating}</span>
                 </div>
               </div>
-              {/* Availability */}
-              <div className="space-y-2">
+
+              {/* Stock / Availability */}
+              <div className="pt-1 space-y-1">
                 {product.stock < 10 && product.stock > 0 && (
                   <p className="text-red-500 text-sm font-bold animate-pulse">
                     Hurry, Only {product.stock} left!
@@ -564,71 +615,55 @@ export default function ProductDetailPage({
               </div>
             </div>
 
-            {/* Variant Selector - Only for Laptops and Desktops */}
-            {(() => {
-              const categoryName = productCategory?.name?.toLowerCase() || "";
-              const isComputer =
-                categoryName.includes("laptop") ||
-                categoryName.includes("desktop");
+            {/* Variant Selector - Only for Computers */}
+            {isComputer && (
+              <VariantSelector
+                rams={rams}
+                storages={storages}
+                selectedRam={selectedRam?.label}
+                selectedStorage={selectedStorage?.label}
+                onRamSelect={setSelectedRam}
+                onStorageSelect={setSelectedStorage}
+                basePrice={basePrice}
+                initialPrice={product.price}
+                productImage={
+                  product.product_primary_image_url || product.images?.[0]
+                }
+                showRam={product.hasRam}
+                showStorage={product.hasStorage}
+              />
+            )}
 
-              if (isComputer) {
-                return (
-                  <VariantSelector
-                    rams={rams}
-                    storages={storages}
-                    selectedRam={selectedRam?.label}
-                    selectedStorage={selectedStorage?.label}
-                    onRamSelect={setSelectedRam}
-                    onStorageSelect={setSelectedStorage}
-                    basePrice={basePrice}
-                    initialPrice={product.price}
-                    productImage={
-                      product.product_primary_image_url || product.images?.[0]
-                    }
-                    showRam={product.hasRam}
-                    showStorage={product.hasStorage}
-                  />
-                );
-              }
-              return null;
-            })()}
-
-            {/* Specs Section */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 border-t pt-8 mt-8">
-              <div className="md:col-span-3">
-                <h3 className="text-muted-foreground font-medium">
-                  Specifications
-                </h3>
-              </div>
-              <div className="md:col-span-9">
-                <ProductSpecsGrid
-                  specifications={
-                    safeParse(product.specifications, {}) as Record<
-                      string,
-                      string
-                    >
-                  }
-                />
-              </div>
+            {/* Specifications */}
+            <div className="border-t pt-5 mt-2">
+              <h3 className="text-muted-foreground font-medium text-sm mb-3">
+                Specifications
+              </h3>
+              <ProductSpecsGrid
+                specifications={
+                  safeParse(product.specifications, {}) as Record<
+                    string,
+                    string
+                  >
+                }
+              />
             </div>
 
-            {/* Details Section (Description) */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-8">
-              <div className="md:col-span-3">
-                <h3 className="text-muted-foreground font-medium">
-                  Description
-                </h3>
-              </div>
-              <div className="md:col-span-9">
-                <p className="text-sm leading-relaxed text-foreground">
-                  {product.description}
-                </p>
-              </div>
+            {/* Description */}
+            <div className="pt-1">
+              <h3 className="text-muted-foreground font-medium text-sm mb-2">
+                Description
+              </h3>
+              <p className="text-sm leading-relaxed text-foreground">
+                {product.description}
+              </p>
             </div>
 
             {/* Quantity Selector */}
-            <div className="flex items-center gap-6 pt-6 border-t">
-              <h3 className="text-muted-foreground font-medium">Quantity</h3>
+            <div className="flex flex-wrap items-center gap-4 pt-4 border-t">
+              <h3 className="text-muted-foreground font-medium text-sm">
+                Quantity
+              </h3>
               <div className="flex items-center gap-3">
                 <div className="flex items-center bg-muted border rounded-full px-2">
                   <Button
@@ -660,17 +695,45 @@ export default function ProductDetailPage({
                 </span>
               </div>
             </div>
+
+            {/* Technical Specifications — mobile only (shown at bottom below quantity) */}
+            {product.technicalSpecifications &&
+              Object.entries(
+                safeParse(product.technicalSpecifications, {}),
+              ).filter(
+                ([key, value]) =>
+                  value &&
+                  String(value).trim() !== "" &&
+                  !["id", "_id", "__v", "technical"].includes(
+                    key.toLowerCase(),
+                  ),
+              ).length > 0 && (
+                <div className="sm:hidden pt-5 mt-2 border-t">
+                  <h3 className="text-muted-foreground font-medium mb-3 text-sm">
+                    Technical Specifications
+                  </h3>
+                  <TechnicalSpecsTable
+                    specifications={
+                      safeParse(product.technicalSpecifications, {}) as Record<
+                        string,
+                        string
+                      >
+                    }
+                  />
+                </div>
+              )}
           </div>
         </div>
 
         {/* Related Products Section */}
         {relatedProducts.length > 0 && (
-          <div className="mt-16 mb-8">
-            <h2 className="text-2xl font-bold mb-6">Related Products</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="mt-8 mb-4">
+            <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">
+              Related Products
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
               {relatedProducts.map((related) => (
                 <div key={related._id} className="h-full">
-                  {/* Reuse ProductCard but ensure we import it if check fails */}
                   <ProductCard product={related} />
                 </div>
               ))}
@@ -678,6 +741,26 @@ export default function ProductDetailPage({
           </div>
         )}
       </main>
+
+      {/* ===== MOBILE STICKY BOTTOM CTA BAR ===== */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-2xl px-3 py-2 flex gap-2">
+        <Button
+          onClick={handleAddToCart}
+          disabled={product.stock === 0}
+          className="flex-1 h-12 text-sm sm:text-base font-bold bg-[#ff9f00] hover:bg-[#ff9f00]/90 text-white shadow-md rounded-lg"
+        >
+          <ShoppingCart className="w-4 h-4 mr-1.5" />
+          ADD TO CART
+        </Button>
+        <Button
+          onClick={handleBuyNow}
+          disabled={product.stock === 0}
+          className="flex-1 h-12 text-sm sm:text-base font-bold bg-[#fb641b] hover:bg-[#fb641b]/90 text-white shadow-md rounded-lg"
+        >
+          <PlusCircle className="w-4 h-4 mr-1.5" />
+          BUY NOW
+        </Button>
+      </div>
 
       <Footer />
     </div>

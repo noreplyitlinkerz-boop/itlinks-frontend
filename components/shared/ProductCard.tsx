@@ -75,30 +75,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <p className="hidden md:line-clamp-2 text-[10px] md:text-xs text-muted-foreground">
               {product.description}
             </p>
-            {/* RAM/Storage Quick Specs */}
-            <div className="flex flex-wrap gap-1">
-              {product.specifications &&
-                typeof product.specifications === "object" && (
-                  <>
-                    {product.specifications.RAM && (
-                      <Badge
-                        variant="secondary"
-                        className="text-[9px] py-0 h-3.5 bg-primary/10 text-primary border-none"
-                      >
-                        {String(product.specifications.RAM)}
-                      </Badge>
-                    )}
-                    {product.specifications.Storage && (
-                      <Badge
-                        variant="secondary"
-                        className="text-[9px] py-0 h-3.5 bg-blue-500/10 text-blue-600 border-none"
-                      >
-                        {String(product.specifications.Storage)}
-                      </Badge>
-                    )}
-                  </>
-                )}
-            </div>
+
             <div className="flex flex-col">
               <p className="text-base md:text-xl font-bold text-primary">
                 ₹

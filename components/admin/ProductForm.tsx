@@ -787,7 +787,7 @@ export function ProductForm({
         onSubmit={form.handleSubmit(handleFormSubmit as any)}
         className="space-y-8"
       >
-        <div className="space-y-8 max-w-3xl mx-auto">
+        <div className="space-y-8 max-w-4xl mx-auto">
           {/* Basic Information */}
           <div className="p-8 bg-muted/40 dark:bg-muted/10 rounded-2xl border border-border/50 space-y-6">
             <h3 className="text-xs font-bold text-primary/70 uppercase tracking-widest">
@@ -1380,9 +1380,9 @@ export function ProductForm({
                         />
                       </FormControl>
                       <FormMessage />
-                      <p className="text-xs text-muted-foreground mt-1">
+                      {/* <p className="text-xs text-muted-foreground mt-1">
                         Auto-calculated based on discount %
-                      </p>
+                      </p> */}
                     </FormItem>
                   )}
                 />
@@ -1551,19 +1551,33 @@ export function ProductForm({
                   No specifications configured
                 </p>
               )}
-              {specs.length > 0 && (
+              {specs.filter(
+                (s) =>
+                  s.value &&
+                  String(s.value).trim() !== "" &&
+                  String(s.value).toLowerCase() !== "empty" &&
+                  String(s.value).toLowerCase() !== "null",
+              ).length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {specs.map((spec, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
-                    >
-                      <span className="font-semibold text-muted-foreground">
-                        {spec.key || "Untitled"}:
-                      </span>
-                      <span>{spec.value || "Empty"}</span>
-                    </div>
-                  ))}
+                  {specs
+                    .filter(
+                      (s) =>
+                        s.value &&
+                        String(s.value).trim() !== "" &&
+                        String(s.value).toLowerCase() !== "empty" &&
+                        String(s.value).toLowerCase() !== "null",
+                    )
+                    .map((spec, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
+                      >
+                        <span className="font-semibold text-muted-foreground">
+                          {spec.key || "Untitled"}:
+                        </span>
+                        <span>{spec.value}</span>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
@@ -1656,19 +1670,33 @@ export function ProductForm({
                   No technical specifications configured
                 </p>
               )}
-              {techSpecs.length > 0 && (
+              {techSpecs.filter(
+                (s) =>
+                  s.value &&
+                  String(s.value).trim() !== "" &&
+                  String(s.value).toLowerCase() !== "empty" &&
+                  String(s.value).toLowerCase() !== "null",
+              ).length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {techSpecs.map((spec, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
-                    >
-                      <span className="font-semibold text-muted-foreground">
-                        {spec.key || "Untitled"}:
-                      </span>
-                      <span>{spec.value || "Empty"}</span>
-                    </div>
-                  ))}
+                  {techSpecs
+                    .filter(
+                      (s) =>
+                        s.value &&
+                        String(s.value).trim() !== "" &&
+                        String(s.value).toLowerCase() !== "empty" &&
+                        String(s.value).toLowerCase() !== "null",
+                    )
+                    .map((spec, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
+                      >
+                        <span className="font-semibold text-muted-foreground">
+                          {spec.key || "Untitled"}:
+                        </span>
+                        <span>{spec.value}</span>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>

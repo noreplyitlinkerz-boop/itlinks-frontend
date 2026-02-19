@@ -11,6 +11,7 @@ interface VariantSelectorProps {
   onRamSelect: (ram: Ram) => void;
   onStorageSelect: (storage: Storage) => void;
   basePrice: number;
+  initialPrice: number;
   productImage?: string;
   showRam?: boolean;
   showStorage?: boolean;
@@ -26,6 +27,7 @@ export const VariantSelector = ({
   onRamSelect,
   onStorageSelect,
   basePrice,
+  initialPrice,
   productImage,
   showRam = true,
   showStorage = true,
@@ -54,7 +56,6 @@ export const VariantSelector = ({
                 const isSelected = ram.label === selectedRam;
                 const totalPrice =
                   basePrice + ram.extraPrice + currentStorageExtra;
-                const oldPrice = totalPrice * 1.5; // MRP estimate
 
                 return (
                   <button
@@ -75,7 +76,7 @@ export const VariantSelector = ({
                         ₹{totalPrice.toLocaleString()}
                       </span>
                       <span className="text-[10px] text-muted-foreground line-through opacity-60">
-                        ₹{Math.round(basePrice).toLocaleString()}
+                        ₹{Math.round(initialPrice).toLocaleString()}
                       </span>
                     </div>
                   </button>

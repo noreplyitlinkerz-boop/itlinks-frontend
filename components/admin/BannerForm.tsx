@@ -22,14 +22,7 @@ import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
 
-// Helper for file validation (simplified)
-const MAX_FILE_SIZE = 5000000; // 5MB
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
+
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
@@ -231,7 +224,7 @@ export function BannerForm({
               className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-4 transition-colors ${previewUrl ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"}`}
             >
               {previewUrl ? (
-                <div className="relative w-full aspect-video md:aspect-[21/9] rounded-lg overflow-hidden shadow-md">
+                <div className="relative w-full aspect-video md:aspect-21/9 rounded-lg overflow-hidden shadow-md">
                   <Image
                     src={previewUrl}
                     alt="Banner Preview"

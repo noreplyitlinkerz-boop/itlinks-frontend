@@ -72,17 +72,17 @@ export function BannerCarousel() {
               src={getFullImageUrl(slide.image)}
               alt={slide.title}
               fill
-              className="object-cover brightness-[0.4]"
+              className="object-cover brightness-[1]"
               priority
               unoptimized={true}
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 text-white z-10 pb-16 md:pb-20">
-              <h2 className="text-3xl md:text-6xl font-bold mb-2 md:mb-4 animate-fade-in px-2">
+            <div className="absolute inset-0 flex flex-col items-center justify-end text-center px-4 text-white z-10 pb-16 md:pb-20">
+              {/* <h2 className="text-3xl md:text-6xl font-bold mb-2 md:mb-4 animate-fade-in px-2">
                 {slide.title}
               </h2>
               <p className="text-sm md:text-2xl mb-6 md:mb-8 max-w-2xl text-gray-200 animate-slide-in-up px-6 md:px-0">
                 {slide.description}
-              </p>
+              </p> */}
 
               <Button
                 size="lg"

@@ -39,6 +39,7 @@ import {
   Storage,
   Product as ApiProduct,
 } from "@/lib/api/types/endpoints";
+import { ProductCard } from "@/components/shared/ProductCard";
 import { io } from "socket.io-client";
 
 const socket = io(
@@ -85,6 +86,7 @@ export default function ProductDetailPage({
   const [productCategory, setProductCategory] = useState<Category | null>(null);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [basePrice, setBasePrice] = useState<number>(0);
+  const [relatedProducts, setRelatedProducts] = useState<ApiProduct[]>([]);
   const fetchProduct = async () => {
     setIsLoading(true);
     try {
@@ -136,10 +138,47 @@ export default function ProductDetailPage({
     }
   };
 
+  const fetchRelatedProducts = async (ids: string[]) => {
+    try {
+      if (!ids || ids.length === 0) return;
+
+      console.log("Fetching related products for IDs:", ids);
+      // Fetch details for each related product
+      // Optimization: In a real app, we should have a bulk fetch endpoint
+      const productsData = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const res = await productService.getProductById(id);
+            return res.success ? res.data : null;
+          } catch (e) {
+            console.error(`Failed to fetch related product ${id}`, e);
+            return null;
+          }
+        }),
+      );
+
+      const validProducts = productsData.filter(
+        (p) => p !== null,
+      ) as ApiProduct[];
+      setRelatedProducts(validProducts);
+    } catch (error) {
+      console.error("Error fetching related products", error);
+    }
+  };
+
   useEffect(() => {
     fetchProduct();
     fetchVariants();
   }, [slug]);
+
+  useEffect(() => {
+    if (product?.relatedProducts && product.relatedProducts.length > 0) {
+      const ids = product.relatedProducts.map((p) =>
+        typeof p === "string" ? p : p._id,
+      );
+      fetchRelatedProducts(ids);
+    }
+  }, [product]);
 
   const fetchVariants = async () => {
     try {
@@ -542,6 +581,7 @@ export default function ProductDetailPage({
                     onRamSelect={setSelectedRam}
                     onStorageSelect={setSelectedStorage}
                     basePrice={basePrice}
+                    initialPrice={product.price}
                     productImage={
                       product.product_primary_image_url || product.images?.[0]
                     }
@@ -622,6 +662,21 @@ export default function ProductDetailPage({
             </div>
           </div>
         </div>
+
+        {/* Related Products Section */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16 mb-8">
+            <h2 className="text-2xl font-bold mb-6">Related Products</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {relatedProducts.map((related) => (
+                <div key={related._id} className="h-full">
+                  {/* Reuse ProductCard but ensure we import it if check fails */}
+                  <ProductCard product={related} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />

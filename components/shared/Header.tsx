@@ -356,20 +356,6 @@ export function Header() {
 
             {/* Action Icons */}
             <div className="flex items-center gap-2 md:gap-3">
-              {/* Search icon — mobile only */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden w-9 h-9"
-                onClick={() => {
-                  setMobileSearchOpen(!mobileSearchOpen);
-                  setMobileMenuOpen(false);
-                }}
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </Button>
-
               <button
                 onClick={() => window.open("tel:+917380817676")}
                 className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10BBE6]/5 border border-[#10BBE6]/10 text-[#10BBE6] hover:bg-[#10BBE6] hover:text-white transition-all duration-300 group mr-2"
@@ -520,103 +506,98 @@ export function Header() {
           </div>
         </nav>
 
-        {/* ── MOBILE SEARCH BAR (slides in below top-bar) ── */}
-        {mobileSearchOpen && (
-          <div className="lg:hidden px-3 pb-3 pt-1 border-t border-border/30 animate-in slide-in-from-top-2 duration-200">
-            <div className="relative w-full">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (searchQuery.trim()) {
-                    router.push(
-                      `/products?search=${encodeURIComponent(searchQuery)}`,
-                    );
-                    setShowResults(false);
-                    setMobileSearchOpen(false);
-                  }
-                }}
-                className="relative w-full"
-              >
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Search products, brands..."
-                  className="w-full h-11 pl-10 pr-10 rounded-full bg-muted/60 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setShowResults(true)}
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setSearchResults([]);
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-lg leading-none"
-                  >
-                    ×
-                  </button>
-                )}
-              </form>
+        {/* ── MOBILE SEARCH BAR (always visible) ── */}
+        <div className="lg:hidden px-3 pb-3 border-t border-border/30">
+          <div className="relative w-full">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  router.push(
+                    `/products?search=${encodeURIComponent(searchQuery)}`,
+                  );
+                  setShowResults(false);
+                }
+              }}
+              className="relative w-full"
+            >
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search products, brands..."
+                className="w-full h-11 pl-10 pr-10 rounded-full bg-muted/60 border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowResults(true)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSearchResults([]);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-lg leading-none"
+                >
+                  ×
+                </button>
+              )}
+            </form>
 
-              {/* Mobile Search Results Dropdown */}
-              {showResults &&
-                (searchQuery.length >= 2 || searchResults.length > 0) && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10 bg-transparent"
-                      onClick={() => setShowResults(false)}
-                    />
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-background/97 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-20 overflow-hidden max-h-[55vh] overflow-y-auto">
-                      {isSearching ? (
-                        <div className="p-4 flex items-center gap-3 text-sm text-muted-foreground">
-                          <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                          Searching...
-                        </div>
-                      ) : searchResults.length > 0 ? (
-                        <div className="py-2">
-                          <p className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/20">
-                            Results for &quot;{searchQuery}&quot;
-                          </p>
-                          {searchResults.map((product) => (
-                            <div
-                              key={product._id}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer border-b border-border/10 last:border-0"
-                              onClick={() => {
-                                router.push(`/products/slug/${product.slug}`);
-                                setShowResults(false);
-                                setSearchQuery("");
-                                setMobileSearchOpen(false);
-                              }}
-                            >
-                              <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                              <div className="flex-1 flex justify-between items-center min-w-0 gap-2">
-                                <h4 className="text-sm font-medium text-foreground truncate">
-                                  {product.name}
-                                </h4>
-                                <p className="text-xs text-primary font-semibold whitespace-nowrap">
-                                  ₹{product.price.toLocaleString()}
-                                </p>
-                              </div>
+            {/* Mobile Search Results Dropdown */}
+            {showResults &&
+              (searchQuery.length >= 2 || searchResults.length > 0) && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10 bg-transparent"
+                    onClick={() => setShowResults(false)}
+                  />
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-background/97 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-20 overflow-hidden max-h-[55vh] overflow-y-auto">
+                    {isSearching ? (
+                      <div className="p-4 flex items-center gap-3 text-sm text-muted-foreground">
+                        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                        Searching...
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <div className="py-2">
+                        <p className="px-4 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/20">
+                          Results for &quot;{searchQuery}&quot;
+                        </p>
+                        {searchResults.map((product) => (
+                          <div
+                            key={product._id}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer border-b border-border/10 last:border-0"
+                            onClick={() => {
+                              router.push(`/products/slug/${product.slug}`);
+                              setShowResults(false);
+                              setSearchQuery("");
+                            }}
+                          >
+                            <Search className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            <div className="flex-1 flex justify-between items-center min-w-0 gap-2">
+                              <h4 className="text-sm font-medium text-foreground truncate">
+                                {product.name}
+                              </h4>
+                              <p className="text-xs text-primary font-semibold whitespace-nowrap">
+                                ₹{product.price.toLocaleString()}
+                              </p>
                             </div>
-                          ))}
-                        </div>
-                      ) : searchQuery.length >= 2 ? (
-                        <div className="p-6 text-center">
-                          <Search className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                          <p className="text-sm text-muted-foreground">
-                            No products found for &quot;{searchQuery}&quot;
-                          </p>
-                        </div>
-                      ) : null}
-                    </div>
-                  </>
-                )}
-            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : searchQuery.length >= 2 ? (
+                      <div className="p-6 text-center">
+                        <Search className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">
+                          No products found for &quot;{searchQuery}&quot;
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </>
+              )}
           </div>
-        )}
+        </div>
 
         {/* Categories Navigation - Desktop - Full Width */}
         <div className="hidden md:flex items-center justify-center bg-[#10BBE6] text-white">

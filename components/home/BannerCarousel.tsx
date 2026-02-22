@@ -57,7 +57,7 @@ export function BannerCarousel() {
   }
 
   return (
-    <div className="relative w-full h-[50vh] md:h-[600px] overflow-hidden bg-background">
+    <div className="relative w-full aspect-16/6 md:aspect-16/5 overflow-hidden">
       {/* Slides */}
       <div
         className="flex transition-transform duration-700 ease-in-out h-full"
@@ -66,7 +66,7 @@ export function BannerCarousel() {
         {banners.map((slide) => (
           <div
             key={slide._id}
-            className="min-w-full relative h-[50vh] md:h-[600px]"
+            className="min-w-full relative aspect-16/6 md:aspect-16/5"
           >
             <Image
               src={getFullImageUrl(slide.image)}

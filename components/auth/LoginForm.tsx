@@ -30,7 +30,13 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
+export function LoginForm({
+  onSuccess,
+  onForgotPassword,
+}: {
+  onSuccess?: () => void;
+  onForgotPassword?: () => void;
+}) {
   const router = useRouter();
   const { login: setAuthUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -165,12 +171,22 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
                   <FormLabel className="text-sm font-semibold text-muted-foreground">
                     Password
                   </FormLabel>
-                  <Link
-                    href="/forgot-password"
-                    className="text-xs font-bold text-accent hover:text-accent/80 transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
+                  {onForgotPassword ? (
+                    <button
+                      type="button"
+                      onClick={onForgotPassword}
+                      className="text-xs font-bold text-accent hover:text-accent/80 transition-colors"
+                    >
+                      Forgot password?
+                    </button>
+                  ) : (
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs font-bold text-accent hover:text-accent/80 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
                 </div>
                 <FormControl>
                   <div className="relative group">

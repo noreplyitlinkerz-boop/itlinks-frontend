@@ -46,14 +46,17 @@ export const TechnicalSpecsTable = ({
           <div
             key={key}
             className={cn(
-              "flex flex-col sm:flex-row border-b last:border-0",
-              index % 2 === 0 ? "bg-muted/30" : "bg-transparent",
+              "flex flex-col sm:flex-row border-b last:border-0 group transition-colors duration-200",
+              index % 2 === 0
+                ? "bg-white dark:bg-card"
+                : "bg-muted/30 dark:bg-muted/10",
+              "hover:bg-primary/5 dark:hover:bg-primary/10",
             )}
           >
-            <div className="sm:w-1/3 p-3 sm:px-4 sm:py-3 text-sm font-medium text-muted-foreground bg-muted/10 sm:bg-transparent">
+            <div className="sm:w-1/3 p-3 sm:px-5 sm:py-4 text-sm font-semibold text-muted-foreground bg-muted/20 dark:bg-muted/5 sm:border-r border-border/50 group-hover:text-primary transition-colors">
               {formatKey(key)}
             </div>
-            <div className="sm:w-2/3 p-3 sm:px-4 sm:py-3 text-sm text-foreground wrap-break-word">
+            <div className="sm:w-2/3 p-3 sm:px-5 sm:py-4 text-sm text-foreground leading-relaxed wrap-break-word">
               {value}
             </div>
           </div>

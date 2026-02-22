@@ -615,6 +615,43 @@ export default function ProductDetailPage({
               </div>
             </div>
 
+            {/* Quantity Selector */}
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              <h3 className="text-muted-foreground font-medium text-sm">
+                Quantity
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center bg-muted border rounded-full px-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="h-8 w-8 hover:bg-background rounded-full"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </Button>
+                  <span className="w-8 text-center text-sm font-bold">
+                    {quantity}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      setQuantity(Math.min(product.stock, quantity + 1))
+                    }
+                    disabled={quantity >= product.stock}
+                    className="h-8 w-8 hover:bg-background rounded-full"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {product.stock} pieces available
+                </span>
+              </div>
+            </div>
+
             {/* Variant Selector - Only for Computers */}
             {isComputer && (
               <VariantSelector
@@ -657,43 +694,6 @@ export default function ProductDetailPage({
               <p className="text-sm leading-relaxed text-foreground">
                 {product.description}
               </p>
-            </div>
-
-            {/* Quantity Selector */}
-            <div className="flex flex-wrap items-center gap-4 pt-4 border-t">
-              <h3 className="text-muted-foreground font-medium text-sm">
-                Quantity
-              </h3>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center bg-muted border rounded-full px-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                    className="h-8 w-8 hover:bg-background rounded-full"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                  <span className="w-8 text-center text-sm font-bold">
-                    {quantity}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      setQuantity(Math.min(product.stock, quantity + 1))
-                    }
-                    disabled={quantity >= product.stock}
-                    className="h-8 w-8 hover:bg-background rounded-full"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {product.stock} pieces available
-                </span>
-              </div>
             </div>
 
             {/* Technical Specifications — mobile only (shown at bottom below quantity) */}

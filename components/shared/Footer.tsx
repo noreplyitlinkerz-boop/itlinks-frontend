@@ -28,7 +28,7 @@ export function Footer() {
         href="https://wa.me/917380817676"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 p-4 bg-[#25D366] text-white rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group animate-bounce-slow"
+        className="fixed bottom-20 md:bottom-6 right-6 z-50 p-4 bg-[#25D366] text-white rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group animate-bounce-slow"
         aria-label="Chat on WhatsApp"
       >
         <WhatsAppIcon className="w-6 h-6" />
@@ -39,7 +39,7 @@ export function Footer() {
 
       {/* Back to Top */}
       <button
-        className="fixed bottom-24 right-6 z-50 text-black "
+        className="fixed bottom-36 md:bottom-24 right-6 z-50 text-black "
         onClick={scrollToTop}
       >
         <div className="p-4 rounded-full animate-bounce bg-white border border-black/5 shadow-2xl shadow-gray-500 hover:scale-110 transition-transform active:scale-95 group animate-bounce-slow">

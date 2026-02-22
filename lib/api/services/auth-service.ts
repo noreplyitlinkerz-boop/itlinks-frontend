@@ -9,6 +9,9 @@ import {
   LoginRequest,
   AuthResponse,
   User,
+  ForgotPasswordRequest,
+  VerifyResetOtpRequest,
+  ResetPasswordRequest,
 } from "../types/endpoints";
 import { ApiResponse } from "../types/api-types";
 import { TokenStorage, UserStorage, clearAllStorage } from "../utils/storage";
@@ -118,6 +121,45 @@ class AuthService extends BaseService {
    */
   getStoredUser<T = User>(): T | null {
     return UserStorage.getUser<T>();
+  }
+
+  /**
+   * Request password reset OTP
+   * @public
+   * @endpoint POST /api/auth/forgot-password
+   */
+  async forgotPassword(
+    data: ForgotPasswordRequest,
+  ): Promise<ApiResponse<{ message: string }>> {
+    return this.post<ApiResponse<{ message: string }>>(
+      "/forgot-password",
+      data,
+    );
+  }
+
+  /**
+   * Verify password reset OTP
+   * @public
+   * @endpoint POST /api/auth/verify-reset-otp
+   */
+  async verifyResetOtp(
+    data: VerifyResetOtpRequest,
+  ): Promise<ApiResponse<{ message: string; otpVerified: boolean }>> {
+    return this.post<ApiResponse<{ message: string; otpVerified: boolean }>>(
+      "/verify-reset-otp",
+      data,
+    );
+  }
+
+  /**
+   * Reset password
+   * @public
+   * @endpoint POST /api/auth/reset-password
+   */
+  async resetPassword(
+    data: ResetPasswordRequest,
+  ): Promise<ApiResponse<{ message: string }>> {
+    return this.post<ApiResponse<{ message: string }>>("/reset-password", data);
   }
 }
 

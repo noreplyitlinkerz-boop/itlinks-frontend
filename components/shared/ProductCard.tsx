@@ -49,21 +49,23 @@ export function ProductCard({ product }: ProductCardProps) {
               fill
               className="object-contain p-2 transition-transform duration-300 group-hover:scale-110"
             />
-            {product.featured && (
-              <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">
-                Featured
-              </Badge>
-            )}
-            {product.stock < 10 && product.stock > 0 && (
-              <Badge className="absolute top-3 right-3 bg-yellow-600 hover:bg-yellow-600">
-                Low Stock
-              </Badge>
-            )}
-            {product.stock === 0 && (
-              <Badge className="absolute top-3 right-3 bg-destructive hover:bg-destructive">
-                Out of Stock
-              </Badge>
-            )}
+            <div className="absolute top-2 left-2 right-2 flex flex-wrap gap-1 z-10 pointer-events-none">
+              {product.featured && (
+                <Badge className="bg-primary text-primary-foreground text-[9px] md:text-xs px-1.5 py-0 h-4 md:h-5 pointer-events-auto">
+                  Featured
+                </Badge>
+              )}
+              {product.stock < 10 && product.stock > 0 && (
+                <Badge className="bg-yellow-600 hover:bg-yellow-600 text-[9px] md:text-xs px-1.5 py-0 h-4 md:h-5 pointer-events-auto">
+                  Low Stock
+                </Badge>
+              )}
+              {product.stock === 0 && (
+                <Badge className="bg-destructive hover:bg-destructive text-[9px] md:text-xs px-1.5 py-0 h-4 md:h-5 pointer-events-auto">
+                  Out of Stock
+                </Badge>
+              )}
+            </div>
           </div>
         </CardContent>
 

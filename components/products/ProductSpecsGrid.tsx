@@ -27,14 +27,14 @@ interface SpecItemProps {
 
 const SpecCard = ({ label, value, icon }: SpecItemProps) => (
   <div className="bg-gray-100 rounded-xl p-2 flex items-center gap-2 border border-transparent hover:border-border/60 transition-all duration-300 group">
-    <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+    <div className="w-8 h-8 shrink-0 rounded-lg bg-white shadow-sm flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
       {icon || <Box className="w-4 h-4" />}
     </div>
     <div className="flex flex-col min-w-0">
-      <span className="text-[13px] text-muted-foreground font-medium uppercase tracking-wider line-clamp-1">
+      <span className="text-[10px] sm:text-[13px] text-muted-foreground font-medium uppercase tracking-wider line-clamp-1">
         {label}
       </span>
-      <span className="text-sm font-bold text-foreground line-clamp-2">
+      <span className="text-xs sm:text-sm font-bold text-foreground line-clamp-2">
         {value}
       </span>
     </div>
@@ -123,7 +123,7 @@ export const ProductSpecsGrid = ({ specifications }: ProductSpecsGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
       {specsEntries.map(([key, value]) => (
         <SpecCard
           key={key}

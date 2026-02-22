@@ -196,7 +196,7 @@ export default function AdminRamPage() {
                   <TableCell className="font-medium pl-6">
                     {ram.label}
                   </TableCell>
-                  <TableCell>${ram.extraPrice.toFixed(2)}</TableCell>
+                  <TableCell>₹{ram.extraPrice.toFixed(2)}</TableCell>
                   <TableCell>
                     {ram.isAvailable ? (
                       <Check className="w-4 h-4 text-green-500" />

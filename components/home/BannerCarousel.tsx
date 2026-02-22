@@ -76,17 +76,9 @@ export function BannerCarousel() {
               priority
               unoptimized={true}
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-end text-center px-4 text-white z-10 pb-16 md:pb-20">
-              {/* <h2 className="text-3xl md:text-6xl font-bold mb-2 md:mb-4 animate-fade-in px-2">
-                {slide.title}
-              </h2>
-              <p className="text-sm md:text-2xl mb-6 md:mb-8 max-w-2xl text-gray-200 animate-slide-in-up px-6 md:px-0">
-                {slide.description}
-              </p> */}
-
+            <div className="absolute inset-0 flex flex-col items-center justify-end text-center px-4 text-white z-10 pb-8 md:pb-20">
               <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-4 md:px-8 md:py-6 rounded-full text-base md:text-lg shadow-lg hover:translate-y-[-2px] transition-transform"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 py-2 md:px-8 md:py-6 rounded-full text-xs md:text-lg shadow-lg hover:translate-y-[-2px] transition-transform"
                 onClick={() => router.push(slide.link)}
               >
                 {slide.ctaText}

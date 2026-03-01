@@ -88,29 +88,69 @@ export function ProductForm({
   const [videoPreviews, setVideoPreviews] = useState<string[]>(
     initialData?.product_videos_url?.map((vid) => getFullImageUrl(vid)) || [],
   );
-
-  // Default specs for new products
-  const defaultSpecs = [
-    { key: "Screen size", value: '15.6"' },
-    { key: "RAM", value: "16GB" },
-    { key: "Processor", value: "Intel i7" },
-    { key: "Storage", value: "" },
-    { key: "Generation", value: "" },
-    { key: "Touch", value: "" },
-    { key: "Graphics", value: "" },
+  // Default general specs for all new products
+  const DEFAULT_GENERAL_SPECS = [
+    { key: "Screen size", value: `14.0"` },
+    { key: "RAM", value: "DDR4" },
+    { key: "Processor", value: "Core i5" },
+    { key: "Storage", value: "NVEM/M.2" },
+    { key: "Generation", value: "8th Gen" },
+    { key: "Touch(if any)", value: "No" },
   ];
+
+  // Technical specifications specifically for Laptops and Desktops
+  const LAPTOP_DESKTOP_TECH_DEFAULTS = [
+    { key: "Operating system", value: "Windows 10" },
+    { key: "Refresh Rate", value: "60 Hz" },
+    { key: "Battery type", value: "Lithium Ion" },
+    { key: "Battery Life", value: "2 Hrs" },
+    { key: "Number of cells", value: "4 Cells" },
+    { key: "Human Interface types", value: "Touchpad" },
+    { key: "Keyboard Layout", value: "QWERTY" },
+    { key: "Audio Output type", value: "Speakers" },
+    { key: "Audio Recording", value: "Yes" },
+    { key: "Total USB port", value: "3" },
+    { key: "No. of port", value: "6" },
+    { key: "Number of Ethernet port", value: "1" },
+    { key: "Total Thunderbolt port", value: "1" },
+    { key: "Total HDMI port", value: "1" },
+    { key: "M.2 slot count", value: "1" },
+    { key: "What is in this BOX", value: "65 Watt Adapter + Laptop" },
+    { key: "Processor type", value: "Core i7 8560U" },
+    { key: "Processor count", value: "4 Cores" },
+    { key: "Processor Brand", value: "Intel" },
+    { key: "Graphics Description", value: "Intel ultra HD" },
+    { key: "Cellular Technology", value: "wifi" },
+    { key: "Bluetooth Version", value: "5.0" },
+    { key: "Model year", value: "2021" },
+    { key: "Model No", value: "840 G6" },
+    { key: "RAM Installed", value: "8 GB" },
+    { key: "RAM Technology", value: "DDR4" },
+    { key: "Memory Speed", value: "2666 MHz" },
+    { key: "Hard disk description", value: "SSD" },
+    { key: "Webcam", value: "Yes" },
+    { key: "Form factor", value: "Notebook" },
+    { key: "Item Dimension", value: "33.4 x 33.8 x 2.5 cm" },
+    { key: "Chipset", value: "Intel" },
+    { key: "Power Device", value: "AC Adapter" },
+    { key: "Video Output", value: "HDMI" },
+    { key: "Screen Size", value: '14.0"' },
+    { key: "Native Resolution", value: "1920 x 1080 pixels" },
+    { key: "Display type", value: "LED" },
+  ];
+
 
   const [specs, setSpecs] = useState<Array<{ key: string; value: string }>>(
     initialData?.specifications
       ? Object.entries(safeParse(initialData.specifications, {})).map(
-          ([key, value]) => ({
-            key,
-            value: String(value),
-          }),
-        )
+        ([key, value]) => ({
+          key,
+          value: String(value),
+        }),
+      )
       : initialData
         ? []
-        : defaultSpecs,
+        : DEFAULT_GENERAL_SPECS,
   );
 
   // Default technical specs from backend
@@ -350,7 +390,7 @@ export function ProductForm({
       setAdditionalImages([]);
       setVideoPreviews([]);
       setVideos([]);
-      setSpecs(defaultSpecs);
+      setSpecs(DEFAULT_GENERAL_SPECS);
       form.reset({
         name: "",
         brandID: "",
@@ -382,7 +422,34 @@ export function ProductForm({
         isSearching: false,
       });
     }
-  }, [initialData, form]);
+  }, [initialData, form, DEFAULT_GENERAL_SPECS]);
+
+  // Helper function to handle category change and apply defaults
+  const handleCategoryChange = (categoryId: string) => {
+    form.setValue("categoryID", categoryId, { shouldValidate: true });
+
+    const selectedCategory = categories.find((c) => c._id === categoryId);
+    if (selectedCategory) {
+      const categoryName = selectedCategory.name.toUpperCase();
+      if (categoryName === "LAPTOP" || categoryName === "DESKTOP" || categoryName === "LAPTOPS" || categoryName === "DESKTOPS") {
+        // Apply technical defaults for Laptop/Desktop
+        setTechSpecs(LAPTOP_DESKTOP_TECH_DEFAULTS);
+        toast.info(`Applied default technical specifications for ${selectedCategory.name}`);
+      }
+    }
+  };
+
+  const validateCategorySelection = () => {
+    const categoryId = form.getValues("categoryID");
+    if (!categoryId) {
+      toast.warning("Please first select a category to see specific technical details", {
+        description: "Defaults are applied based on the selected category.",
+        duration: 3000,
+      });
+      return false;
+    }
+    return true;
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -855,7 +922,7 @@ export function ProductForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={handleCategoryChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -1558,28 +1625,28 @@ export function ProductForm({
                   String(s.value).toLowerCase() !== "empty" &&
                   String(s.value).toLowerCase() !== "null",
               ).length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {specs
-                    .filter(
-                      (s) =>
-                        s.value &&
-                        String(s.value).trim() !== "" &&
-                        String(s.value).toLowerCase() !== "empty" &&
-                        String(s.value).toLowerCase() !== "null",
-                    )
-                    .map((spec, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
-                      >
-                        <span className="font-semibold text-muted-foreground">
-                          {spec.key || "Untitled"}:
-                        </span>
-                        <span>{spec.value}</span>
-                      </div>
-                    ))}
-                </div>
-              )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {specs
+                      .filter(
+                        (s) =>
+                          s.value &&
+                          String(s.value).trim() !== "" &&
+                          String(s.value).toLowerCase() !== "empty" &&
+                          String(s.value).toLowerCase() !== "null",
+                      )
+                      .map((spec, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
+                        >
+                          <span className="font-semibold text-muted-foreground">
+                            {spec.key || "Untitled"}:
+                          </span>
+                          <span>{spec.value}</span>
+                        </div>
+                      ))}
+                  </div>
+                )}
             </div>
           </div>
 
@@ -1597,6 +1664,7 @@ export function ProductForm({
                     variant="outline"
                     size="sm"
                     className="h-8 text-xs gap-2"
+                    onClick={() => validateCategorySelection()}
                   >
                     <List className="w-3.5 h-3.5" />
                     Manage Tech Specs
@@ -1677,28 +1745,28 @@ export function ProductForm({
                   String(s.value).toLowerCase() !== "empty" &&
                   String(s.value).toLowerCase() !== "null",
               ).length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {techSpecs
-                    .filter(
-                      (s) =>
-                        s.value &&
-                        String(s.value).trim() !== "" &&
-                        String(s.value).toLowerCase() !== "empty" &&
-                        String(s.value).toLowerCase() !== "null",
-                    )
-                    .map((spec, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
-                      >
-                        <span className="font-semibold text-muted-foreground">
-                          {spec.key || "Untitled"}:
-                        </span>
-                        <span>{spec.value}</span>
-                      </div>
-                    ))}
-                </div>
-              )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {techSpecs
+                      .filter(
+                        (s) =>
+                          s.value &&
+                          String(s.value).trim() !== "" &&
+                          String(s.value).toLowerCase() !== "empty" &&
+                          String(s.value).toLowerCase() !== "null",
+                      )
+                      .map((spec, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-2 rounded bg-secondary/20 border border-border/50 text-sm"
+                        >
+                          <span className="font-semibold text-muted-foreground">
+                            {spec.key || "Untitled"}:
+                          </span>
+                          <span>{spec.value}</span>
+                        </div>
+                      ))}
+                  </div>
+                )}
             </div>
           </div>
 

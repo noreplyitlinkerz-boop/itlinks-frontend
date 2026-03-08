@@ -40,16 +40,10 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/products/slug/${product.slug}`} className="group">
-      <Card className="h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-border/50 bg-card/50 backdrop-blur-sm group-hover:border-primary/50">
+      <Card className="h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-border/50 bg-card/50 backdrop-blur-sm group-hover:border-primary/50 flex flex-col">
         <CardContent className="p-0">
-          <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
-            <ProductImage
-              src={product.product_primary_image_url || product.images?.[0]}
-              alt={product.name}
-              fill
-              className="object-contain p-2 transition-transform duration-300 group-hover:scale-110"
-            />
-            <div className="absolute top-2 left-2 right-2 flex flex-wrap gap-1 z-10 pointer-events-none">
+          {(product.featured || product.stock < 10) && (
+            <div className="flex flex-wrap gap-1 p-2 pb-0 w-full z-10 relative">
               {product.featured && (
                 <Badge className="bg-primary text-primary-foreground text-[9px] md:text-xs px-1.5 py-0 h-4 md:h-5 pointer-events-auto">
                   Featured
@@ -66,6 +60,14 @@ export function ProductCard({ product }: ProductCardProps) {
                 </Badge>
               )}
             </div>
+          )}
+          <div className={`relative aspect-video overflow-hidden bg-muted ${(product.featured || product.stock < 10) ? "mt-2" : "rounded-t-lg"}`}>
+            <ProductImage
+              src={product.product_primary_image_url || product.images?.[0]}
+              alt={product.name}
+              fill
+              className="object-contain p-2 transition-transform duration-300 group-hover:scale-110"
+            />
           </div>
         </CardContent>
 
@@ -82,9 +84,9 @@ export function ProductCard({ product }: ProductCardProps) {
               <p className="text-base md:text-xl font-bold text-primary">
                 ₹
                 {(product.discount &&
-                typeof product.discount === "object" &&
-                product.discount.percentage > 0 &&
-                product.discount.discountedPrice > 0
+                  typeof product.discount === "object" &&
+                  product.discount.percentage > 0 &&
+                  product.discount.discountedPrice > 0
                   ? product.discount.discountedPrice
                   : product.price
                 ).toLocaleString()}
@@ -121,9 +123,8 @@ export function ProductCard({ product }: ProductCardProps) {
               className="px-1.5 md:px-2 h-7 md:h-8"
             >
               <Heart
-                className={`w-3 h-3 md:w-3.5 md:h-3.5 transition-all ${
-                  inWishlist ? "fill-current" : ""
-                }`}
+                className={`w-3 h-3 md:w-3.5 md:h-3.5 transition-all ${inWishlist ? "fill-current" : ""
+                  }`}
               />
             </Button>
           </div>

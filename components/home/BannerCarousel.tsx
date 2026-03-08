@@ -72,7 +72,7 @@ export function BannerCarousel() {
               src={getFullImageUrl(slide.image)}
               alt={slide.title}
               fill
-              className="object-cover brightness-[1]"
+              className="object-fill brightness-[1]"
               priority
               unoptimized={true}
             />
@@ -108,11 +108,10 @@ export function BannerCarousel() {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all ${
-              currentSlide === index
-                ? "bg-accent w-6 md:w-8"
-                : "bg-white/50 hover:bg-white/80"
-            }`}
+            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all ${currentSlide === index
+              ? "bg-accent w-6 md:w-8"
+              : "bg-white/50 hover:bg-white/80"
+              }`}
           />
         ))}
       </div>

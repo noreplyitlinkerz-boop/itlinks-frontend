@@ -9,9 +9,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/proxy/:path*",
-        destination: `${
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
-        }/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
+          }/:path*`,
       },
     ];
   },
@@ -39,6 +38,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "example.com",
+      },
+      {
+        protocol: "https",
+        hostname: "itlinks-s3-bucket.s3.ap-south-1.amazonaws.com",
       },
     ],
   },

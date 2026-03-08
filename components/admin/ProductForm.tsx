@@ -64,6 +64,76 @@ import { Category, Brand, Ram, Storage } from "@/lib/api/types/endpoints";
 import { safeParse } from "@/lib/utils";
 import { getFullImageUrl } from "@/components/shared/ProductImage";
 
+// Default general specs for all new products
+const DEFAULT_GENERAL_SPECS = [
+  { key: "Screen size", value: `14.0"` },
+  { key: "RAM", value: "DDR4" },
+  { key: "Processor", value: "Core i5" },
+  { key: "Storage", value: "NVEM/M.2" },
+  { key: "Generation", value: "8th Gen" },
+  { key: "Touch(if any)", value: "No" },
+];
+
+// Technical specifications specifically for Laptops and Desktops
+const LAPTOP_DESKTOP_TECH_DEFAULTS = [
+  { key: "Operating system", value: "Windows 10" },
+  { key: "Refresh Rate", value: "60 Hz" },
+  { key: "Battery type", value: "Lithium Ion" },
+  { key: "Battery Life", value: "2 Hrs" },
+  { key: "Number of cells", value: "4 Cells" },
+  { key: "Human Interface types", value: "Touchpad" },
+  { key: "Keyboard Layout", value: "QWERTY" },
+  { key: "Audio Output type", value: "Speakers" },
+  { key: "Audio Recording", value: "Yes" },
+  { key: "Total USB port", value: "3" },
+  { key: "No. of port", value: "6" },
+  { key: "Number of Ethernet port", value: "1" },
+  { key: "Total Thunderbolt port", value: "1" },
+  { key: "Total HDMI port", value: "1" },
+  { key: "M.2 slot count", value: "1" },
+  { key: "What is in this BOX", value: "65 Watt Adapter + Laptop" },
+  { key: "Processor type", value: "Core i7 8560U" },
+  { key: "Processor count", value: "4 Cores" },
+  { key: "Processor Brand", value: "Intel" },
+  { key: "Graphics Description", value: "Intel ultra HD" },
+  { key: "Cellular Technology", value: "wifi" },
+  { key: "Bluetooth Version", value: "5.0" },
+  { key: "Model year", value: "2021" },
+  { key: "Model No", value: "840 G6" },
+  { key: "RAM Installed", value: "8 GB" },
+  { key: "RAM Technology", value: "DDR4" },
+  { key: "Memory Speed", value: "2666 MHz" },
+  { key: "Hard disk description", value: "SSD" },
+  { key: "Webcam", value: "Yes" },
+  { key: "Form factor", value: "Notebook" },
+  { key: "Item Dimension", value: "33.4 x 33.8 x 2.5 cm" },
+  { key: "Chipset", value: "Intel" },
+  { key: "Power Device", value: "AC Adapter" },
+  { key: "Video Output", value: "HDMI" },
+  { key: "Screen Size", value: '14.0"' },
+  { key: "Native Resolution", value: "1920 x 1080 pixels" },
+  { key: "Display type", value: "LED" },
+];
+
+// Default technical specs from backend
+const defaultTechnicalSpecs = [
+  { key: "os", value: "" },
+  { key: "productDimensions", value: "" },
+  { key: "itemModelNumber", value: "" },
+  { key: "connectivityTechnologies", value: "" },
+  { key: "gps", value: "" },
+  { key: "otherDisplayFeatures", value: "" },
+  { key: "deviceInterfacePrimary", value: "" },
+  { key: "resolution", value: "" },
+  { key: "otherCameraFeatures", value: "" },
+  { key: "formFactor", value: "" },
+  { key: "batteryPowerRating", value: "" },
+  { key: "whatsInTheBox", value: "" },
+  { key: "manufacturer", value: "" },
+  { key: "countryOfOrigin", value: "" },
+  { key: "itemWeight", value: "" },
+];
+
 export function ProductForm({
   initialData,
   onSubmit,
@@ -88,57 +158,6 @@ export function ProductForm({
   const [videoPreviews, setVideoPreviews] = useState<string[]>(
     initialData?.product_videos_url?.map((vid) => getFullImageUrl(vid)) || [],
   );
-  // Default general specs for all new products
-  const DEFAULT_GENERAL_SPECS = [
-    { key: "Screen size", value: `14.0"` },
-    { key: "RAM", value: "DDR4" },
-    { key: "Processor", value: "Core i5" },
-    { key: "Storage", value: "NVEM/M.2" },
-    { key: "Generation", value: "8th Gen" },
-    { key: "Touch(if any)", value: "No" },
-  ];
-
-  // Technical specifications specifically for Laptops and Desktops
-  const LAPTOP_DESKTOP_TECH_DEFAULTS = [
-    { key: "Operating system", value: "Windows 10" },
-    { key: "Refresh Rate", value: "60 Hz" },
-    { key: "Battery type", value: "Lithium Ion" },
-    { key: "Battery Life", value: "2 Hrs" },
-    { key: "Number of cells", value: "4 Cells" },
-    { key: "Human Interface types", value: "Touchpad" },
-    { key: "Keyboard Layout", value: "QWERTY" },
-    { key: "Audio Output type", value: "Speakers" },
-    { key: "Audio Recording", value: "Yes" },
-    { key: "Total USB port", value: "3" },
-    { key: "No. of port", value: "6" },
-    { key: "Number of Ethernet port", value: "1" },
-    { key: "Total Thunderbolt port", value: "1" },
-    { key: "Total HDMI port", value: "1" },
-    { key: "M.2 slot count", value: "1" },
-    { key: "What is in this BOX", value: "65 Watt Adapter + Laptop" },
-    { key: "Processor type", value: "Core i7 8560U" },
-    { key: "Processor count", value: "4 Cores" },
-    { key: "Processor Brand", value: "Intel" },
-    { key: "Graphics Description", value: "Intel ultra HD" },
-    { key: "Cellular Technology", value: "wifi" },
-    { key: "Bluetooth Version", value: "5.0" },
-    { key: "Model year", value: "2021" },
-    { key: "Model No", value: "840 G6" },
-    { key: "RAM Installed", value: "8 GB" },
-    { key: "RAM Technology", value: "DDR4" },
-    { key: "Memory Speed", value: "2666 MHz" },
-    { key: "Hard disk description", value: "SSD" },
-    { key: "Webcam", value: "Yes" },
-    { key: "Form factor", value: "Notebook" },
-    { key: "Item Dimension", value: "33.4 x 33.8 x 2.5 cm" },
-    { key: "Chipset", value: "Intel" },
-    { key: "Power Device", value: "AC Adapter" },
-    { key: "Video Output", value: "HDMI" },
-    { key: "Screen Size", value: '14.0"' },
-    { key: "Native Resolution", value: "1920 x 1080 pixels" },
-    { key: "Display type", value: "LED" },
-  ];
-
 
   const [specs, setSpecs] = useState<Array<{ key: string; value: string }>>(
     initialData?.specifications
@@ -152,25 +171,6 @@ export function ProductForm({
         ? []
         : DEFAULT_GENERAL_SPECS,
   );
-
-  // Default technical specs from backend
-  const defaultTechnicalSpecs = [
-    { key: "os", value: "" },
-    { key: "productDimensions", value: "" },
-    { key: "itemModelNumber", value: "" },
-    { key: "connectivityTechnologies", value: "" },
-    { key: "gps", value: "" },
-    { key: "otherDisplayFeatures", value: "" },
-    { key: "deviceInterfacePrimary", value: "" },
-    { key: "resolution", value: "" },
-    { key: "otherCameraFeatures", value: "" },
-    { key: "formFactor", value: "" },
-    { key: "batteryPowerRating", value: "" },
-    { key: "whatsInTheBox", value: "" },
-    { key: "manufacturer", value: "" },
-    { key: "countryOfOrigin", value: "" },
-    { key: "itemWeight", value: "" },
-  ];
 
   const [techSpecs, setTechSpecs] = useState<
     Array<{ key: string; value: string }>

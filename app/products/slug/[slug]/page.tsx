@@ -105,8 +105,8 @@ export default function ProductDetailPage({
         setProduct(productData as ApiProduct);
         setActiveMedia(
           productData.product_primary_image_url ||
-            productData.images?.[0] ||
-            "",
+          productData.images?.[0] ||
+          "",
         );
 
         if (typeof productData.categoryID === "string") {
@@ -220,9 +220,9 @@ export default function ProductDetailPage({
 
       const initialPrice =
         product.discount &&
-        typeof product.discount === "object" &&
-        Number(product.discount.percentage) > 0 &&
-        Number(product.discount.discountedPrice) > 0
+          typeof product.discount === "object" &&
+          Number(product.discount.percentage) > 0 &&
+          Number(product.discount.discountedPrice) > 0
           ? Number(product.discount.discountedPrice)
           : Number(product.price);
 
@@ -239,9 +239,9 @@ export default function ProductDetailPage({
     } else if (product) {
       const initialPrice =
         product.discount &&
-        typeof product.discount === "object" &&
-        Number(product.discount.percentage) > 0 &&
-        Number(product.discount.discountedPrice) > 0
+          typeof product.discount === "object" &&
+          Number(product.discount.percentage) > 0 &&
+          Number(product.discount.discountedPrice) > 0
           ? Number(product.discount.discountedPrice)
           : Number(product.price);
 
@@ -350,9 +350,9 @@ export default function ProductDetailPage({
 
   const discountAmount =
     product.discount &&
-    typeof product.discount === "object" &&
-    product.discount.percentage > 0 &&
-    product.discount.discountedPrice > 0
+      typeof product.discount === "object" &&
+      product.discount.percentage > 0 &&
+      product.discount.discountedPrice > 0
       ? product.price - product.discount.discountedPrice
       : 0;
 
@@ -539,9 +539,9 @@ export default function ProductDetailPage({
           </div>
 
           {/* ===== RIGHT COLUMN: Product Info ===== */}
-          <div className="sm:col-span-7 space-y-3 sm:space-y-4">
+          <div className="sm:col-span-7 flex flex-col gap-3 sm:gap-4">
             {/* Product Title */}
-            <div>
+            <div className="sm:order-1">
               <h1 className="text-lg sm:text-xl md:text-2xl font-normal leading-snug text-foreground">
                 {product.name}
                 {isComputer && selectedRam ? `, ${selectedRam.label} RAM` : ""}
@@ -563,7 +563,7 @@ export default function ProductDetailPage({
             </div>
 
             {/* Price Block */}
-            <div className="space-y-1">
+            <div className="space-y-1 sm:order-2">
               {discountAmount > 0 && (
                 <p className="text-green-600 text-sm font-bold">
                   Extra ₹{discountAmount.toLocaleString()} off
@@ -616,7 +616,7 @@ export default function ProductDetailPage({
             </div>
 
             {/* Quantity Selector */}
-            <div className="flex flex-wrap items-center gap-4 pt-1">
+            <div className="flex flex-wrap items-center gap-4 pt-1 sm:order-4">
               <h3 className="text-muted-foreground font-medium text-sm">
                 Quantity
               </h3>
@@ -654,25 +654,27 @@ export default function ProductDetailPage({
 
             {/* Variant Selector - Only for Computers */}
             {isComputer && (
-              <VariantSelector
-                rams={rams}
-                storages={storages}
-                selectedRam={selectedRam?.label}
-                selectedStorage={selectedStorage?.label}
-                onRamSelect={setSelectedRam}
-                onStorageSelect={setSelectedStorage}
-                basePrice={basePrice}
-                initialPrice={product.price}
-                productImage={
-                  product.product_primary_image_url || product.images?.[0]
-                }
-                showRam={product.hasRam}
-                showStorage={product.hasStorage}
-              />
+              <div className="sm:order-3">
+                <VariantSelector
+                  rams={rams}
+                  storages={storages}
+                  selectedRam={selectedRam?.label}
+                  selectedStorage={selectedStorage?.label}
+                  onRamSelect={setSelectedRam}
+                  onStorageSelect={setSelectedStorage}
+                  basePrice={basePrice}
+                  initialPrice={product.price}
+                  productImage={
+                    product.product_primary_image_url || product.images?.[0]
+                  }
+                  showRam={product.hasRam}
+                  showStorage={product.hasStorage}
+                />
+              </div>
             )}
 
             {/* Specifications */}
-            <div className="border-t pt-5 mt-2">
+            <div className="border-t pt-5 mt-2 sm:order-5">
               <h3 className="text-muted-foreground font-medium text-sm mb-3">
                 Specifications
               </h3>
@@ -687,7 +689,7 @@ export default function ProductDetailPage({
             </div>
 
             {/* Description */}
-            <div className="pt-1">
+            <div className="pt-1 sm:order-6">
               <h3 className="text-muted-foreground font-medium text-sm mb-2">
                 Description
               </h3>
@@ -697,49 +699,53 @@ export default function ProductDetailPage({
             </div>
 
             {/* Technical Specifications — mobile only (shown at bottom below quantity) */}
-            {product.technicalSpecifications &&
-              Object.entries(
-                safeParse(product.technicalSpecifications, {}),
-              ).filter(
-                ([key, value]) =>
-                  value &&
-                  String(value).trim() !== "" &&
-                  !["id", "_id", "__v", "technical"].includes(
-                    key.toLowerCase(),
-                  ),
-              ).length > 0 && (
-                <div className="sm:hidden pt-5 mt-2 border-t">
-                  <h3 className="text-muted-foreground font-medium mb-3 text-sm">
-                    Technical Specifications
-                  </h3>
-                  <TechnicalSpecsTable
-                    specifications={
-                      safeParse(product.technicalSpecifications, {}) as Record<
-                        string,
-                        string
-                      >
-                    }
-                  />
-                </div>
-              )}
+            <div className="sm:order-7">
+              {product.technicalSpecifications &&
+                Object.entries(
+                  safeParse(product.technicalSpecifications, {}),
+                ).filter(
+                  ([key, value]) =>
+                    value &&
+                    String(value).trim() !== "" &&
+                    !["id", "_id", "__v", "technical"].includes(
+                      key.toLowerCase(),
+                    ),
+                ).length > 0 && (
+                  <div className="sm:hidden pt-5 mt-2 border-t">
+                    <h3 className="text-muted-foreground font-medium mb-3 text-sm">
+                      Technical Specifications
+                    </h3>
+                    <TechnicalSpecsTable
+                      specifications={
+                        safeParse(product.technicalSpecifications, {}) as Record<
+                          string,
+                          string
+                        >
+                      }
+                    />
+                  </div>
+                )}
+            </div>
           </div>
         </div>
 
         {/* Related Products Section */}
-        {relatedProducts.length > 0 && (
-          <div className="mt-8 mb-4">
-            <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">
-              Related Products
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-              {relatedProducts.map((related) => (
-                <div key={related._id} className="h-full">
-                  <ProductCard product={related} />
-                </div>
-              ))}
+        {
+          relatedProducts.length > 0 && (
+            <div className="mt-8 mb-4">
+              <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">
+                Related Products
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {relatedProducts.map((related) => (
+                  <div key={related._id} className="h-full">
+                    <ProductCard product={related} />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
       </main>
 
       {/* ===== MOBILE STICKY BOTTOM CTA BAR ===== */}

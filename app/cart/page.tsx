@@ -50,7 +50,7 @@ export default function CartPage() {
                 item.price !== undefined
                   ? item.price
                   : item.product.discount &&
-                      typeof item.product.discount === "object"
+                    typeof item.product.discount === "object"
                     ? item.product.discount.discountedPrice
                     : item.product.price;
 
@@ -209,18 +209,13 @@ export default function CartPage() {
                   <span className="text-muted-foreground">Shipping</span>
                   <span className="font-semibold text-primary">Free</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax (10%)</span>
-                  <span className="font-semibold">
-                    ₹{(totalPrice * 0.1).toLocaleString()}
-                  </span>
-                </div>
+
               </div>
 
               <div className="flex justify-between text-lg font-bold pt-4 border-t border-border/50">
                 <span>Total</span>
                 <span className="text-primary">
-                  ₹{(totalPrice * 1.1).toLocaleString()}
+                  ₹{(totalPrice).toLocaleString()}
                 </span>
               </div>
 

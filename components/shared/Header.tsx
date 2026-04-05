@@ -152,6 +152,22 @@ export function Header() {
 
   // Helper to determine the correct URL for navigation items
   const getHref = (navLabel: string, navUrl: string, parentLabel?: string) => {
+    let finalUrl = navUrl;
+    
+    // Add fallback URLs for items with empty links (like "BUY ACCESSORIES")
+    if (!finalUrl || finalUrl === "#") {
+      const lowerLabel = navLabel.toLowerCase();
+      if (lowerLabel.includes("accessories")) {
+        finalUrl = "/products?category=accessories";
+      } else if (lowerLabel.includes("laptop")) {
+        finalUrl = "/products?category=refurbished-laptop";
+      } else if (lowerLabel.includes("desktop")) {
+        finalUrl = "/products?category=refurbished-desktop";
+      } else {
+        finalUrl = "#";
+      }
+    }
+
     const knownBrands = [
       "HP",
       "Lenovo",
@@ -172,8 +188,8 @@ export function Header() {
         knownBrands.find((brand) => upperLabel.includes(brand)) || navLabel;
 
       // If the URL is already a products search/filter URL
-      if (navUrl.includes("/products")) {
-        const url = new URL(navUrl, window.location.origin);
+      if (finalUrl.includes("/products")) {
+        const url = new URL(finalUrl, window.location.origin);
         // If it was previously using subcategory for the brand, replace it with brand parameter
         if (
           url.searchParams.has("subcategory") &&
@@ -188,7 +204,7 @@ export function Header() {
         return url.pathname + url.search;
       }
     }
-    return navUrl;
+    return finalUrl;
   };
 
   return (
@@ -619,7 +635,7 @@ export function Header() {
                 onMouseLeave={() => setActiveCategory(null)}
               >
                 <Link
-                  href={nav.url || "#"}
+                  href={getHref(nav.label, nav.url || "#")}
                   className={cn(
                     "text-sm font-bold uppercase tracking-tight flex items-center gap-1 transition-colors hover:text-white/80",
                     activeCategory === nav.label
@@ -705,7 +721,7 @@ export function Header() {
                 >
                   <div className="flex items-center justify-between">
                     <Link
-                      href={nav.url || "#"}
+                      href={getHref(nav.label, nav.url || "#")}
                       onClick={() => {
                         if (!nav.children || nav.children.length === 0)
                           setMobileMenuOpen(false);

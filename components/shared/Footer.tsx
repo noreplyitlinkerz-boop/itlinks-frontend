@@ -42,6 +42,22 @@ export function Footer() {
 
   // Helper to determine the correct URL for navigation items (Matches Header logic)
   const getHref = (navLabel: string, navUrl: string) => {
+    let finalUrl = navUrl;
+    
+    // Add fallback URLs for items with empty links (like "BUY ACCESSORIES")
+    if (!finalUrl || finalUrl === "#") {
+      const lowerLabel = navLabel.toLowerCase();
+      if (lowerLabel.includes("accessories")) {
+        finalUrl = "/products?category=accessories";
+      } else if (lowerLabel.includes("laptop")) {
+        finalUrl = "/products?category=refurbished-laptop";
+      } else if (lowerLabel.includes("desktop")) {
+        finalUrl = "/products?category=refurbished-desktop";
+      } else {
+        finalUrl = "#";
+      }
+    }
+
     const knownBrands = [
       "HP", "Lenovo", "Dell", "Apple", "Acer", "Asus", "MSI", "Samsung", "Sony", "Microsoft",
     ];
@@ -50,17 +66,14 @@ export function Footer() {
     if (knownBrands.some((brand) => upperLabel.includes(brand))) {
       const brandName = knownBrands.find((brand) => upperLabel.includes(brand)) || navLabel;
 
-      if (navUrl.includes("/products")) {
+      if (finalUrl.includes("/products")) {
         // Simple manual check if the URL already has search/filter params
-        const separator = navUrl.includes("?") ? "&" : "?";
-        // To avoid multiple 'brand' parameters, we can't easily use URL in Footer without 'origin' check
-        // but it's safer to just return as-is if it's already complex, 
-        // or just ensure we don't double up 'brand' if we are appending.
-        if (navUrl.includes("brand=")) return navUrl;
-        return `${navUrl}${separator}brand=${encodeURIComponent(brandName)}`;
+        const separator = finalUrl.includes("?") ? "&" : "?";
+        if (finalUrl.includes("brand=")) return finalUrl;
+        return `${finalUrl}${separator}brand=${encodeURIComponent(brandName)}`;
       }
     }
-    return navUrl;
+    return finalUrl;
   };
 
   return (

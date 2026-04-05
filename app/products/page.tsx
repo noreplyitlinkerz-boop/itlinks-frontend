@@ -78,6 +78,15 @@ function ProductsContent() {
         let allCategories: Category[] = [];
         let allBrands: any[] = [];
 
+        // Helper to extract array from possibly nested API response
+        const extractArray = (res: any) => {
+          if (!res) return [];
+          if (Array.isArray(res)) return res;
+          if (res.data && Array.isArray(res.data)) return res.data;
+          if (res.data && res.data.data && Array.isArray(res.data.data)) return res.data.data;
+          return [];
+        };
+
         // Fetch categories if we have slugs to resolve
         if (
           (categoryFromUrl && !isObjectId(categoryFromUrl)) ||
@@ -87,7 +96,7 @@ function ProductsContent() {
             categoryService
               .getCategories()
               .then((res) => {
-                allCategories = res.data || [];
+                allCategories = extractArray(res);
               })
               .catch(() => {
                 allCategories = [];
@@ -101,7 +110,7 @@ function ProductsContent() {
             brandService
               .getBrands()
               .then((res) => {
-                allBrands = res.data || [];
+                allBrands = extractArray(res);
               })
               .catch(() => {
                 allBrands = [];

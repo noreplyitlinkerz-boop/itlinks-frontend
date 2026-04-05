@@ -66,7 +66,8 @@ export function BannerCarousel() {
         {banners.map((slide) => (
           <div
             key={slide._id}
-            className="min-w-full relative aspect-16/6 md:aspect-16/5"
+            className="min-w-full relative aspect-16/6 md:aspect-16/5 cursor-pointer"
+            onClick={() => router.push(slide.link)}
           >
             <Image
               src={getFullImageUrl(slide.image)}
@@ -76,14 +77,6 @@ export function BannerCarousel() {
               priority
               unoptimized={true}
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-end text-center px-4 text-white z-10 pb-8 md:pb-20">
-              <Button
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 py-2 md:px-8 md:py-6 rounded-full text-xs md:text-lg shadow-lg hover:translate-y-[-2px] transition-transform"
-                onClick={() => router.push(slide.link)}
-              >
-                {slide.ctaText}
-              </Button>
-            </div>
           </div>
         ))}
       </div>

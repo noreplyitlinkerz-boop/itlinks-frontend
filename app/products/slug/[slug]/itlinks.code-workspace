@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../.."
+		},
+		{
+			"name": "itlinks-backend",
+			"path": "../../../../../itlinks-backend"
+		}
+	],
+	"settings": {}
+}

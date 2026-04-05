@@ -88,7 +88,7 @@ export default function ContactPage() {
                     <div>
                       <p className="font-semibold">Email</p>
                       <p className="text-muted-foreground">
-                        contact.itlinkers@gmail.com
+                        admin@itlinkers.co.in
                       </p>
                     </div>
                   </div>

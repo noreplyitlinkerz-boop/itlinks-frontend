@@ -1,9 +1,12 @@
 "use client";
 
+import { Suspense, useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { ArrowUp, Send, Youtube, Facebook, Instagram } from "lucide-react";
+import { ArrowUp, Send, Youtube, Facebook, Instagram, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { navigationService } from "@/lib/api/services";
+import { NavigationItem } from "@/lib/api/types/endpoints";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg
@@ -17,8 +20,47 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 export function Footer() {
+  const [navItems, setNavItems] = useState<NavigationItem[]>([]);
+
+  useEffect(() => {
+    const fetchNavigation = async () => {
+      try {
+        const response = await navigationService.getNavigation();
+        if (response.success && response.data) {
+          setNavItems(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch navigation", error);
+      }
+    };
+    fetchNavigation();
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Helper to determine the correct URL for navigation items (Matches Header logic)
+  const getHref = (navLabel: string, navUrl: string) => {
+    const knownBrands = [
+      "HP", "Lenovo", "Dell", "Apple", "Acer", "Asus", "MSI", "Samsung", "Sony", "Microsoft",
+    ];
+    const upperLabel = navLabel.toUpperCase();
+
+    if (knownBrands.some((brand) => upperLabel.includes(brand))) {
+      const brandName = knownBrands.find((brand) => upperLabel.includes(brand)) || navLabel;
+
+      if (navUrl.includes("/products")) {
+        // Simple manual check if the URL already has search/filter params
+        const separator = navUrl.includes("?") ? "&" : "?";
+        // To avoid multiple 'brand' parameters, we can't easily use URL in Footer without 'origin' check
+        // but it's safer to just return as-is if it's already complex, 
+        // or just ensure we don't double up 'brand' if we are appending.
+        if (navUrl.includes("brand=")) return navUrl;
+        return `${navUrl}${separator}brand=${encodeURIComponent(brandName)}`;
+      }
+    }
+    return navUrl;
   };
 
   return (
@@ -28,7 +70,7 @@ export function Footer() {
         href="https://wa.me/917380817676"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-20 md:bottom-6 right-6 z-50 p-4 bg-[#25D366] text-white rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group animate-bounce-slow"
+        className="fixed bottom-20 md:bottom-6 right-6 z-50 p-4 bg-[#25D366] text-white rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group animate-float-slow"
         aria-label="Chat on WhatsApp"
       >
         <WhatsAppIcon className="w-6 h-6" />
@@ -39,10 +81,10 @@ export function Footer() {
 
       {/* Back to Top */}
       <button
-        className="fixed bottom-36 md:bottom-24 right-6 z-50 text-black "
+        className="fixed bottom-36 md:bottom-24 right-6 z-50 text-black"
         onClick={scrollToTop}
       >
-        <div className="p-4 rounded-full animate-bounce bg-white border border-black/5 shadow-2xl shadow-gray-500 hover:scale-110 transition-transform active:scale-95 group animate-bounce-slow">
+        <div className="p-4 rounded-full bg-white border border-black/5 shadow-2xl shadow-gray-500 hover:scale-110 transition-transform active:scale-95 group animate-float-slow">
           <ArrowUp className="w-4 h-4" />
         </div>
       </button>
@@ -55,21 +97,26 @@ export function Footer() {
               href="/"
               className="flex items-center gap-1.5 md:gap-2 group shrink-0"
             >
-              <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-105">
-                <Image
-                  className="w-4 h-12 md:w-4 md:h-16 fill-black"
-                  src="/logo-01.svg"
-                  alt="Logo"
-                  width={20}
-                  height={20}
-                />
-              </div>
               <div className="flex flex-col -gap-0.5 md:-gap-1">
-                <span className="text-lg md:text-2xl font-bold text-[#10BBE6]">
-                  ITLINKERS
-                </span>
-                <span className="text-[7px] md:text-[10px] text-muted-foreground font-medium tracking-wider uppercase leading-none">
-                  wired for your world
+                <div className="flex items-center">
+                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -mr-[0.1em]">
+                    ITL
+                  </span>
+                  <div className="relative flex items-center justify-center transition-all duration-300 group-hover:scale-100 mb-2">
+                    <Image
+                      className="w-3 h-5 md:w-5 md:h-7"
+                      src="/logo-01.svg"
+                      alt="Logo"
+                      width={16}
+                      height={16}
+                    />
+                  </div>
+                  <span className="text-lg md:text-2xl font-bold text-[#10BBE6] -ml-[0.1em]">
+                    NKERS
+                  </span>
+                </div>
+                <span className="text-[6px] md:text-[8px] text-center w-full  text-muted-foreground font-medium tracking-tighter uppercase leading-none">
+                  Where Technology Connects
                 </span>
               </div>
             </Link>
@@ -114,32 +161,32 @@ export function Footer() {
               <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
                 ABOUT US
               </h3>
-              <ul className="space-y-3 text-sm font-medium">
+              <ul className="space-y-3.5 text-sm font-medium">
                 <li>
                   <Link
                     href="/about"
-                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
-                    About Itlinkers
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">About Itlinkers</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/refurbishing-story"
-                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
-                    Refurbishing story
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Refurbishing story</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/our-story"
-                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
-                    Our Story
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Our Story</span>
                   </Link>
                 </li>
               </ul>
@@ -147,46 +194,44 @@ export function Footer() {
 
             {/* 2. OUR PRODUCTS */}
             <div className="space-y-6">
-              <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
+              <h3 className="text-lg font-bold uppercase tracking-wider text-slate-800">
                 Our Products
               </h3>
-              <ul className="space-y-3 text-sm font-medium">
-                <li>
-                  <Link
-                    href="/products?category=laptops"
-                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
-                    Laptops
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products?category=desktops"
-                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
-                    Desktops
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products?category=hp-refurbished"
-                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
-                    HP Laptops
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products?category=accessories"
-                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-border group-hover:bg-primary transition-colors"></span>
-                    Accessories
-                  </Link>
-                </li>
+              <ul className="space-y-3.5 text-sm font-medium">
+                {navItems.length > 0 ? (
+                  navItems.slice(0, 5).map((nav) => (
+                    <li key={nav.label}>
+                      <Link
+                        href={getHref(nav.label, nav.url || "#")}
+                        className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                        <span className="group-hover:translate-x-1 transition-transform">{nav.label}</span>
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <>
+                    <li>
+                      <Link
+                        href="/products?category=refurbished-laptop"
+                        className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                        <span className="group-hover:translate-x-1 transition-transform">Laptops</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/products?category=accessories"
+                        className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                        <span className="group-hover:translate-x-1 transition-transform">Accessories</span>
+                      </Link>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
 
@@ -195,53 +240,59 @@ export function Footer() {
               <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
                 Help
               </h3>
-              <ul className="space-y-3 text-sm font-medium">
+              <ul className="space-y-3.5 text-sm font-medium">
                 <li>
                   <Link
                     href="/contact"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    Contact Us
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Contact Us</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/terms"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    Terms of Service
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Terms of Service</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/shipping"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    Shipping Policy
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Shipping Policy</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/returns"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    Return Policy
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Return Policy</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/warranty"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    Warranty Policy
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Warranty Policy</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/privacy"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    className="text-slate-500 hover:text-[#10BBE6] transition-all flex items-center gap-3 group"
                   >
-                    Privacy Policy
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-[#10BBE6] group-hover:scale-125 group-hover:shadow-[0_0_8px_rgba(16,187,230,0.5)] transition-all duration-300"></div>
+                    <span className="group-hover:translate-x-1 transition-transform">Privacy Policy</span>
                   </Link>
                 </li>
               </ul>
@@ -261,7 +312,7 @@ export function Footer() {
                     +91 7380817676
                   </p>
                   <p className="text-xs font-bold text-[#10BBE6] break-all">
-                    contact.itlinkers@gmail.com
+                    admin@itlinkers.co.in
                   </p>
                 </div>
               </div>

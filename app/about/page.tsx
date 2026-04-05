@@ -55,13 +55,15 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-tr from-[#10BBE6]/20 to-transparent rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="relative h-[500px] lg:h-[600px] rounded-[3rem] overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800">
+                <div className="relative z-10 w-full aspect-video md:aspect-square rounded-[3.5rem] overflow-hidden rotate-2 hover:rotate-0 transition-transform duration-700 shadow-2xl group">
                   <Image
-                    src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=2020&auto=format&fit=crop"
-                    alt="Premium Technology"
+                    src="/images/about-itlinkers-premium.png"
+                    alt="Premium Refurbishing Lab"
                     fill
-                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                    className="object-cover group-hover:scale-110 transition-transform duration-700 font-sans"
+                    priority
                   />
+                  <div className="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors duration-700" />
                 </div>
               </div>
               <div className="space-y-8">

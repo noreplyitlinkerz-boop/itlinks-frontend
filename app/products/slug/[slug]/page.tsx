@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -137,6 +137,48 @@ export default function ProductDetailPage({
     }
   };
 
+  // Memoize specifications to prevent hydration errors and unnecessary re-renders
+  const technicalSpecs = useMemo(() => {
+    if (!product?.technicalSpecifications) return [];
+    
+    try {
+      const parsed = typeof product.technicalSpecifications === "string" 
+        ? JSON.parse(product.technicalSpecifications) 
+        : product.technicalSpecifications;
+        
+      if (!parsed || typeof parsed !== "object") return [];
+      
+      return Object.entries(parsed)
+        .filter(([key, value]) => {
+          if (!value) return false;
+          if (String(value).trim() === "") return false;
+          const blockedKeys = ["id", "_id", "__v", "technical", "createdat", "updatedat"];
+          return !blockedKeys.includes(key.toLowerCase());
+        })
+        .map(([key, value]) => {
+          // Ensure value is a string or number for display
+          const displayValue = typeof value === "object" 
+            ? JSON.stringify(value) 
+            : String(value);
+          return [key, displayValue];
+        });
+    } catch (e) {
+      console.error("Failed to parse technical specifications", e);
+      return [];
+    }
+  }, [product?.technicalSpecifications]);
+
+  const productSpecs = useMemo(() => {
+    if (!product?.specifications) return {};
+    try {
+      return typeof product.specifications === "string"
+        ? JSON.parse(product.specifications)
+        : product.specifications;
+    } catch (e) {
+      return {};
+    }
+  }, [product?.specifications]);
+
   const fetchRelatedProducts = async (ids: string[]) => {
     try {
       if (!ids || ids.length === 0) return;
@@ -174,6 +216,22 @@ export default function ProductDetailPage({
         typeof p === "string" ? p : p._id,
       );
       fetchRelatedProducts(ids);
+    } else if (product?.categoryID) {
+      // Fallback: Fetch products from the same category
+      const categoryId = typeof product.categoryID === "string" 
+        ? product.categoryID 
+        : product.categoryID._id;
+      
+      productService.getProducts({ category: categoryId, limit: 5 })
+        .then(res => {
+          if (res && res.data) {
+            // Filter out current product
+            const products = Array.isArray(res.data) ? res.data : [];
+            const filtered = products.filter((p: ApiProduct) => p._id !== product._id);
+            setRelatedProducts(filtered);
+          }
+        })
+        .catch(err => console.error("Failed to fetch category related products", err));
     }
   }, [product]);
 
@@ -550,15 +608,19 @@ export default function ProductDetailPage({
                   : ""}
               </h1>
 
+              {/* Rating Pill */}
               <div className="flex items-center gap-3 mt-2">
-                <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  {Math.floor(getStableRandom(product._id + "ratings") * 500) +
-                    100}{" "}
-                  Ratings &{" "}
-                  {Math.floor(getStableRandom(product._id + "reviews") * 100) +
-                    10}{" "}
-                  Reviews
-                </span>
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 w-fit">
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    {product.rating || 4.2}
+                  </span>
+                  <Star className="w-3.5 h-3.5 fill-green-600 text-green-600" />
+                  <div className="w-[1px] h-4 bg-slate-300 dark:bg-slate-600 mx-1" />
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    {Math.floor(getStableRandom(product._id + "ratings") * 500) +
+                      100}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -587,17 +649,13 @@ export default function ProductDetailPage({
                   )}
               </div>
 
-              {/* Brand & Rating */}
+              {/* Brand */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-wider">
                   {typeof product.brandID === "object"
                     ? product.brandID.name
                     : "Premium Brand"}
                 </span>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-accent/10 text-accent rounded-full text-xs font-bold">
-                  <Star className="w-3.5 h-3.5 fill-accent" />
-                  <span>{product.rating}</span>
-                </div>
               </div>
 
               {/* Stock / Availability */}
@@ -679,12 +737,7 @@ export default function ProductDetailPage({
                 Specifications
               </h3>
               <ProductSpecsGrid
-                specifications={
-                  safeParse(product.specifications, {}) as Record<
-                    string,
-                    string
-                  >
-                }
+                specifications={productSpecs as Record<string, string>}
               />
             </div>
 
@@ -700,31 +753,16 @@ export default function ProductDetailPage({
 
             {/* Technical Specifications — mobile only (shown at bottom below quantity) */}
             <div className="sm:order-7">
-              {product.technicalSpecifications &&
-                Object.entries(
-                  safeParse(product.technicalSpecifications, {}),
-                ).filter(
-                  ([key, value]) =>
-                    value &&
-                    String(value).trim() !== "" &&
-                    !["id", "_id", "__v", "technical"].includes(
-                      key.toLowerCase(),
-                    ),
-                ).length > 0 && (
-                  <div className="sm:hidden pt-5 mt-2 border-t">
-                    <h3 className="text-muted-foreground font-medium mb-3 text-sm">
-                      Technical Specifications
-                    </h3>
-                    <TechnicalSpecsTable
-                      specifications={
-                        safeParse(product.technicalSpecifications, {}) as Record<
-                          string,
-                          string
-                        >
-                      }
-                    />
-                  </div>
-                )}
+              {technicalSpecs.length > 0 && (
+                <div className="sm:hidden pt-5 mt-2 border-t">
+                  <h3 className="text-muted-foreground font-medium mb-3 text-sm">
+                    Technical Specifications
+                  </h3>
+                  <TechnicalSpecsTable
+                    specifications={Object.fromEntries(technicalSpecs)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -732,10 +770,13 @@ export default function ProductDetailPage({
         {/* Related Products Section */}
         {
           relatedProducts.length > 0 && (
-            <div className="mt-8 mb-4">
-              <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6">
-                Related Products
-              </h2>
+            <div className="mt-16 mb-8">
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="text-xl sm:text-3xl font-black uppercase tracking-tighter">
+                  You May Also <span className="text-primary italic">Like</span>
+                </h2>
+                <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                 {relatedProducts.map((related) => (
                   <div key={related._id} className="h-full">

@@ -534,24 +534,19 @@ export default function CheckoutPage() {
                       Free
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm font-medium">
-                    <span className="text-muted-foreground">
-                      Estimated Tax (18%)
-                    </span>
-                    <span className="font-bold">
-                      ₹{(totalPrice * 0.18).toLocaleString()}
-                    </span>
-                  </div>
 
                   <div className="flex justify-between items-end pt-4 border-t border-border/50">
-                    <div>
+                    <div className="space-y-1">
                       <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
                         Total Amount
                       </p>
-                      <h3 className="text-3xl font-black text-accent tracking-tighter mt-1">
-                        ₹{(totalPrice * 1.18).toLocaleString()}
-                      </h3>
+                      <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest">
+                        Includes GST & All Taxes
+                      </p>
                     </div>
+                    <h3 className="text-3xl font-black text-accent tracking-tighter mt-1">
+                      ₹{totalPrice.toLocaleString()}
+                    </h3>
                   </div>
                 </div>
 

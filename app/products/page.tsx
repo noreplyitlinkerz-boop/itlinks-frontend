@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SortOption, Product as FrontendProduct } from "@/types";
-import { productService, categoryService } from "@/lib/api/services";
+import { productService, categoryService, brandService } from "@/lib/api/services";
 import { Product as ApiProduct, Category } from "@/lib/api/types/endpoints";
 import { safeParse } from "@/lib/utils";
 
@@ -43,7 +43,16 @@ function ProductsContent() {
 
   const [products, setProducts] = useState<FrontendProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+
+  // Sync searchQuery with URL search parameter
+  useEffect(() => {
+    const search = searchParams.get("search");
+    if (search !== null && search !== searchQuery) {
+      setSearchQuery(search);
+    }
+  }, [searchParams]);
+
   const [sortOption, setSortOption] = useState<SortOption>("newest");
 
   // State for display names
@@ -56,14 +65,53 @@ function ProductsContent() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // 1. Fetch Display Names
-        const displayNamesPromises = [];
+        // 1. Fetch Display Names & Resolve IDs
+        const displayNamesPromises: Promise<any>[] = [];
+        let resolvedCategoryId = categoryFromUrl;
+        let resolvedSubcategoryId = subcategoryFromUrl;
+        let resolvedBrandId = brandFromUrl;
 
+        const isObjectId = (id: string | null) =>
+          id && (id.length === 24 || /^[0-9a-fA-F]+$/.test(id));
+
+        // Create a list of all categories to resolve slugs/names
+        let allCategories: Category[] = [];
+        let allBrands: any[] = [];
+
+        // Fetch categories if we have slugs to resolve
+        if (
+          (categoryFromUrl && !isObjectId(categoryFromUrl)) ||
+          (subcategoryFromUrl && !isObjectId(subcategoryFromUrl))
+        ) {
+          displayNamesPromises.push(
+            categoryService
+              .getCategories()
+              .then((res) => {
+                allCategories = res.data || [];
+              })
+              .catch(() => {
+                allCategories = [];
+              }),
+          );
+        }
+
+        // Fetch brands if we have a name to resolve
+        if (brandFromUrl && !isObjectId(brandFromUrl)) {
+          displayNamesPromises.push(
+            brandService
+              .getBrands()
+              .then((res) => {
+                allBrands = res.data || [];
+              })
+              .catch(() => {
+                allBrands = [];
+              }),
+          );
+        }
+
+        // --- Category Resolution ---
         if (categoryFromUrl) {
-          if (
-            categoryFromUrl.length === 24 ||
-            /^[0-9a-fA-F]+$/.test(categoryFromUrl)
-          ) {
+          if (isObjectId(categoryFromUrl)) {
             displayNamesPromises.push(
               categoryService
                 .getCategoryById(categoryFromUrl)
@@ -78,17 +126,16 @@ function ProductsContent() {
                 ),
             );
           } else {
-            setCategoryDisplayName(categoryFromUrl.replace(/-/g, " "));
+            // It's a slug, we need to wait for categories to be fetched
+            // This part will handle the mapping after we await the promises
           }
         } else {
           setCategoryDisplayName("All Collection");
         }
 
+        // --- Subcategory Resolution ---
         if (subcategoryFromUrl) {
-          if (
-            subcategoryFromUrl.length === 24 ||
-            /^[0-9a-fA-F]+$/.test(subcategoryFromUrl)
-          ) {
+          if (isObjectId(subcategoryFromUrl)) {
             displayNamesPromises.push(
               categoryService
                 .getCategoryById(subcategoryFromUrl)
@@ -106,28 +153,95 @@ function ProductsContent() {
                   ),
                 ),
             );
-          } else {
-            setSubcategoryDisplayName(subcategoryFromUrl.replace(/-/g, " "));
           }
         } else {
           setSubcategoryDisplayName("");
         }
 
+        // --- Brand Resolution ---
         if (brandFromUrl) {
-          setBrandDisplayName(brandFromUrl.replace(/-/g, " "));
+          if (!isObjectId(brandFromUrl)) {
+            // Placeholder, formatted version set after displayNamesPromises
+            setBrandDisplayName(brandFromUrl.replace(/-/g, " "));
+          } else {
+            // Already an ID, try to get name from brands if needed?
+            // Usually we just show the name, so we'll fetch brands list anyway
+          }
         } else {
           setBrandDisplayName("");
         }
 
+        // Finalize resolutions after fetching lists
         if (displayNamesPromises.length > 0)
           await Promise.all(displayNamesPromises);
+
+        // Map Category slug/name to ID if needed
+        if (categoryFromUrl && !isObjectId(categoryFromUrl)) {
+          const match = allCategories.find(
+            (c) =>
+              c.name.toLowerCase() ===
+                categoryFromUrl.toLowerCase().replace(/-/g, " ") ||
+              c.name.toLowerCase().replace(/\s+/g, "-") ===
+                categoryFromUrl.toLowerCase(),
+          );
+          if (match) {
+            resolvedCategoryId = match._id;
+            setCategoryDisplayName(match.name);
+          } else {
+            setCategoryDisplayName(categoryFromUrl.replace(/-/g, " "));
+          }
+        }
+
+        // Map Subcategory slug/name to ID if needed
+        if (subcategoryFromUrl && !isObjectId(subcategoryFromUrl)) {
+          const match = allCategories.find(
+            (c) =>
+              c.name.toLowerCase() ===
+                subcategoryFromUrl.toLowerCase().replace(/-/g, " ") ||
+              c.name.toLowerCase().replace(/\s+/g, "-") ===
+                subcategoryFromUrl.toLowerCase(),
+          );
+          if (match) {
+            resolvedSubcategoryId = match._id;
+            setSubcategoryDisplayName(match.name);
+          } else {
+            setSubcategoryDisplayName(subcategoryFromUrl.replace(/-/g, " "));
+          }
+        }
+
+        // Map Brand name to ID if needed
+        if (brandFromUrl && !isObjectId(brandFromUrl)) {
+          const match = allBrands.find(
+            (b) =>
+              b.name.toLowerCase() ===
+                brandFromUrl.toLowerCase().replace(/-/g, " ") ||
+              b.name.toLowerCase().replace(/\s+/g, "-") ===
+                brandFromUrl.toLowerCase(),
+          );
+          if (match) {
+            resolvedBrandId = match._id;
+            setBrandDisplayName(match.name);
+          } else {
+            setBrandDisplayName(brandFromUrl.replace(/-/g, " "));
+          }
+        }
 
         // 2. Fetch Products
         const params: any = { limit: 50, page: 1 };
         if (searchQuery) params.search = searchQuery;
-        if (categoryFromUrl) params.category = categoryFromUrl;
-        if (subcategoryFromUrl) params.subcategory = subcategoryFromUrl;
-        if (brandFromUrl) params.brand = brandFromUrl;
+
+        // Use resolved IDs for API parameters
+        if (resolvedCategoryId) params.category = resolvedCategoryId;
+        if (resolvedSubcategoryId) params.subcategory = resolvedSubcategoryId;
+        
+        // If it's a resolved ObjectID, use brandID; otherwise use brand
+        if (resolvedBrandId) {
+          if (isObjectId(resolvedBrandId)) {
+            params.brandID = resolvedBrandId;
+          } else {
+            params.brand = resolvedBrandId;
+          }
+        }
 
         const response = await productService.getProducts(params);
         const getArray = (res: any, key: string) => {
@@ -159,13 +273,8 @@ function ProductsContent() {
     // Client-side fallback filter if API doesn't strictly filter by subcategory
     if (subcategoryFromUrl) {
       const subName = subcategoryFromUrl.replace(/-/g, " ").toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(subName) ||
-          (p.description && p.description.toLowerCase().includes(subName)) ||
-          (p.keywords &&
-            p.keywords.some((k) => k.toLowerCase().includes(subName))),
-      );
+      // Subcategory filtering (if needed client-side, but API already handles this)
+      // Removed strict name matching as it causes "No Results" issues
     } else if (categoryFromUrl) {
       // Basic category name match if needed
       const catName = categoryFromUrl.replace(/-/g, " ").toLowerCase();

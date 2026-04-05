@@ -833,10 +833,18 @@ export function ProductForm({
 
     // Handle existing images for update
     if (initialData) {
-      formData.append(
-        "existingPrimaryImageUrl",
-        initialData.product_primary_image_url || "",
-      );
+      // If a new primary image is uploaded, don't send the existing one's URL as "current"
+      // to signal replacement to the backend
+      if (!primaryImage) {
+        formData.append(
+          "existingPrimaryImageUrl",
+          initialData.product_primary_image_url || "",
+        );
+      } else {
+        // Send a flag or explicitly leave out existingPrimaryImageUrl if backend supports it
+        formData.append("replacePrimaryImage", "true");
+      }
+
       formData.append(
         "existingImages",
         JSON.stringify(

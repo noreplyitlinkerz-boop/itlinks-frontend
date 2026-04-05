@@ -270,7 +270,7 @@ export function Header() {
                         {detectedLocation.city} {detectedLocation.pincode}
                       </>
                     ) : (
-                      "Mohali 160062"
+                      "waiting for location..."
                     )}
                   </span>
                   <span className="text-xs font-bold leading-tight group-hover:text-primary">

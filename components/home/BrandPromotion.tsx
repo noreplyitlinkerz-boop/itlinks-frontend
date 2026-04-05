@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { brandService } from "@/lib/api/services";
+import { Brand } from "@/lib/api/types/endpoints";
 
-const BRANDS = [
+// Curated mapping to ensure correct SimpleIcons slugs for your preferred brands
+const PREFERRED_BRANDS = [
   { name: "Logitech", slug: "logitech" },
   { name: "Dell", slug: "dell" },
   { name: "Apple", slug: "apple" },
@@ -20,6 +23,42 @@ const BRANDS = [
 ];
 
 export function BrandPromotion() {
+  const [displayBrands, setDisplayBrands] = useState<{ name: string; slug: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function syncBrands() {
+      try {
+        const response = await brandService.getBrands();
+        const apiBrands = response.data || (response as any).brands || [];
+        
+        // Filter and map: only show curated brands if they exist in the API
+        const matched = PREFERRED_BRANDS.filter(preferred => 
+          apiBrands.some((api: Brand) => api.name.toLowerCase() === preferred.name.toLowerCase())
+        );
+
+        // Fallback: If API is empty or no matches, use the preferred list (to avoid blank section)
+        setDisplayBrands(matched.length > 0 ? matched : PREFERRED_BRANDS);
+      } catch (error) {
+        console.error("Failed to sync brands:", error);
+        setDisplayBrands(PREFERRED_BRANDS);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    syncBrands();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section className="py-24 bg-slate-50/50 dark:bg-slate-900/10">
+        <div className="container mx-auto px-4 flex justify-center">
+          <div className="h-10 w-full bg-slate-200/20 animate-pulse rounded-full" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-24 relative overflow-hidden bg-slate-50/50 dark:bg-slate-900/10">
       <div className="container mx-auto px-4 mb-16">
@@ -36,12 +75,12 @@ export function BrandPromotion() {
 
       <div className="relative flex w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div className="flex animate-marquee-row whitespace-nowrap py-10">
-          {[...BRANDS, ...BRANDS].map((brand, index) => (
+          {[...displayBrands, ...displayBrands].map((brand, index) => (
             <div
               key={`${brand.slug}-${index}`}
-              className="mx-8 md:mx-12 flex flex-col items-center justify-center group cursor-pointer"
+              className="mx-8 md:mx-12 flex flex-col items-center justify-center group"
             >
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] group-hover:border-primary/40 transition-all duration-700 transform group-hover:-translate-y-4 group-hover:rotate-3">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] group-hover:border-primary/40 transition-all duration-700 transform group-hover:-translate-y-4">
                 <img
                   src={`https://cdn.simpleicons.org/${brand.slug}`}
                   alt={brand.name}

@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-import { navigationService, productService } from "@/lib/api/services";
+import { navigationService, productService, brandService } from "@/lib/api/services";
 import { NavigationItem } from "@/lib/api/types/endpoints";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -62,23 +62,33 @@ export function Header() {
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [allBrands, setAllBrands] = useState<any[]>([]);
 
   const userInitials = user
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
     : "";
 
   useEffect(() => {
-    const fetchNavigation = async () => {
+    const fetchData = async () => {
       try {
-        const response = await navigationService.getNavigation();
-        if (response.success && response.data) {
-          setNavItems(response.data);
+        const [navRes, brandRes] = await Promise.all([
+          navigationService.getNavigation(),
+          brandService.getBrands()
+        ]);
+        
+        if (navRes.success && navRes.data) {
+          setNavItems(navRes.data);
+        }
+        
+        if (brandRes.success && brandRes.data) {
+          const data = brandRes.data || (brandRes as any).brands || [];
+          setAllBrands(Array.isArray(data) ? data : []);
         }
       } catch (error) {
-        console.error("Failed to fetch navigation", error);
+        console.error("Failed to fetch header data", error);
       }
     };
-    fetchNavigation();
+    fetchData();
   }, []);
 
   const [detectedLocation, setDetectedLocation] = useState<{
@@ -168,24 +178,13 @@ export function Header() {
       }
     }
 
-    const knownBrands = [
-      "HP",
-      "Lenovo",
-      "Dell",
-      "Apple",
-      "Acer",
-      "Asus",
-      "MSI",
-      "Samsung",
-      "Sony",
-      "Microsoft",
-    ];
+    const knownBrandNames = allBrands.map(b => b.name.toUpperCase());
     const upperLabel = navLabel.toUpperCase();
 
     // If it's a known brand and we're under a category like "Laptop"
-    if (knownBrands.some((brand) => upperLabel.includes(brand))) {
+    if (knownBrandNames.some((brand) => upperLabel.includes(brand))) {
       const brandName =
-        knownBrands.find((brand) => upperLabel.includes(brand)) || navLabel;
+        knownBrandNames.find((brand) => upperLabel.includes(brand)) || navLabel;
 
       // If the URL is already a products search/filter URL
       if (finalUrl.includes("/products")) {

@@ -55,11 +55,11 @@ function ProductsContent() {
 
   const [sortOption, setSortOption] = useState<SortOption>("newest");
 
-  // State for display names
   const [categoryDisplayName, setCategoryDisplayName] = useState<string>("");
   const [subcategoryDisplayName, setSubcategoryDisplayName] =
     useState<string>("");
   const [brandDisplayName, setBrandDisplayName] = useState<string>("");
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,7 +75,7 @@ function ProductsContent() {
           id && (id.length === 24 || /^[0-9a-fA-F]+$/.test(id));
 
         // Create a list of all categories to resolve slugs/names
-        let allCategories: Category[] = [];
+        let allCategoriesLocal: Category[] = [];
         let allBrands: any[] = [];
 
         // Helper to extract array from possibly nested API response
@@ -87,22 +87,20 @@ function ProductsContent() {
           return [];
         };
 
-        // Fetch categories if we have slugs to resolve
-        if (
-          (categoryFromUrl && !isObjectId(categoryFromUrl)) ||
-          (subcategoryFromUrl && !isObjectId(subcategoryFromUrl))
-        ) {
-          displayNamesPromises.push(
-            categoryService
-              .getCategories()
-              .then((res) => {
-                allCategories = extractArray(res);
-              })
-              .catch(() => {
-                allCategories = [];
-              }),
-          );
-        }
+        // Always fetch categories for the bottom section and resolution
+        displayNamesPromises.push(
+          categoryService
+            .getCategories()
+            .then((res) => {
+              const cats = extractArray(res);
+              allCategoriesLocal = cats;
+              setAllCategories(cats);
+            })
+            .catch(() => {
+              allCategoriesLocal = [];
+              setAllCategories([]);
+            }),
+        );
 
         // Fetch brands if we have a name to resolve
         if (brandFromUrl && !isObjectId(brandFromUrl)) {
@@ -453,53 +451,44 @@ function ProductsContent() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              {[
-                {
-                  name: "Laptops",
-                  icon: Laptop,
-                  slug: "refurbished-laptop",
-                  color: "from-blue-500/5",
-                },
-                {
-                  name: "Workstations",
-                  icon: Monitor,
-                  slug: "refurbished-desktop",
-                  color: "from-purple-500/5",
-                },
-                {
-                  name: "Components",
-                  icon: Cpu,
-                  slug: "accessories",
-                  color: "from-emerald-500/5",
-                },
-                {
-                  name: "Accessories",
-                  icon: MousePointer2,
-                  slug: "accessories",
-                  color: "from-orange-500/5",
-                },
-              ].map((cat) => (
-                <Link
-                  key={cat.name}
-                  href={`/products?category=${cat.slug}`}
-                  className={cn(
-                    "group relative p-6 rounded-2xl border border-slate-100 bg-white hover:border-primary/20 hover:shadow-sm flex flex-col items-center transition-all duration-300",
-                  )}
-                >
-                  <div
+              {allCategories.slice(0, 4).map((cat) => {
+                const getIcon = (name: string) => {
+                  const n = name.toLowerCase();
+                  if (n.includes("laptop")) return Laptop;
+                  if (n.includes("desktop") || n.includes("workstation"))
+                    return Monitor;
+                  if (n.includes("cpu") || n.includes("component") || n.includes("processor"))
+                    return Cpu;
+                  if (n.includes("accessory") || n.includes("mouse") || n.includes("keyboard"))
+                    return MousePointer2;
+                  return PackageSearch;
+                };
+                const Icon = getIcon(cat.name);
+                const slug = cat.name.toLowerCase().replace(/\s+/g, "-");
+
+                return (
+                  <Link
+                    key={cat._id}
+                    href={`/products?category=${slug}`}
                     className={cn(
-                      "mb-3 p-3 rounded-xl bg-linear-to-br transition-colors",
-                      cat.color,
-                      "to-transparent",
+                      "group relative p-6 rounded-2xl border border-slate-100 bg-white hover:border-primary/20 hover:shadow-sm flex flex-col items-center transition-all duration-300",
                     )}
                   >
-                    <cat.icon className="w-5 h-5 text-slate-600 group-hover:text-primary transition-colors" />
-                  </div>
-                  <span className="font-bold text-[10px] uppercase tracking-wider text-slate-700">
-                    {cat.name}
-                  </span>
-                </Link>
-              ))}
+                    <div
+                      className={cn(
+                        "mb-3 p-3 rounded-xl bg-linear-to-br transition-colors",
+                        "from-primary/5",
+                        "to-transparent",
+                      )}
+                    >
+                      <Icon className="w-5 h-5 text-slate-600 group-hover:text-primary transition-colors" />
+                    </div>
+                    <span className="font-bold text-[10px] uppercase tracking-wider text-slate-700 text-center">
+                      {cat.name}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>

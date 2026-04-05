@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowUp, Send, Youtube, Facebook, Instagram, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { navigationService } from "@/lib/api/services";
+import { navigationService, brandService } from "@/lib/api/services";
 import { NavigationItem } from "@/lib/api/types/endpoints";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -21,19 +21,29 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 
 export function Footer() {
   const [navItems, setNavItems] = useState<NavigationItem[]>([]);
+  const [allBrands, setAllBrands] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchNavigation = async () => {
+    const fetchData = async () => {
       try {
-        const response = await navigationService.getNavigation();
-        if (response.success && response.data) {
-          setNavItems(response.data);
+        const [navRes, brandRes] = await Promise.all([
+          navigationService.getNavigation(),
+          brandService.getBrands()
+        ]);
+
+        if (navRes.success && navRes.data) {
+          setNavItems(navRes.data);
+        }
+
+        if (brandRes.success && brandRes.data) {
+          const data = brandRes.data || (brandRes as any).brands || [];
+          setAllBrands(Array.isArray(data) ? data : []);
         }
       } catch (error) {
-        console.error("Failed to fetch navigation", error);
+        console.error("Failed to fetch footer data", error);
       }
     };
-    fetchNavigation();
+    fetchData();
   }, []);
 
   const scrollToTop = () => {
@@ -43,12 +53,12 @@ export function Footer() {
   // Helper to determine the correct URL for navigation items (Matches Header logic)
   const getHref = (navLabel: string, navUrl: string) => {
     let finalUrl = navUrl;
-    
+
     // Add fallback URLs for items with empty links (like "BUY ACCESSORIES")
     if (!finalUrl || finalUrl === "#") {
       const lowerLabel = navLabel.toLowerCase();
       if (lowerLabel.includes("accessories")) {
-        finalUrl = "/products?category=accessories";
+        finalUrl = "/products";
       } else if (lowerLabel.includes("laptop")) {
         finalUrl = "/products?category=refurbished-laptop";
       } else if (lowerLabel.includes("desktop")) {
@@ -58,13 +68,11 @@ export function Footer() {
       }
     }
 
-    const knownBrands = [
-      "HP", "Lenovo", "Dell", "Apple", "Acer", "Asus", "MSI", "Samsung", "Sony", "Microsoft",
-    ];
+    const knownBrandNames = allBrands.map(b => b.name.toUpperCase());
     const upperLabel = navLabel.toUpperCase();
 
-    if (knownBrands.some((brand) => upperLabel.includes(brand))) {
-      const brandName = knownBrands.find((brand) => upperLabel.includes(brand)) || navLabel;
+    if (knownBrandNames.some((brand) => upperLabel.includes(brand))) {
+      const brandName = knownBrandNames.find((brand) => upperLabel.includes(brand)) || navLabel;
 
       if (finalUrl.includes("/products")) {
         // Simple manual check if the URL already has search/filter params

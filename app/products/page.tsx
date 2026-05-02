@@ -350,17 +350,17 @@ function ProductsContent() {
           </div>
 
           {/* Main Action Bar */}
-          <div className="flex flex-col lg:flex-row items-stretch gap-3">
-            <div className="relative flex-1 group">
+          <div className="flex justify-end flex-col lg:flex-row items-stretch gap-3">
+            {/* <div className="relative flex-1 group">
               <SearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Search premium inventory..."
                 className="bg-white/60 backdrop-blur-md border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all duration-300 rounded-xl h-12 pl-10 text-sm shadow-sm"
               />
-            </div>
+            </div> */}
 
-            <div className="flex gap-3">
+            <div className="flex justify-end gap-3">
               <Select
                 value={sortOption}
                 onValueChange={(value) => setSortOption(value as SortOption)}
